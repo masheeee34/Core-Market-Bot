@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: tahitian-ticket-bot
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
