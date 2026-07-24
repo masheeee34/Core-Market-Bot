@@ -1,20 +1,20 @@
-"""Products Cog — formatted sales embeds with persistent "Buy Here" buttons.
+"""Products Cog — formatted sales embeds with persistent "Buy Here" / "Acheter ici" buttons.
 Zero-database design: product key, staff role ID, and logs channel ID are encoded
-in the button custom_id (e.g., buy_product:unlockall:123456789:987654321).
+in the button custom_id (e.g., buy_product:unlockall_fr:123456789:987654321).
 """
 
 from typing import Any
 
-discord = None  # Will be imported
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 PRODUCTS: dict[str, dict[str, Any]] = {
     "unlockall": {
-        "raw_title": "UNLOCK ALL (SKIN CHANGER)",
+        "raw_title": "UNLOCK ALL (SKIN CHANGER) [EN]",
         "title": "🟣 UNLOCK ALL (SKIN CHANGER) 🟣",
         "description": "*Weapon skin customizer*",
+        "button_label": "Buy Here",
         "color": discord.Color.from_str("#8E44AD"),
         "fields": [
             (
@@ -35,18 +35,52 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "💳 Pricing Plan",
-                "• **1 Day:** $7.5\n"
+                "• **1 Day:** $7.50\n"
                 "• **1 Week:** $20.00\n"
                 "• **1 Month:** $40.00\n"
-                "• **Lifetime:** $100",
+                "• **Lifetime:** $100.00",
+                False,
+            ),
+        ],
+    },
+    "unlockall_fr": {
+        "raw_title": "UNLOCK ALL (SKIN CHANGER) [FR]",
+        "title": "🟣 UNLOCK ALL (SKIN CHANGER) 🟣",
+        "description": "*Personnalisateur de skins d'armes*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#8E44AD"),
+        "fields": [
+            (
+                "🌐 Système & Compatibilité",
+                "• **OS :** Windows 10 & 11 (Toutes les versions)\n"
+                "• **Rendu Côté Client :** Invisible pour les spectateurs et streamers\n"
+                "• **Anti-Cheat :** Vanguard",
+                False,
+            ),
+            (
+                "⚙️ Déverrouillage & Cosmétiques",
+                "• **Déverrouiller tous les cosmétiques :** Débloquez visuellement les skins d'armes, porte-bonheurs et cartes\n"
+                "• **Changer de skin :** Personnalisez vos skins avec application automatique\n"
+                "• **Changer de porte-bonheur :** Personnalisez vos porte-bonheurs avec application automatique\n"
+                "• **Sélection personnalisée :** Choisissez n'importe quel porte-bonheur dans la liste déroulante\n"
+                "• **Déverrouillage des Finishers :** Échangez et déclenchez les animations de finisher",
+                False,
+            ),
+            (
+                "💳 Tarifs",
+                "• **1 Jour :** $7.50 / 7.50 €\n"
+                "• **1 Semaine :** $20.00 / 20.00 €\n"
+                "• **1 Mois :** $40.00 / 40.00 €\n"
+                "• **A vie (Lifetime) :** $100.00 / 100.00 €",
                 False,
             ),
         ],
     },
     "colorbot": {
-        "raw_title": "COLORBOT PRIVATE",
+        "raw_title": "COLORBOT PRIVATE [EN]",
         "title": "🟡 COLORBOT PRIVATE 🟡",
         "description": "*Private pipeline · Web-only access · Built for discretion*",
+        "button_label": "Buy Here",
         "color": discord.Color.from_str("#F1C40F"),
         "fields": [
             (
@@ -95,6 +129,59 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
         ],
     },
+    "colorbot_fr": {
+        "raw_title": "COLORBOT PRIVATE [FR]",
+        "title": "🟡 COLORBOT PRIVATE 🟡",
+        "description": "*Pipeline privé · Accès Web uniquement · Conçu pour la discrétion*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#F1C40F"),
+        "fields": [
+            (
+                "🌐 SYSTÈME & COMPATIBILITÉ",
+                "• **OS :** Windows 10 & 11 (Home & Pro, toutes versions)\n"
+                "• **Composants :** Supporte tous les processeurs CPU & cartes GPU\n"
+                "• **Mode HVCI :** Compatible avec HVCI Activé/Désactivé\n"
+                "• **Anti-Cheat :** Vanguard",
+                False,
+            ),
+            (
+                "🎯 FONCTIONNALITÉS AIMBOT",
+                "• **Aim Bot & Aim Assist**\n"
+                "• **Silent Aim & Flickbot**\n"
+                "• **Trigger Bot (Tir automatique)**\n"
+                "• **Couleurs cibles :** Jaune, Violet",
+                False,
+            ),
+            (
+                "🛠️ RÉGLAGES AJUSTABLES",
+                "• **FOV :** (Taille du champ de vision)\n"
+                "• **Smoothness :** (Vitesse de fluidité)\n"
+                "• **Vitesse (Speed)**\n"
+                "• **Décalage (Offset)**",
+                False,
+            ),
+            (
+                "📦 UTILITAIRES & LIVRAISON",
+                "• **Sauvegarde & Chargement de la configuration**\n"
+                "• **Raccourcis personnalisés (Keybinds)**\n"
+                "• **Touche d'urgence (Panic Key)**\n"
+                "• **Session basiques sur le Web :** (Rien n'est écrit sur le disque)\n"
+                "• **Salon de livraison privé et isolé**\n"
+                "• **Ciblage assisté par IA & logique des couleurs**\n"
+                "• **Empreinte minimale sur le système**\n"
+                "• **Surveillance continue de l'intégrité & mises à jour**",
+                False,
+            ),
+            (
+                "💳 TARIFS",
+                "• **1 Jour :** $7.00 / 7.00 €\n"
+                "• **1 Semaine :** $20.00 / 20.00 €\n"
+                "• **1 Mois :** $40.00 / 40.00 €\n"
+                "• **A vie (Lifetime) :** $75.00 / 75.00 €",
+                False,
+            ),
+        ],
+    },
 }
 
 
@@ -127,11 +214,12 @@ class BuyProductButton(
         product_key: str,
         staff_role_id: int,
         logs_channel_id: int,
-        button_label: str = "Buy Here",
+        button_label: str | None = None,
     ) -> None:
+        label = button_label or PRODUCTS.get(product_key, {}).get("button_label", "Buy Here / Acheter ici")
         super().__init__(
             discord.ui.Button(
-                label=button_label,
+                label=label,
                 style=discord.ButtonStyle.secondary,
                 emoji="🛒",
                 custom_id=f"buy_product:{product_key}:{staff_role_id}:{logs_channel_id}",
@@ -215,53 +303,75 @@ class Products(commands.Cog):
 
     @app_commands.command(
         name="setup_unlockall",
-        description="Poster le message de vente UNLOCK ALL avec bouton Buy Here",
+        description="Poster le message de vente UNLOCK ALL avec bouton d'achat",
     )
     @app_commands.describe(
+        langue="Langue de l'embed (français ou anglais)",
         role_staff="Rôle staff ayant accès au ticket (optionnel)",
         salon_logs="Salon des logs/transcripts (optionnel)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
     async def setup_unlockall(
         self,
         interaction: discord.Interaction,
+        langue: app_commands.Choice[str] | None = None,
         role_staff: discord.Role | None = None,
         salon_logs: discord.TextChannel | None = None,
     ) -> None:
-        await self._send_product_panel(interaction, "unlockall", role_staff, salon_logs)
+        lang = langue.value if langue else "fr"
+        key = "unlockall_fr" if lang == "fr" else "unlockall"
+        await self._send_product_panel(interaction, key, role_staff, salon_logs)
 
     @app_commands.command(
         name="setup_colorbot",
-        description="Poster le message de vente COLORBOT avec bouton Buy Here",
+        description="Poster le message de vente COLORBOT avec bouton d'achat",
     )
     @app_commands.describe(
+        langue="Langue de l'embed (français ou anglais)",
         role_staff="Rôle staff ayant accès au ticket (optionnel)",
         salon_logs="Salon des logs/transcripts (optionnel)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
     async def setup_colorbot(
         self,
         interaction: discord.Interaction,
+        langue: app_commands.Choice[str] | None = None,
         role_staff: discord.Role | None = None,
         salon_logs: discord.TextChannel | None = None,
     ) -> None:
-        await self._send_product_panel(interaction, "colorbot", role_staff, salon_logs)
+        lang = langue.value if langue else "fr"
+        key = "colorbot_fr" if lang == "fr" else "colorbot"
+        await self._send_product_panel(interaction, key, role_staff, salon_logs)
 
     @app_commands.command(
         name="setup_product",
         description="Poster le message de vente d'un produit spécifique",
     )
     @app_commands.describe(
-        produit="Identifiant du produit à afficher",
+        produit="Identifiant et langue du produit à afficher",
         role_staff="Rôle staff ayant accès au ticket (optionnel)",
         salon_logs="Salon des logs/transcripts (optionnel)",
     )
     @app_commands.choices(
         produit=[
-            app_commands.Choice(name="🟣 UNLOCK ALL (SKIN CHANGER)", value="unlockall"),
-            app_commands.Choice(name="🟡 COLORBOT PRIVATE", value="colorbot"),
+            app_commands.Choice(name="🟣 UNLOCK ALL (FR 🇫🇷)", value="unlockall_fr"),
+            app_commands.Choice(name="🟣 UNLOCK ALL (EN 🇬🇧)", value="unlockall"),
+            app_commands.Choice(name="🟡 COLORBOT PRIVATE (FR 🇫🇷)", value="colorbot_fr"),
+            app_commands.Choice(name="🟡 COLORBOT PRIVATE (EN 🇬🇧)", value="colorbot"),
         ]
     )
     @app_commands.default_permissions(administrator=True)
