@@ -59,9 +59,9 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "⚙️ Déverrouillage & Cosmétiques",
-                "• **Déverrouiller tous les cosmétiques :** Débloquez visuellement les skins d'armes, porte-bonheurs et cartes\n"
+                "• **Déverrouiller tous les cosmétiques :** Débloquez visuellement les skins d'armes, porte-bonheur et cartes\n"
                 "• **Changer de skin :** Personnalisez vos skins avec application automatique\n"
-                "• **Changer de porte-bonheur :** Personnalisez vos porte-bonheurs avec application automatique\n"
+                "• **Changer de porte-bonheur :** Personnalisez vos porte-bonheur avec application automatique\n"
                 "• **Sélection personnalisée :** Choisissez n'importe quel porte-bonheur dans la liste déroulante\n"
                 "• **Déverrouillage des Finishers :** Échangez et déclenchez les animations de finisher",
                 False,
@@ -71,7 +71,7 @@ PRODUCTS: dict[str, dict[str, Any]] = {
                 "• **1 Jour :** $7.50 / 7.50 €\n"
                 "• **1 Semaine :** $20.00 / 20.00 €\n"
                 "• **1 Mois :** $40.00 / 40.00 €\n"
-                "• **A vie (Lifetime) :** $100.00 / 100.00 €",
+                "• **À vie (Lifetime) :** $100.00 / 100.00 €",
                 False,
             ),
         ],
@@ -165,7 +165,7 @@ PRODUCTS: dict[str, dict[str, Any]] = {
                 "• **Sauvegarde & Chargement de la configuration**\n"
                 "• **Raccourcis personnalisés (Keybinds)**\n"
                 "• **Touche d'urgence (Panic Key)**\n"
-                "• **Session basiques sur le Web :** (Rien n'est écrit sur le disque)\n"
+                "• **Session basée sur le Web :** (Rien n'est écrit sur le disque)\n"
                 "• **Salon de livraison privé et isolé**\n"
                 "• **Ciblage assisté par IA & logique des couleurs**\n"
                 "• **Empreinte minimale sur le système**\n"
@@ -177,7 +177,7 @@ PRODUCTS: dict[str, dict[str, Any]] = {
                 "• **1 Jour :** $7.00 / 7.00 €\n"
                 "• **1 Semaine :** $20.00 / 20.00 €\n"
                 "• **1 Mois :** $40.00 / 40.00 €\n"
-                "• **A vie (Lifetime) :** $75.00 / 75.00 €",
+                "• **À vie (Lifetime) :** $75.00 / 75.00 €",
                 False,
             ),
         ],
