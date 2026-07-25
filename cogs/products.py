@@ -182,6 +182,118 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
         ],
     },
+    "mcore_fr": {
+        "raw_title": "M-CORE EXTERNAL BO7 / WARZONE [FR]",
+        "title": "🔴 M-CORE EXTERNAL BO7 / WARZONE 🔴",
+        "description": "*Solution externe premium pour Black Ops 7 & Warzone*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#E74C3C"),
+        "fields": [
+            (
+                "⚠️ CONSIGNES DE PAIEMENT PAYPAL",
+                "• Envoyer **exactement** le montant indiqué sur le site\n"
+                "• Mettre la **note exacte** fournie par le site\n"
+                "• Choisir l'option **« Entre proches »** (et non Biens & Services)\n"
+                "🔗 **Après paiement :** Ouvrez un ticket sur ce serveur Discord pour obtenir votre rôle client !",
+                False,
+            ),
+            (
+                "💻 INFORMATIONS & COMPATIBILITÉ",
+                "• **OS :** Windows 10 & 11 (Toutes versions, compatible 25H2 ✅)\n"
+                "• **Plateforme :** BattleNet, Steam, Activision, Xbox / PC GamePass\n"
+                "• **Bypass OBS :** Oui (Streamproof)\n"
+                "• **Manette :** 100% Compatible avec manette 🎮",
+                False,
+            ),
+            (
+                "🎯 AIMBOT",
+                "• **Visée :** Activer/Désactiver le verrouillage de cible\n"
+                "• **Os ciblés :** Casque, Tête, Cou, Poitrine, Bassin, Aléatoire\n"
+                "• **Réglages :** Fluidité (Smooth), Contrôle du recul, Prédiction de trajectoire\n"
+                "• **Filtres :** Ennemis uniquement, Vérification visuelle, Visée collante, Saut à terre / réanimation\n"
+                "• **Ciblage Intelligent :** Sélection par distance, FOV ou Smart",
+                False,
+            ),
+            (
+                "👁 ESP & VISUELS",
+                "• **Boîtes ESP :** 2D, 3D, Angles, Remplies\n"
+                "• **Joueurs :** Squelette, Barre de santé, Distance, Noms, ID Équipe, Bulle ESP\n"
+                "• **Radar & Drone :** Radar 2D, Drone avancé (Point / Directionnel), Boussole ESP\n"
+                "• **Avertissements & Traçage :** Avertissement de visée ennemie, Traceurs de balles\n"
+                "• **Butin & Items :** Munitions, Armes, Argent, Plaques de blindage, Caches d'approvisionnement",
+                False,
+            ),
+            (
+                "⚙️ PARAMÈTRES & MISC",
+                "• **FOV :** FOV Changer & Dynamic FOV\n"
+                "• **Configurations :** Sauvegarder, Charger et Créer des profils",
+                False,
+            ),
+            (
+                "💳 TARIFS",
+                "• **24 Heures :** 5.99 €\n"
+                "• **1 Semaine :** 15.99 €\n"
+                "• **30 Jours :** 35.99 €",
+                False,
+            ),
+        ],
+    },
+    "mcore": {
+        "raw_title": "M-CORE EXTERNAL BO7 / WARZONE [EN]",
+        "title": "🔴 M-CORE EXTERNAL BO7 / WARZONE 🔴",
+        "description": "*Premium External Tool for Black Ops 7 & Warzone*",
+        "button_label": "Buy Here",
+        "color": discord.Color.from_str("#E74C3C"),
+        "fields": [
+            (
+                "⚠️ PAYPAL PAYMENT NOTICE",
+                "• Send **exact** amount specified on the website\n"
+                "• Include the **exact note** provided by the site\n"
+                "• Choose **\"Friends & Family\"** option (not Goods & Services)\n"
+                "🔗 **After payment:** Open a ticket in this Discord server to get your Customer role!",
+                False,
+            ),
+            (
+                "💻 INFORMATION & COMPATIBILITY",
+                "• **OS:** Windows 10 & 11 (All versions, 25H2 ready ✅)\n"
+                "• **Platform:** BattleNet, Steam, Activision, Xbox / PC GamePass\n"
+                "• **OBS Bypass:** Yes (Streamproof)\n"
+                "• **Controller:** 100% Controller Compatible 🎮",
+                False,
+            ),
+            (
+                "🎯 AIMBOT",
+                "• **Aimbot:** Enable/Disable target lock\n"
+                "• **Hitbox:** Head, Helmet, Neck, Chest, Pelvis, Any\n"
+                "• **Settings:** Smoothness slider, Recoil control, Motion prediction\n"
+                "• **Filters:** Enemies only, Visible check, Sticky aim, Downed/Reviving targets\n"
+                "• **Smart Targeting:** Closest by Smart / FOV / Distance",
+                False,
+            ),
+            (
+                "👁 ESP & VISUALS",
+                "• **ESP Boxes:** 2D, 3D, Corner, Filled 2D/3D\n"
+                "• **Player ESP:** Skeleton, Health Bar, Distance, Names, Team ID, Snaplines\n"
+                "• **Radar & UAV:** 2D Radar, Advanced UAV, Compass ESP\n"
+                "• **Alerts & Tracers:** Aim warnings, Bullet tracers\n"
+                "• **Loot ESP:** Ammo, Weapons, Cash, Armor plates, Supply boxes",
+                False,
+            ),
+            (
+                "⚙️ SETTINGS & MISC",
+                "• **FOV:** FOV Changer & Dynamic FOV\n"
+                "• **Configs:** Save, Load, and Create custom profiles",
+                False,
+            ),
+            (
+                "💳 PRICING PLAN",
+                "• **24 Hours:** $5.99 / 5.99 €\n"
+                "• **1 Week:** $15.99 / 15.99 €\n"
+                "• **30 Days:** $35.99 / 35.99 €",
+                False,
+            ),
+        ],
+    },
 }
 
 
@@ -358,6 +470,34 @@ class Products(commands.Cog):
         await self._send_product_panel(interaction, key, role_staff, salon_logs)
 
     @app_commands.command(
+        name="setup_mcore",
+        description="Poster le message de vente M-CORE BO7 / WARZONE avec bouton d'achat",
+    )
+    @app_commands.describe(
+        langue="Langue de l'embed (français ou anglais)",
+        role_staff="Rôle staff ayant accès au ticket (optionnel)",
+        salon_logs="Salon des logs/transcripts (optionnel)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_mcore(
+        self,
+        interaction: discord.Interaction,
+        langue: app_commands.Choice[str] | None = None,
+        role_staff: discord.Role | None = None,
+        salon_logs: discord.TextChannel | None = None,
+    ) -> None:
+        lang = langue.value if langue else "fr"
+        key = "mcore_fr" if lang == "fr" else "mcore"
+        await self._send_product_panel(interaction, key, role_staff, salon_logs)
+
+    @app_commands.command(
         name="setup_product",
         description="Poster le message de vente d'un produit spécifique",
     )
@@ -372,6 +512,8 @@ class Products(commands.Cog):
             app_commands.Choice(name="🟣 UNLOCK ALL (EN 🇬🇧)", value="unlockall"),
             app_commands.Choice(name="🟡 COLORBOT PRIVATE (FR 🇫🇷)", value="colorbot_fr"),
             app_commands.Choice(name="🟡 COLORBOT PRIVATE (EN 🇬🇧)", value="colorbot"),
+            app_commands.Choice(name="🔴 M-CORE BO7/WARZONE (FR 🇫🇷)", value="mcore_fr"),
+            app_commands.Choice(name="🔴 M-CORE BO7/WARZONE (EN 🇬🇧)", value="mcore"),
         ]
     )
     @app_commands.default_permissions(administrator=True)
