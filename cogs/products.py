@@ -190,14 +190,6 @@ PRODUCTS: dict[str, dict[str, Any]] = {
         "color": discord.Color.from_str("#E74C3C"),
         "fields": [
             (
-                "⚠️ CONSIGNES DE PAIEMENT PAYPAL",
-                "• Envoyer **exactement** le montant indiqué sur le site\n"
-                "• Mettre la **note exacte** fournie par le site\n"
-                "• Choisir l'option **« Entre proches »** (et non Biens & Services)\n"
-                "🔗 **Après paiement :** Ouvrez un ticket sur ce serveur Discord pour obtenir votre rôle client !",
-                False,
-            ),
-            (
                 "💻 INFORMATIONS & COMPATIBILITÉ",
                 "• **OS :** Windows 10 & 11 (Toutes versions, compatible 25H2 ✅)\n"
                 "• **Plateforme :** BattleNet, Steam, Activision, Xbox / PC GamePass\n"
@@ -245,14 +237,6 @@ PRODUCTS: dict[str, dict[str, Any]] = {
         "button_label": "Buy Here",
         "color": discord.Color.from_str("#E74C3C"),
         "fields": [
-            (
-                "⚠️ PAYPAL PAYMENT NOTICE",
-                "• Send **exact** amount specified on the website\n"
-                "• Include the **exact note** provided by the site\n"
-                "• Choose **\"Friends & Family\"** option (not Goods & Services)\n"
-                "🔗 **After payment:** Open a ticket in this Discord server to get your Customer role!",
-                False,
-            ),
             (
                 "💻 INFORMATION & COMPATIBILITY",
                 "• **OS:** Windows 10 & 11 (All versions, 25H2 ready ✅)\n"
