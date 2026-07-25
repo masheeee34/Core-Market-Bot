@@ -81,16 +81,16 @@ def is_staff(member: discord.Member, staff_role_id: int) -> bool:
 
 class PanelSelect(
     discord.ui.DynamicItem[discord.ui.Select],
-    template=r"panel:(?P<staff>\d+):(?P<logs>\d+)",
+    template=r"panel:(?P<staff>\d+):(?P<logs>\d+)(:(?P<lang>[a-z]+))?",
 ):
-    """Panel select. Config (staff role, logs channel) lives in the custom_id —
+    """Panel select. Config (staff role, logs channel, lang) lives in the custom_id —
     invisible to members, survives restarts, no database."""
 
-    def __init__(self, staff_role_id: int, logs_channel_id: int) -> None:
+    def __init__(self, staff_role_id: int, logs_channel_id: int, lang: str = "en") -> None:
         super().__init__(
             discord.ui.Select(
-                custom_id=f"panel:{staff_role_id}:{logs_channel_id}",
-                placeholder="Select a ticket category...",
+                custom_id=f"panel:{staff_role_id}:{logs_channel_id}:{lang}",
+                placeholder="Sélectionnez une catégorie..." if lang == "fr" else "Select a ticket category...",
                 min_values=1,
                 max_values=1,
                 options=[
@@ -105,26 +105,27 @@ class PanelSelect(
         )
         self.staff_role_id = staff_role_id
         self.logs_channel_id = logs_channel_id
+        self.lang = lang
 
     @classmethod
     async def from_custom_id(cls, interaction, item, match, /):
-        return cls(int(match["staff"]), int(match["logs"]))
+        return cls(int(match["staff"]), int(match["logs"]), match["lang"] or "en")
 
     async def callback(self, interaction: discord.Interaction) -> None:
         ticket_type = self.item.values[0]
-        await create_ticket(interaction, ticket_type, self.staff_role_id, self.logs_channel_id)
+        await create_ticket(interaction, ticket_type, self.staff_role_id, self.logs_channel_id, forced_lang=self.lang)
         # Reset the menu for the next member (otherwise the selection stays displayed).
         try:
             await interaction.message.edit(
-                view=build_panel_view(self.staff_role_id, self.logs_channel_id)
+                view=build_panel_view(self.staff_role_id, self.logs_channel_id, lang=self.lang)
             )
         except discord.HTTPException:
             pass
 
 
-def build_panel_view(staff_role_id: int, logs_channel_id: int) -> discord.ui.View:
+def build_panel_view(staff_role_id: int, logs_channel_id: int, lang: str = "en") -> discord.ui.View:
     view = discord.ui.View(timeout=None)
-    view.add_item(PanelSelect(staff_role_id, logs_channel_id))
+    view.add_item(PanelSelect(staff_role_id, logs_channel_id, lang=lang))
     return view
 
 
@@ -134,6 +135,7 @@ async def create_ticket(
     staff_role_id: int,
     logs_channel_id: int,
     product_key: str | None = None,
+    forced_lang: str | None = None,
 ) -> None:
     await interaction.response.defer(ephemeral=True)
     guild = interaction.guild
@@ -161,11 +163,30 @@ async def create_ticket(
         "color": discord.Color.dark_grey(),
     })
 
-    # Route to the matching category, created on the fly if missing.
-    category = discord.utils.get(guild.categories, name=info["category"])
+    # Determine language priority:
+    # 1. product_key (if ends with _fr)
+    # 2. forced_lang (if specified on panel)
+    # 3. Channel category name or channel name (e.g. if panel is in a channel under "community [ FR ]")
+    lang = "en"
+    if product_key and product_key.endswith("_fr"):
+        lang = "fr"
+    elif forced_lang:
+        lang = forced_lang
+    elif isinstance(interaction.channel, discord.TextChannel):
+        ch = interaction.channel
+        cat_name = ch.category.name.lower() if ch.category else ""
+        ch_name = ch.name.lower()
+        if "fr" in cat_name or "fr" in ch_name:
+            lang = "fr"
+
+    # Route to matching category (e.g. Order [ FR ] vs Order)
+    cat_name = f"{info['category']} [ {lang.upper()} ]" if lang == "fr" else info["category"]
+    category = discord.utils.get(guild.categories, name=cat_name)
+    if category is None:
+        category = discord.utils.get(guild.categories, name=info["category"])
     if category is None:
         category = await guild.create_category(
-            info["category"], reason="Ticket category (auto-created)"
+            cat_name, reason="Ticket category (auto-created)"
         )
 
     staff_overwrite = discord.PermissionOverwrite(
@@ -190,8 +211,6 @@ async def create_ticket(
 
     prefix = f"buy-{product_key}" if product_key else ticket_type
     channel_name = f"{prefix}-{user.name}"[:100]
-
-    lang = "fr" if (product_key and product_key.endswith("_fr")) else "en"
 
     channel = await category.create_text_channel(
         name=channel_name,

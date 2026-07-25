@@ -129,6 +129,13 @@ class Admin(commands.Cog):
     @app_commands.describe(
         role_staff="Rôle ayant accès aux tickets",
         salon_logs="Salon où les transcripts seront envoyés",
+        langue="Langue du panel (Français ou Anglais)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
@@ -137,16 +144,23 @@ class Admin(commands.Cog):
         interaction: discord.Interaction,
         role_staff: discord.Role,
         salon_logs: discord.TextChannel,
+        langue: app_commands.Choice[str] | None = None,
     ) -> None:
-        # Minimal panel: one line + the select menu. Config lives in the select's
-        # custom_id (invisible) — no database. Tickets are routed per category.
+        lang = langue.value if langue else "en"
+        if langue is None and isinstance(interaction.channel, discord.TextChannel):
+            ch = interaction.channel
+            cat_name = ch.category.name.lower() if ch.category else ""
+            if "fr" in cat_name or "fr" in ch.name.lower():
+                lang = "fr"
+
+        content = "**Créer un ticket**" if lang == "fr" else "**Create a ticket**"
+
         await interaction.channel.send(
-            content="**Create a ticket**",
-            view=build_panel_view(role_staff.id, salon_logs.id),
+            content=content,
+            view=build_panel_view(role_staff.id, salon_logs.id, lang=lang),
         )
         await interaction.response.send_message(
-            f"✅ Panel posté — staff {role_staff.mention}, logs dans {salon_logs.mention}. "
-            f"Les tickets sont rangés automatiquement par catégorie (Order, Support, Media, Reseller).",
+            f"✅ Panel posté ({lang.upper()}) — staff {role_staff.mention}, logs dans {salon_logs.mention}.",
             ephemeral=True,
         )
 
