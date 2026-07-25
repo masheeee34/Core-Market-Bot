@@ -48,8 +48,8 @@ TICKET_TYPES = {
 UNCLAIMED = "*Nobody yet*"
 
 
-def encode_topic(owner_id: int, staff_role_id: int, logs_channel_id: int, ticket_type: str) -> str:
-    return f"ticket|owner:{owner_id}|staff:{staff_role_id}|logs:{logs_channel_id}|type:{ticket_type}"
+def encode_topic(owner_id: int, staff_role_id: int, logs_channel_id: int, ticket_type: str, lang: str = "en") -> str:
+    return f"ticket|owner:{owner_id}|staff:{staff_role_id}|logs:{logs_channel_id}|type:{ticket_type}|lang:{lang}"
 
 
 def decode_topic(topic: str | None) -> dict | None:
@@ -62,6 +62,7 @@ def decode_topic(topic: str | None) -> dict | None:
             "staff_role_id": int(data["staff"]),
             "logs_channel_id": int(data["logs"]),
             "type": data["type"],
+            "lang": data.get("lang", "en"),
         }
     except (KeyError, ValueError):
         return None
@@ -190,10 +191,12 @@ async def create_ticket(
     prefix = f"buy-{product_key}" if product_key else ticket_type
     channel_name = f"{prefix}-{user.name}"[:100]
 
+    lang = "fr" if (product_key and product_key.endswith("_fr")) else "en"
+
     channel = await category.create_text_channel(
         name=channel_name,
         overwrites=overwrites,
-        topic=encode_topic(user.id, staff_role_id, logs_channel_id, ticket_type),
+        topic=encode_topic(user.id, staff_role_id, logs_channel_id, ticket_type, lang=lang),
     )
 
     desc_product = f"\n🛒 **Selected Item:** `{product_key.upper()}`" if product_key else ""
