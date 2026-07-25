@@ -35,10 +35,10 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "💳 Pricing Plan",
-                "• **1 Day:** $7.50\n"
-                "• **1 Week:** $20.00\n"
-                "• **1 Month:** $40.00\n"
-                "• **Lifetime:** $100.00",
+                "• **1 Day:** 7.50 €\n"
+                "• **1 Week:** 20.00 €\n"
+                "• **1 Month:** 40.00 €\n"
+                "• **Lifetime:** 100.00 €",
                 False,
             ),
         ],
@@ -68,10 +68,10 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "💳 Tarifs",
-                "• **1 Jour :** $7.50 / 7.50 €\n"
-                "• **1 Semaine :** $20.00 / 20.00 €\n"
-                "• **1 Mois :** $40.00 / 40.00 €\n"
-                "• **À vie (Lifetime) :** $100.00 / 100.00 €",
+                "• **1 Jour :** 7.50 €\n"
+                "• **1 Semaine :** 20.00 €\n"
+                "• **1 Mois :** 40.00 €\n"
+                "• **À vie (Lifetime) :** 100.00 €",
                 False,
             ),
         ],
@@ -121,10 +121,10 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "💳 PRICING PLAN",
-                "• **1 Day:** $7.00\n"
-                "• **1 Week:** $20.00\n"
-                "• **1 Month:** $40.00\n"
-                "• **Lifetime:** $75.00",
+                "• **1 Day:** 7.00 €\n"
+                "• **1 Week:** 20.00 €\n"
+                "• **1 Month:** 40.00 €\n"
+                "• **Lifetime:** 75.00 €",
                 False,
             ),
         ],
@@ -174,10 +174,10 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "💳 TARIFS",
-                "• **1 Jour :** $7.00 / 7.00 €\n"
-                "• **1 Semaine :** $20.00 / 20.00 €\n"
-                "• **1 Mois :** $40.00 / 40.00 €\n"
-                "• **À vie (Lifetime) :** $75.00 / 75.00 €",
+                "• **1 Jour :** 7.00 €\n"
+                "• **1 Semaine :** 20.00 €\n"
+                "• **1 Mois :** 40.00 €\n"
+                "• **À vie (Lifetime) :** 75.00 €",
                 False,
             ),
         ],
@@ -287,9 +287,9 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
             (
                 "💳 PRICING PLAN",
-                "• **24 Hours:** $5.99 / 5.99 €\n"
-                "• **1 Week:** $15.99 / 15.99 €\n"
-                "• **30 Days:** $35.99 / 35.99 €",
+                "• **24 Hours:** 5.99 €\n"
+                "• **1 Week:** 15.99 €\n"
+                "• **30 Days:** 35.99 €",
                 False,
             ),
         ],
