@@ -206,6 +206,124 @@ class Admin(commands.Cog):
             ephemeral=True,
         )
 
+    @app_commands.command(
+        name="setup_core_market",
+        description="Générer automatiquement la structure complète du serveur Core Market (salons, catégories, rôles)",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_core_market(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
+        guild = interaction.guild
+        if guild is None:
+            return
+
+        report: list[str] = []
+
+        # 1. Roles setup
+        for name, colour, permissions in ROLE_SPECS:
+            if discord.utils.get(guild.roles, name=name) is None:
+                await guild.create_role(
+                    name=name,
+                    colour=colour,
+                    permissions=permissions,
+                    hoist=True,
+                    mentionable=True,
+                    reason="/setup_core_market — role creation",
+                )
+                report.append(f"👑 Rôle créé : **{name}**")
+            else:
+                report.append(f"ℹ️ Rôle existant : **{name}**")
+
+        staff_role = discord.utils.get(guild.roles, name="Staff")
+        admin_role = discord.utils.get(guild.roles, name="Owner")
+
+        # Overwrites
+        read_only_overwrites = {
+            guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=True, view_channel=True),
+            guild.me: discord.PermissionOverwrite(send_messages=True, manage_channels=True, view_channel=True),
+        }
+        if staff_role:
+            read_only_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
+
+        staff_only_overwrites = {
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True),
+        }
+        if staff_role:
+            staff_only_overwrites[staff_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True)
+        if admin_role:
+            staff_only_overwrites[admin_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True)
+
+        structure = [
+            (
+                "🔷 ────── MAIN ────── 🔷",
+                [
+                    ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", read_only_overwrites),
+                    ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", read_only_overwrites),
+                    ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", read_only_overwrites),
+                    ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", read_only_overwrites),
+                    ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", read_only_overwrites),
+                    ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", read_only_overwrites),
+                    ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", read_only_overwrites),
+                ],
+            ),
+            (
+                "🔷 ────── CALL OF DUTY ────── 🔷",
+                [
+                    ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", read_only_overwrites),
+                    ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", read_only_overwrites),
+                    ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", read_only_overwrites),
+                    ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", read_only_overwrites),
+                    ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", read_only_overwrites),
+                ],
+            ),
+            (
+                "🔷 ────── TICKETS & SUPPORT ────── 🔷",
+                [
+                    ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", read_only_overwrites),
+                ],
+            ),
+            (
+                "🔒 ────── STAFF ONLY ────── 🔒",
+                [
+                    ("💬 ┃ 𝖘𝖙𝖆𝖋𝖋-𝖈𝖍𝖆𝖙", "Discussion réservée à l'équipe", staff_only_overwrites),
+                    ("📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘", "Logs automatiques des tickets", staff_only_overwrites),
+                ],
+            ),
+        ]
+
+        for cat_name, channels in structure:
+            category = discord.utils.get(guild.categories, name=cat_name)
+            if category is None:
+                category = await guild.create_category(cat_name)
+                report.append(f"📁 Catégorie créée : **{cat_name}**")
+
+            for ch_name, topic, ow in channels:
+                existing = discord.utils.get(category.text_channels, name=ch_name)
+                if existing is None:
+                    ch = await category.create_text_channel(name=ch_name, topic=topic, overwrites=ow)
+                    report.append(f"  └─ 💬 Salon créé : {ch.mention}")
+
+                    # Auto post Vouch button in Avis-client
+                    if "Avis-client" in ch_name or "avis" in ch_name.lower():
+                        from cogs.vouch import VouchButtonView
+                        await ch.send(content="**Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
+
+                    # Auto post Ticket panel in create-ticket
+                    if "create-ticket" in ch_name and staff_role:
+                        logs_ch = discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘") or ch
+                        await ch.send(content="**Créer un ticket / Create a ticket**", view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"))
+                else:
+                    report.append(f"  └─ ℹ️ Salon existant : {existing.mention}")
+
+        embed = discord.Embed(
+            title="⚡ Configuration Core Market terminée !",
+            color=discord.Color.blue(),
+            description="\n".join(report[:30]) + ("\n..." if len(report) > 30 else ""),
+        )
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Admin(bot))
