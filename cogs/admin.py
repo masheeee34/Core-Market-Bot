@@ -376,42 +376,40 @@ class Admin(commands.Cog):
                 (
                     "✦ ─── INFORMATION ─── ✦",
                     [
-                        ("👋・ʙɪᴇɴᴠᴇɴᴜᴇ", "Bienvenue sur Core Market !", read_only_overwrites, None),
-                        ("📢・ᴀɴɴᴏɴᴄᴇꜱ", "Annonces officielles", read_only_overwrites, None),
-                        ("🚨・ʀᴇɢʟᴇᴍᴇɴᴛ", "Règles et consignes", read_only_overwrites, None),
-                        ("⭐・ᴀᴠɪꜱ-ᴄʟɪᴇɴᴛꜱ", "Avis clients et retours", read_only_overwrites, "vouch"),
-                        ("🎁・ɢɪᴠᴇᴀᴡᴀʏꜱ", "Concours et cadeaux", read_only_overwrites, None),
-                        ("🌐・ꜱɪᴛᴇ-ᴏꜰꜰɪᴄɪᴇʟ", "Liens officiels", read_only_overwrites, None),
-                        ("🎬・ᴅᴇᴍᴏɴꜱᴛʀᴀᴛɪᴏɴꜱ", "Vidéos et présentations", read_only_overwrites, None),
+                        ("👋・ᴡᴇʟᴄᴏᴍᴇ", "Welcome to Core Market !", read_only_overwrites, None),
+                        ("📢・ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ", "Official announcements", read_only_overwrites, None),
+                        ("🚨・ʀᴜʟᴇꜱ", "Server rules and guidelines", read_only_overwrites, None),
+                        ("⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ", "Customer reviews and vouches", read_only_overwrites, "vouch"),
+                        ("🎁・ɢɪᴠᴇᴀᴡᴀʏꜱ", "Giveaways and contests", read_only_overwrites, None),
+                        ("🌐・ᴏꜰꜰɪᴄɪᴀʟ-ᴡᴇʙꜱɪᴛᴇ", "Official links and website", read_only_overwrites, None),
+                        ("🎬・ᴍᴇᴅɪᴀ-ꜱʜᴏᴡᴄᴀꜱᴇ", "Demonstrations and showcase", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "✦ ─── CALL OF DUTY ─── ✦",
                     [
-                        ("⚡・ꜱᴘᴏᴏꜰ-ʀᴀɴᴋᴇᴅ", "Offres Spoof Ranked", read_only_overwrites, None),
-                        ("🔥・ᴍᴄᴏʀᴇ", "Offres MCore External", read_only_overwrites, None),
-                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ", "Offres Spectre", read_only_overwrites, None),
-                        ("⚙️・ɢᴇɴ-ᴄᴏᴍᴘᴛᴇ-ꜱᴛᴇᴀᴍ", "Comptes Steam", read_only_overwrites, None),
-                        ("🔑・ᴇꜱꜱᴀɪ-ɢʀᴀᴛᴜɪᴛ", "Obtenir un test gratuit", read_only_overwrites, None),
+                        ("🔴・ᴍᴄᴏʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "M-CORE External BO7 / Warzone", read_only_overwrites, "mcore"),
+                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "TRINITY SPECTRE BO7 / Warzone", read_only_overwrites, "spectre"),
+                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free trial requests", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "✦ ─── VALORANT ─── ✦",
                     [
-                        ("⚡・ᴘᴜʟꜱᴇ-ɪɴᴛᴇʀɴᴀʟ", "Offres Pulse Internal Valorant", read_only_overwrites, None),
+                        ("⚡・ᴘᴜʟꜱᴇ-ɪɴᴛᴇʀɴᴀʟ", "Pulse Internal Valorant", read_only_overwrites, "pulse"),
                     ],
                 ),
                 (
                     "✦ ─── SUPPORT & TICKETS ─── ✦",
                     [
-                        ("🎫・ᴄʀᴇᴇʀ-ᴜɴ-ᴛɪᴄᴋᴇᴛ", "Ouvrir un ticket pour acheter ou obtenir du support", read_only_overwrites, "ticket"),
+                        ("🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ", "Open a ticket for purchase or support", read_only_overwrites, "ticket"),
                     ],
                 ),
                 (
                     "🔒 ─── STAFF ONLY ─── 🔒",
                     [
-                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Salon réservé à l'équipe", staff_only_overwrites, None),
-                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Transcripts et historique", staff_only_overwrites, None),
+                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Staff team lounge", staff_only_overwrites, None),
+                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Automatic ticket transcripts & logs", staff_only_overwrites, None),
                     ],
                 ),
             ]
@@ -423,34 +421,43 @@ class Admin(commands.Cog):
             category = discord.utils.get(guild.categories, name=cat_name)
             if category is None:
                 category = await guild.create_category(cat_name)
-                report.append(f"📁 Catégorie créée : **{cat_name}**")
+                report.append(f"📁 Category created: **{cat_name}**")
 
             for ch_name, topic, ow, action in channels:
                 existing = discord.utils.get(category.text_channels, name=ch_name)
                 ch = existing
                 if ch is None:
                     ch = await category.create_text_channel(name=ch_name, topic=topic, overwrites=ow)
-                    report.append(f"  └─ 💬 Salon créé : {ch.mention}")
+                    report.append(f"  └─ 💬 Channel created: {ch.mention}")
                 else:
-                    report.append(f"  └─ ℹ️ Salon existant : {ch.mention}")
+                    report.append(f"  └─ ℹ️ Existing channel: {ch.mention}")
 
                 # Auto post Vouch button
                 if action == "vouch":
                     from cogs.vouch import VouchButtonView
-                    await ch.send(content="**⭐ Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
+                    await ch.send(content="**⭐ Leave a review after your purchase!**", view=VouchButtonView())
 
                 # Auto post Ticket panel
-                if action == "ticket":
+                elif action == "ticket":
                     logs_ch = (
                         discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
                         or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
-                        or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘")
                         or ch
                     )
                     await ch.send(
-                        content="**Créer un ticket / Create a ticket**",
-                        view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"),
+                        content="**Create a Ticket**",
+                        view=build_panel_view(staff_role.id, logs_ch.id, lang="en"),
                     )
+
+                # Auto post product sales embeds
+                elif action in ("mcore", "spectre", "pulse"):
+                    from cogs.products import build_product_embed, build_product_view
+                    pkey = "mcore" if action == "mcore" else ("spectre" if action == "spectre" else "pulse_internal")
+                    embed = build_product_embed(pkey)
+                    if embed:
+                        logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or ch
+                        view = build_product_view(pkey, staff_role.id, logs_ch.id)
+                        await ch.send(embed=embed, view=view)
 
         embed = discord.Embed(
             title="⚡ Configuration Core Market terminée !",
