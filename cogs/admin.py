@@ -289,12 +289,21 @@ class Admin(commands.Cog):
         selected_style = style.value if style else "small_caps"
         report: list[str] = []
 
-        # 0. Clean old channels and categories if requested
+        # 0. Clean old channels and categories if requested (safe & fast deletion)
         if supprimer_anciens_salons:
             report.append("🧹 **Nettoyage des anciens salons et catégories effectué.**")
-            for ch in list(guild.channels):
+            text_chs = [c for c in guild.channels if isinstance(c, discord.TextChannel)]
+            cats = [c for c in guild.channels if isinstance(c, discord.CategoryChannel)]
+            for ch in text_chs:
                 try:
                     await ch.delete(reason="/setup_core_market — auto clean")
+                    await asyncio.sleep(0.1)
+                except Exception:
+                    pass
+            for cat in cats:
+                try:
+                    await cat.delete(reason="/setup_core_market — auto clean")
+                    await asyncio.sleep(0.1)
                 except Exception:
                     pass
 
@@ -594,20 +603,24 @@ class Admin(commands.Cog):
 
                 # Auto post SOON GIF
                 elif action == "soon":
-                    embed = discord.Embed(
+                    embed_soon = discord.Embed(
                         title="⏳ COMING SOON",
                         description="*Free trials will be available very soon! Stay tuned.*",
                         color=discord.Color.from_str("#0070FF"),
                     )
-                    embed.set_image(url="https://media.giphy.com/media/l1J9u3TZfzYTEpqaQ/giphy.gif")
-                    await ch.send(embed=embed)
+                    embed_soon.set_image(url="https://media.giphy.com/media/l1J9u3TZfzYTEpqaQ/giphy.gif")
+                    await ch.send(embed=embed_soon)
 
         embed = discord.Embed(
             title="⚡ Configuration Core Market terminée !",
             color=discord.Color.blue(),
             description="\n".join(report[:30]) + ("\n..." if len(report) > 30 else ""),
         )
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        try:
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        except Exception:
+            if interaction.channel:
+                await interaction.channel.send(embed=embed)
 
     @app_commands.command(
         name="setup_soon",
