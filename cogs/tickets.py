@@ -218,20 +218,23 @@ async def create_ticket(
         topic=encode_topic(user.id, staff_role_id, logs_channel_id, ticket_type, lang=lang),
     )
 
-    desc_product = f"\n🛒 **Selected Item:** `{product_key.upper()}`" if product_key else ""
+    desc_product = f"\n🛒 **Selected Product:** `{product_key.upper()}`" if product_key else ""
 
     embed = discord.Embed(
-        title=f"{info['label']} ticket",
+        title=f"🎫  CORE MARKET — {info['label'].upper()} TICKET",
         color=info["color"],
         description=(
-            f"Welcome {user.mention}!{desc_product}\n"
-            f"A {staff_role.mention} member will assist you shortly with your purchase.\n\n"
-            f"🔒 **Close** — closes the ticket (transcript sent to logs)\n"
-            f"✋ **Claim** — a staff member takes over the ticket\n"
-            f"📝 **Transcript** — export the conversation"
+            f"> Welcome {user.mention}!{desc_product}\n"
+            f"> A member of {staff_role.mention} will assist you shortly.\n\n"
+            "```ansi\n"
+            "\u001b[1;33m[ TICKET CONTROLS ]\u001b[0m\n"
+            "```\n"
+            "🔒 **Close Ticket:** Closes channel & routes transcript to staff logs\n"
+            "✋ **Claim Ticket:** Assigns a staff member to handle your request\n"
+            "📝 **Transcript:** Save and export chat history"
         ),
     )
-    embed.add_field(name="Claimed by", value=UNCLAIMED)
+    embed.add_field(name="Assigned Staff", value=UNCLAIMED, inline=False)
     await channel.send(content=f"{user.mention} {staff_role.mention}", embed=embed, view=TicketView())
     await interaction.followup.send(f"✅ Your ticket is open: {channel.mention}", ephemeral=True)
 

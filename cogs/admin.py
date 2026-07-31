@@ -590,38 +590,52 @@ class Admin(commands.Cog):
                 if action == "welcome":
                     ticket_ch = discord.utils.get(guild.text_channels, name="🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ") or ch
                     vouch_ch = discord.utils.get(guild.text_channels, name="⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ") or ch
+                    rules_ch = discord.utils.get(guild.text_channels, name="🚨・ʀᴜʟᴇꜱ") or ch
                     embed = discord.Embed(
-                        title="👋 Welcome to Core Market!",
+                        title="⚡  WELCOME TO CORE MARKET",
                         description=(
-                            "Welcome to **Core Market** — Your #1 Provider for Black Ops 7, Warzone & Valorant Tools!\n\n"
-                            f"📌 **Quick Guide:**\n"
-                            f"• Browse our products in the **Call of Duty** & **Valorant** categories!\n"
-                            f"• Ready to buy? Open a ticket in {ticket_ch.mention}!\n"
-                            f"• Leave feedback after your purchase in {vouch_ch.mention}!\n\n"
-                            "*Enjoy your stay and feel free to open a ticket for any questions!*"
+                            "> **Your #1 Destination for Undetected BO7, Warzone & Valorant Software.**\n\n"
+                            "```ansi\n"
+                            "\u001b[1;36m[ 🚀 QUICK START NAVIGATION ]\u001b[0m\n"
+                            "```\n"
+                            f"▸ **` Step 1 ` Accept Rules:** Read guidelines in {rules_ch.mention} to unlock the entire server.\n"
+                            f"▸ **` Step 2 ` Explore Products:** Check out our catalog in **Call of Duty** & **Valorant** categories.\n"
+                            f"▸ **` Step 3 ` Place an Order:** Open a purchase ticket in {ticket_ch.mention} for instant key delivery.\n"
+                            f"▸ **` Step 4 ` Customer Vouches:** Read verified reviews or drop a vouch in {vouch_ch.mention}.\n\n"
+                            "──────────────────────────────────────────\n"
+                            "💎 *Need assistance? Our support team is online 24/7 inside tickets.*"
                         ),
                         color=discord.Color.from_str("#0070FF"),
                     )
-                    embed.set_footer(text="Core Market • Premium Tools & Resell")
+                    embed.set_footer(text="CORE MARKET • Premium Resell Marketplace")
                     await ch.send(embed=embed)
 
                 # Auto post Rules & Verification Panel
                 elif action == "rules":
                     embed = discord.Embed(
-                        title="🚨 Core Market — Server Rules & Verification",
+                        title="🛡️  CORE MARKET — SERVER RULES & VERIFICATION",
                         description=(
-                            "Welcome to **Core Market**! Please read and accept our server rules to unlock full access to all channels.\n\n"
-                            "📜 **Server Rules:**\n"
-                            "1️⃣ **Respect Everyone:** No toxicity, harassment, hate speech, or offensive behavior.\n"
-                            "2️⃣ **No Advertising / Spam:** Do not DM members, post invite links, or self-promote.\n"
-                            "3️⃣ **Use Appropriate Channels:** Keep discussions relevant to each channel.\n"
-                            "4️⃣ **Staff Decisions are Final:** Follow instructions from staff and admins.\n"
-                            "5️⃣ **No Scamming / Fraud:** Any attempt to scam will result in an instant permanent ban.\n\n"
-                            "✅ **Click the button below to accept the rules and unlock the server!**"
+                            "> **Welcome to Core Market.**\n"
+                            "> Please read our community guidelines below. Accepting the rules grants full access to all product channels, tickets, and support.\n\n"
+                            "```ansi\n"
+                            "\u001b[1;34m[ 📜 COMMUNITY CODE OF CONDUCT ]\u001b[0m\n"
+                            "```\n"
+                            "**` 01 `  Mutual Respect**\n"
+                            "▸ Maintain respect towards all members and staff. No toxicity, harassment, or hate speech.\n\n"
+                            "**` 02 `  Strictly No Self-Promotion / DMs**\n"
+                            "▸ Direct messaging members for advertising, sharing invite links, or self-promotion will result in an instant ban.\n\n"
+                            "**` 03 `  Channel Discipline**\n"
+                            "▸ Keep chat on-topic in appropriate channels. Open a support ticket for technical or ordering assistance.\n\n"
+                            "**` 04 `  Staff Authority**\n"
+                            "▸ Staff and Owner decisions are final. Obey instructions from the moderation team at all times.\n\n"
+                            "**` 05 `  Zero Tolerance Fraud Policy**\n"
+                            "▸ Any scamming, chargeback, or fraud attempt results in a permanent blacklist & HWID ban.\n\n"
+                            "──────────────────────────────────────────\n"
+                            "**Click the green button below to accept the rules and unlock the server!**"
                         ),
                         color=discord.Color.from_str("#0070FF"),
                     )
-                    embed.set_footer(text="Core Market • Rules & Verification")
+                    embed.set_footer(text="CORE MARKET • Official Rules & Access Verification")
                     await ch.send(embed=embed, view=VerifyRulesView())
 
                 # Auto post Vouch button
@@ -699,19 +713,24 @@ class Admin(commands.Cog):
         ch = interaction.channel
         ticket_ch = discord.utils.get(guild.text_channels, name="🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ") or ch
         vouch_ch = discord.utils.get(guild.text_channels, name="⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ") or ch
+        rules_ch = discord.utils.get(guild.text_channels, name="🚨・ʀᴜʟᴇꜱ") or ch
         embed = discord.Embed(
-            title="👋 Welcome to Core Market!",
+            title="⚡  WELCOME TO CORE MARKET",
             description=(
-                "Welcome to **Core Market** — Your #1 Provider for Black Ops 7, Warzone & Valorant Tools!\n\n"
-                f"📌 **Quick Guide:**\n"
-                f"• Browse our products in the **Call of Duty** & **Valorant** categories!\n"
-                f"• Ready to buy? Open a ticket in {ticket_ch.mention}!\n"
-                f"• Leave feedback after your purchase in {vouch_ch.mention}!\n\n"
-                "*Enjoy your stay and feel free to open a ticket for any questions!*"
+                "> **Your #1 Destination for Undetected BO7, Warzone & Valorant Software.**\n\n"
+                "```ansi\n"
+                "\u001b[1;36m[ 🚀 QUICK START NAVIGATION ]\u001b[0m\n"
+                "```\n"
+                f"▸ **` Step 1 ` Accept Rules:** Read guidelines in {rules_ch.mention} to unlock the entire server.\n"
+                f"▸ **` Step 2 ` Explore Products:** Check out our catalog in **Call of Duty** & **Valorant** categories.\n"
+                f"▸ **` Step 3 ` Place an Order:** Open a purchase ticket in {ticket_ch.mention} for instant key delivery.\n"
+                f"▸ **` Step 4 ` Customer Vouches:** Read verified reviews or drop a vouch in {vouch_ch.mention}.\n\n"
+                "──────────────────────────────────────────\n"
+                "💎 *Need assistance? Our support team is online 24/7 inside tickets.*"
             ),
             color=discord.Color.from_str("#0070FF"),
         )
-        embed.set_footer(text="Core Market • Premium Tools & Resell")
+        embed.set_footer(text="CORE MARKET • Premium Resell Marketplace")
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ Message de bienvenue publié !", ephemeral=True)
 
@@ -723,20 +742,29 @@ class Admin(commands.Cog):
     @app_commands.guild_only()
     async def setup_rules(self, interaction: discord.Interaction) -> None:
         embed = discord.Embed(
-            title="🚨 Core Market — Server Rules & Verification",
+            title="🛡️  CORE MARKET — SERVER RULES & VERIFICATION",
             description=(
-                "Welcome to **Core Market**! Please read and accept our server rules to unlock full access to all channels.\n\n"
-                "📜 **Server Rules:**\n"
-                "1️⃣ **Respect Everyone:** No toxicity, harassment, hate speech, or offensive behavior.\n"
-                "2️⃣ **No Advertising / Spam:** Do not DM members, post invite links, or self-promote.\n"
-                "3️⃣ **Use Appropriate Channels:** Keep discussions relevant to each channel.\n"
-                "4️⃣ **Staff Decisions are Final:** Follow instructions from staff and admins.\n"
-                "5️⃣ **No Scamming / Fraud:** Any attempt to scam will result in an instant permanent ban.\n\n"
-                "✅ **Click the button below to accept the rules and unlock the server!**"
+                "> **Welcome to Core Market.**\n"
+                "> Please read our community guidelines below. Accepting the rules grants full access to all product channels, tickets, and support.\n\n"
+                "```ansi\n"
+                "\u001b[1;34m[ 📜 COMMUNITY CODE OF CONDUCT ]\u001b[0m\n"
+                "```\n"
+                "**` 01 `  Mutual Respect**\n"
+                "▸ Maintain respect towards all members and staff. No toxicity, harassment, or hate speech.\n\n"
+                "**` 02 `  Strictly No Self-Promotion / DMs**\n"
+                "▸ Direct messaging members for advertising, sharing invite links, or self-promotion will result in an instant ban.\n\n"
+                "**` 03 `  Channel Discipline**\n"
+                "▸ Keep chat on-topic in appropriate channels. Open a support ticket for technical or ordering assistance.\n\n"
+                "**` 04 `  Staff Authority**\n"
+                "▸ Staff and Owner decisions are final. Obey instructions from the moderation team at all times.\n\n"
+                "**` 05 `  Zero Tolerance Fraud Policy**\n"
+                "▸ Any scamming, chargeback, or fraud attempt results in a permanent blacklist & HWID ban.\n\n"
+                "──────────────────────────────────────────\n"
+                "**Click the green button below to accept the rules and unlock the server!**"
             ),
             color=discord.Color.from_str("#0070FF"),
         )
-        embed.set_footer(text="Core Market • Rules & Verification")
+        embed.set_footer(text="CORE MARKET • Official Rules & Access Verification")
         await interaction.channel.send(embed=embed, view=VerifyRulesView())
         await interaction.response.send_message("✅ Panneau de règlement & vérification publié !", ephemeral=True)
 
