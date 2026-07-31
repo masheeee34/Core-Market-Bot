@@ -36,10 +36,8 @@ log = logging.getLogger("ticketbot")
 
 
 class TicketBot(commands.Bot):
-    def __init__(self, enable_members_intent: bool = False) -> None:
+    def __init__(self) -> None:
         intents = discord.Intents.default()
-        if enable_members_intent:
-            intents.members = True
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self) -> None:
@@ -99,20 +97,11 @@ async def main() -> None:
     await run_webserver()
     asyncio.create_task(keep_alive())
 
-    try:
-        log.info("Tentative de connexion avec Members Intent...")
-        bot = TicketBot(enable_members_intent=True)
-        async with bot:
-            await bot.start(DISCORD_TOKEN)
-    except Exception as e:
-        log.warning("Connexion standard active (Members intent non requis): %s", e)
-
     while True:
         try:
             log.info("Connexion à Discord en cours...")
-            bot = TicketBot(enable_members_intent=False)
-            async with bot:
-                await bot.start(DISCORD_TOKEN)
+            bot = TicketBot()
+            await bot.start(DISCORD_TOKEN)
         except Exception as e:
             log.error("Erreur de connexion Discord : %s. Nouvelle tentative dans 5s...", e)
             await asyncio.sleep(5)
