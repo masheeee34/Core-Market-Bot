@@ -374,6 +374,13 @@ class Admin(commands.Cog):
         else: # small_caps (default ultra clean)
             structure = [
                 (
+                    "🔒 ─── STAFF ONLY ─── 🔒",
+                    [
+                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Staff team lounge", staff_only_overwrites, None),
+                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Automatic ticket transcripts & logs", staff_only_overwrites, None),
+                    ],
+                ),
+                (
                     "✦ ─── INFORMATION ─── ✦",
                     [
                         ("👋・ᴡᴇʟᴄᴏᴍᴇ", "Welcome to Core Market !", read_only_overwrites, None),
@@ -403,13 +410,6 @@ class Admin(commands.Cog):
                     "✦ ─── SUPPORT & TICKETS ─── ✦",
                     [
                         ("🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ", "Open a ticket for purchase or support", read_only_overwrites, "ticket"),
-                    ],
-                ),
-                (
-                    "🔒 ─── STAFF ONLY ─── 🔒",
-                    [
-                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Staff team lounge", staff_only_overwrites, None),
-                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Automatic ticket transcripts & logs", staff_only_overwrites, None),
                     ],
                 ),
             ]

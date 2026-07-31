@@ -304,6 +304,14 @@ class ConfirmCloseView(discord.ui.View):
 
         file = await generate_transcript(channel)
         logs_channel = guild.get_channel(self.ticket["logs_channel_id"])
+        if logs_channel is None or "log" not in logs_channel.name.lower():
+            logs_channel = (
+                discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
+                or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
+                or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘")
+                or discord.utils.get(guild.text_channels, name="logs")
+            )
+
         if logs_channel is not None:
             owner = guild.get_member(self.ticket["owner_id"])
             embed = discord.Embed(
@@ -313,7 +321,7 @@ class ConfirmCloseView(discord.ui.View):
                 description=(
                     f"**Owner:** {owner.mention if owner else self.ticket['owner_id']}\n"
                     f"**Closed by:** {interaction.user.mention}\n"
-                    f"**Type:** {TICKET_TYPES[self.ticket['type']]['label']}"
+                    f"**Type:** {TICKET_TYPES.get(self.ticket['type'], {}).get('label', 'Ticket')}"
                 ),
             )
             await logs_channel.send(embed=embed, file=file)
