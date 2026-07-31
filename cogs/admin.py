@@ -396,6 +396,9 @@ class Admin(commands.Cog):
                 ),
             ]
 
+        # Re-fetch staff_role after roles are guaranteed to exist
+        staff_role = discord.utils.get(guild.roles, name="Staff") or discord.utils.get(guild.roles, name="Owner") or guild.default_role
+
         for cat_name, channels in structure:
             category = discord.utils.get(guild.categories, name=cat_name)
             if category is None:
@@ -404,21 +407,22 @@ class Admin(commands.Cog):
 
             for ch_name, topic, ow in channels:
                 existing = discord.utils.get(category.text_channels, name=ch_name)
-                if existing is None:
+                ch = existing
+                if ch is None:
                     ch = await category.create_text_channel(name=ch_name, topic=topic, overwrites=ow)
                     report.append(f"  └─ 💬 Salon créé : {ch.mention}")
-
-                    # Auto post Vouch button in Avis-client
-                    if "avis" in ch_name.lower():
-                        from cogs.vouch import VouchButtonView
-                        await ch.send(content="**⭐ Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
-
-                    # Auto post Ticket panel in create-ticket
-                    if "ticket" in ch_name.lower() and staff_role and "logs" not in ch_name.lower():
-                        logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘") or ch
-                        await ch.send(content="**Créer un ticket / Create a ticket**", view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"))
                 else:
-                    report.append(f"  └─ ℹ️ Salon existant : {existing.mention}")
+                    report.append(f"  └─ ℹ️ Salon existant : {ch.mention}")
+
+                # Auto post Vouch button in Avis-client
+                if "avis" in ch_name.lower():
+                    from cogs.vouch import VouchButtonView
+                    await ch.send(content="**⭐ Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
+
+                # Auto post Ticket panel in create-ticket
+                if "ticket" in ch_name.lower() and "logs" not in ch_name.lower():
+                    logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘") or ch
+                    await ch.send(content="**Créer un ticket / Create a ticket**", view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"))
 
         embed = discord.Embed(
             title="⚡ Configuration Core Market terminée !",
