@@ -466,6 +466,48 @@ class Admin(commands.Cog):
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """Ping listener: Mention @bot with any product text to turn it into a formatted embed with Buy button."""
+        if message.author.bot or not message.guild or not isinstance(message.channel, discord.TextChannel):
+            return
+
+        if self.bot.user in message.mentions:
+            is_admin = message.author.guild_permissions.administrator
+            staff_role = discord.utils.get(message.guild.roles, name="Staff")
+            owner_role = discord.utils.get(message.guild.roles, name="Owner")
+            has_role = any(r in message.author.roles for r in (staff_role, owner_role) if r)
+
+            if not (is_admin or has_role):
+                return
+
+            clean_text = message.content.replace(f"<@{self.bot.user.id}>", "").replace(f"<@!{self.bot.user.id}>", "").strip()
+
+            if clean_text:
+                lines = [l.strip() for l in clean_text.split("\n") if l.strip()]
+                title = lines[0]
+                desc = "\n".join(lines[1:]) if len(lines) > 1 else ""
+
+                embed = discord.Embed(
+                    title=f"⚡ {title}",
+                    description=desc if desc else None,
+                    color=discord.Color.from_str("#0070FF"),
+                )
+                embed.set_footer(text="Core Market • Click the button below to purchase")
+
+                logs_ch = (
+                    discord.utils.get(message.guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
+                    or message.channel
+                )
+                staff_r = staff_role or owner_role or message.guild.default_role
+
+                view = build_panel_view(staff_r.id, logs_ch.id, lang="en")
+                await message.channel.send(embed=embed, view=view)
+                try:
+                    await message.delete()
+                except Exception:
+                    pass
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Admin(bot))
