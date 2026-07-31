@@ -577,12 +577,10 @@ class Admin(commands.Cog):
                         pass
                     report.append(f"  └─ ℹ️ Channel updated: {ch.mention}")
 
-                # Purge old bot messages before posting fresh embeds
+                # Purge old messages before posting fresh embeds
                 if action and ch:
                     try:
-                        def is_bot_msg(m: discord.Message) -> bool:
-                            return m.author.id == self.bot.user.id
-                        await ch.purge(limit=10, check=is_bot_msg)
+                        await ch.purge(limit=25)
                     except Exception:
                         pass
 
@@ -655,10 +653,10 @@ class Admin(commands.Cog):
                         view=build_panel_view(staff_role.id, logs_ch.id, lang="en"),
                     )
 
-                # Auto post product sales embeds
+                # Auto post product sales embeds (FR version default for clean server presentation)
                 elif action in ("mcore", "spectre", "pulse"):
                     from cogs.products import build_product_embed, build_product_view
-                    pkey = "mcore" if action == "mcore" else ("spectre" if action == "spectre" else "pulse_internal")
+                    pkey = "mcore_fr" if action == "mcore" else ("spectre_fr" if action == "spectre" else "pulse_internal_fr")
                     embed = build_product_embed(pkey)
                     if embed:
                         logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or ch
