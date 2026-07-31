@@ -489,13 +489,43 @@ class Admin(commands.Cog):
                 report.append(f"📁 Category created: **{cat_name}**")
 
             for ch_name, topic, ow, action in channels:
+                # Flexible channel lookup matching exact name or keyword
                 existing = discord.utils.get(category.text_channels, name=ch_name)
+                if existing is None and action:
+                    for tc in category.text_channels:
+                        tc_lower = tc.name.lower()
+                        if (
+                            (action == "welcome" and ("welcome" in tc_lower or "bienvenue" in tc_lower))
+                            or (action == "rules" and ("rule" in tc_lower or "reglement" in tc_lower))
+                            or (action == "vouch" and ("vouch" in tc_lower or "avis" in tc_lower))
+                            or (action == "ticket" and ("ticket" in tc_lower))
+                            or (action == "mcore" and ("mcore" in tc_lower))
+                            or (action == "spectre" and ("spectre" in tc_lower))
+                            or (action == "pulse" and ("pulse" in tc_lower))
+                        ):
+                            existing = tc
+                            break
+
                 ch = existing
                 if ch is None:
                     ch = await category.create_text_channel(name=ch_name, topic=topic, overwrites=ow)
                     report.append(f"  └─ 💬 Channel created: {ch.mention}")
                 else:
-                    report.append(f"  └─ ℹ️ Existing channel: {ch.mention}")
+                    # Enforce overwrites on existing channels
+                    try:
+                        await ch.edit(overwrites=ow, name=ch_name, topic=topic)
+                    except Exception:
+                        pass
+                    report.append(f"  └─ ℹ️ Channel updated: {ch.mention}")
+
+                # Purge old bot messages before posting fresh embeds
+                if action and ch:
+                    try:
+                        def is_bot_msg(m: discord.Message) -> bool:
+                            return m.author.id == self.bot.user.id
+                        await ch.purge(limit=10, check=is_bot_msg)
+                    except Exception:
+                        pass
 
                 # Auto post Welcome Presentation
                 if action == "welcome":
