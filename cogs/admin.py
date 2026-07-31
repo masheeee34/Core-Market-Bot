@@ -279,7 +279,7 @@ class Admin(commands.Cog):
         self,
         interaction: discord.Interaction,
         style: app_commands.Choice[str] | None = None,
-        supprimer_anciens_salons: bool = True,
+        supprimer_anciens_salons: bool = False,
     ) -> None:
         await interaction.response.defer(ephemeral=True)
         guild = interaction.guild
@@ -289,10 +289,13 @@ class Admin(commands.Cog):
         selected_style = style.value if style else "small_caps"
         report: list[str] = []
 
-        # 0. Clean old channels and categories if requested (safe & fast deletion)
+        # 0. Clean old channels and categories if requested (never delete current interaction channel to preserve token)
         if supprimer_anciens_salons:
             report.append("🧹 **Nettoyage des anciens salons et catégories effectué.**")
-            text_chs = [c for c in guild.channels if isinstance(c, discord.TextChannel)]
+            text_chs = [
+                c for c in guild.channels 
+                if isinstance(c, discord.TextChannel) and c.id != interaction.channel_id
+            ]
             cats = [c for c in guild.channels if isinstance(c, discord.CategoryChannel)]
             for ch in text_chs:
                 try:
