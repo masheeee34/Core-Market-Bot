@@ -383,11 +383,11 @@ class Admin(commands.Cog):
                 (
                     "✦ ─── INFORMATION ─── ✦",
                     [
-                        ("👋・ᴡᴇʟᴄᴏᴍᴇ", "Welcome to Core Market !", read_only_overwrites, None),
+                        ("👋・ᴡᴇʟᴄᴏᴍᴇ", "Welcome to Core Market !", read_only_overwrites, "welcome"),
                         ("📢・ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ", "Official announcements", read_only_overwrites, None),
                         ("🚨・ʀᴜʟᴇꜱ", "Server rules and guidelines", read_only_overwrites, None),
                         ("⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ", "Customer reviews and vouches", read_only_overwrites, "vouch"),
-                        ("🎁・ɢɪᴠᴇᴀᴡᴀʏꜱ", "Giveaways and contests", read_only_overwrites, None),
+                        ("🎁・ɢɪᴠᴇᴀᴡᴀYꜱ", "Giveaways and contests", read_only_overwrites, None),
                         ("🌐・ᴏꜰꜰɪᴄɪᴀʟ-ᴡᴇʙꜱɪᴛᴇ", "Official links and website", read_only_overwrites, None),
                         ("🎬・ᴍᴇᴅɪᴀ-ꜱʜᴏᴡᴄᴀꜱᴇ", "Demonstrations and showcase", read_only_overwrites, None),
                     ],
@@ -432,8 +432,27 @@ class Admin(commands.Cog):
                 else:
                     report.append(f"  └─ ℹ️ Existing channel: {ch.mention}")
 
+                # Auto post Welcome Presentation
+                if action == "welcome":
+                    ticket_ch = discord.utils.get(guild.text_channels, name="🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ") or ch
+                    vouch_ch = discord.utils.get(guild.text_channels, name="⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ") or ch
+                    embed = discord.Embed(
+                        title="👋 Welcome to Core Market!",
+                        description=(
+                            "Welcome to **Core Market** — Your #1 Provider for Black Ops 7, Warzone & Valorant Tools!\n\n"
+                            f"📌 **Quick Guide:**\n"
+                            f"• Browse our products in the **Call of Duty** & **Valorant** categories!\n"
+                            f"• Ready to buy? Open a ticket in {ticket_ch.mention}!\n"
+                            f"• Leave feedback after your purchase in {vouch_ch.mention}!\n\n"
+                            "*Enjoy your stay and feel free to open a ticket for any questions!*"
+                        ),
+                        color=discord.Color.from_str("#0070FF"),
+                    )
+                    embed.set_footer(text="Core Market • Premium Tools & Resell")
+                    await ch.send(embed=embed)
+
                 # Auto post Vouch button
-                if action == "vouch":
+                elif action == "vouch":
                     from cogs.vouch import VouchButtonView
                     await ch.send(content="**⭐ Leave a review after your purchase!**", view=VouchButtonView())
 
@@ -491,6 +510,53 @@ class Admin(commands.Cog):
         embed.set_image(url="https://media.giphy.com/media/l1J9u3TZfzYTEpqaQ/giphy.gif")
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ Message COMING SOON publié !", ephemeral=True)
+
+    @app_commands.command(
+        name="setup_welcome",
+        description="Poster le message de bienvenue principal de Core Market",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_welcome(self, interaction: discord.Interaction) -> None:
+        guild = interaction.guild
+        ch = interaction.channel
+        ticket_ch = discord.utils.get(guild.text_channels, name="🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ") or ch
+        vouch_ch = discord.utils.get(guild.text_channels, name="⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ") or ch
+        embed = discord.Embed(
+            title="👋 Welcome to Core Market!",
+            description=(
+                "Welcome to **Core Market** — Your #1 Provider for Black Ops 7, Warzone & Valorant Tools!\n\n"
+                f"📌 **Quick Guide:**\n"
+                f"• Browse our products in the **Call of Duty** & **Valorant** categories!\n"
+                f"• Ready to buy? Open a ticket in {ticket_ch.mention}!\n"
+                f"• Leave feedback after your purchase in {vouch_ch.mention}!\n\n"
+                "*Enjoy your stay and feel free to open a ticket for any questions!*"
+            ),
+            color=discord.Color.from_str("#0070FF"),
+        )
+        embed.set_footer(text="Core Market • Premium Tools & Resell")
+        await interaction.channel.send(embed=embed)
+        await interaction.response.send_message("✅ Message de bienvenue publié !", ephemeral=True)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member) -> None:
+        """Auto welcome new members when they join the server."""
+        guild = member.guild
+        ch = (
+            discord.utils.get(guild.text_channels, name="👋・ᴡᴇʟᴄᴏᴍᴇ")
+            or discord.utils.get(guild.text_channels, name="👋・bienvenue")
+            or discord.utils.get(guild.text_channels, name="welcome")
+        )
+        if ch is not None:
+            ticket_ch = discord.utils.get(guild.text_channels, name="🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ") or ch
+            embed = discord.Embed(
+                title=f"👋 Welcome to Core Market, {member.name}!",
+                description=f"Hey {member.mention}, welcome to **Core Market**!\nOpen a ticket in {ticket_ch.mention} if you need help or want to buy.",
+                color=discord.Color.from_str("#0070FF"),
+            )
+            if member.display_avatar:
+                embed.set_thumbnail(url=member.display_avatar.url)
+            await ch.send(content=f"👋 {member.mention}", embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
