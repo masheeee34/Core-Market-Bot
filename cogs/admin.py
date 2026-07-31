@@ -62,6 +62,9 @@ class VerifyRulesView(discord.ui.View):
         custom_id="verify_rules_button",
     )
     async def verify(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        # Defer immediately — role lookup/creation can take >3s
+        await interaction.response.defer(ephemeral=True)
+
         guild = interaction.guild
         if guild is None or not isinstance(interaction.user, discord.Member):
             return
@@ -78,27 +81,23 @@ class VerifyRulesView(discord.ui.View):
                     reason="Auto create Member role for verification",
                 )
             except Exception as e:
-                await interaction.response.send_message(
-                    f"⚠️ Error creating Member role: {e}", ephemeral=True
-                )
+                await interaction.followup.send(f"⚠️ Error creating Member role: {e}", ephemeral=True)
                 return
 
         if member_role in interaction.user.roles:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "ℹ️ You have already accepted the rules and unlocked the server!", ephemeral=True
             )
             return
 
         try:
             await interaction.user.add_roles(member_role, reason="Accepted server rules in #rules")
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "✅ **Rules Accepted!** All server channels are now unlocked for you. Welcome to **Core Market**! 🎉",
                 ephemeral=True,
             )
         except Exception as e:
-            await interaction.response.send_message(
-                f"⚠️ Error assigning role: {e}", ephemeral=True
-            )
+            await interaction.followup.send(f"⚠️ Error assigning role: {e}", ephemeral=True)
 
 
 class Admin(commands.Cog):
