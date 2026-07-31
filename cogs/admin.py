@@ -22,14 +22,11 @@ ROLE_SPECS: list[tuple[str, discord.Colour, discord.Permissions]] = [
         ),
     ),
     (
-        "Helper",
-        discord.Colour.from_str("#2ECC71"),  # vert émeraude
-        discord.Permissions(manage_messages=True, kick_members=True),
-    ),
-    (
-        "Content Creator",
-        discord.Colour.purple(),
-        discord.Permissions.none(),
+        "Member",
+        discord.Colour.from_str("#3498DB"),
+        discord.Permissions(
+            read_messages=True, send_messages=True, add_reactions=True, read_message_history=True
+        ),
     ),
     (
         "Customer",
@@ -39,9 +36,64 @@ ROLE_SPECS: list[tuple[str, discord.Colour, discord.Permissions]] = [
 ]
 
 
+class VerifyRulesView(discord.ui.View):
+    """Persistent Verification View for #rules."""
+
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="Accept Rules & Unlock Server",
+        emoji="✅",
+        style=discord.ButtonStyle.success,
+        custom_id="verify_rules_button",
+    )
+    async def verify(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        guild = interaction.guild
+        if guild is None or not isinstance(interaction.user, discord.Member):
+            return
+
+        member_role = (
+            discord.utils.get(guild.roles, name="Member")
+            or discord.utils.get(guild.roles, name="Membre")
+        )
+        if member_role is None:
+            try:
+                member_role = await guild.create_role(
+                    name="Member",
+                    colour=discord.Colour.from_str("#3498DB"),
+                    reason="Auto create Member role for verification",
+                )
+            except Exception as e:
+                await interaction.response.send_message(
+                    f"⚠️ Error creating Member role: {e}", ephemeral=True
+                )
+                return
+
+        if member_role in interaction.user.roles:
+            await interaction.response.send_message(
+                "ℹ️ You have already accepted the rules and unlocked the server!", ephemeral=True
+            )
+            return
+
+        try:
+            await interaction.user.add_roles(member_role, reason="Accepted server rules in #rules")
+            await interaction.response.send_message(
+                "✅ **Rules Accepted!** All server channels are now unlocked for you. Welcome to **Core Market**! 🎉",
+                ephemeral=True,
+            )
+        except Exception as e:
+            await interaction.response.send_message(
+                f"⚠️ Error assigning role: {e}", ephemeral=True
+            )
+
+
 class Admin(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    async def cog_load(self) -> None:
+        self.bot.add_view(VerifyRulesView())
 
     @app_commands.command(
         name="setup",
@@ -263,6 +315,7 @@ class Admin(commands.Cog):
 
         staff_role = discord.utils.get(guild.roles, name="Staff")
         admin_role = discord.utils.get(guild.roles, name="Owner")
+        member_role = discord.utils.get(guild.roles, name="Member") or discord.utils.get(guild.roles, name="Customer")
 
         # Auto assign Owner role to administrator running setup
         if admin_role and isinstance(interaction.user, discord.Member) and admin_role not in interaction.user.roles:
@@ -272,51 +325,63 @@ class Admin(commands.Cog):
             except Exception:
                 pass
 
-        # Overwrites
-        read_only_overwrites = {
+        # Public Overwrites: Welcome & Rules (Visible to @everyone without Member role)
+        public_overwrites = {
             guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=True, view_channel=True),
             guild.me: discord.PermissionOverwrite(send_messages=True, manage_channels=True, view_channel=True),
         }
         if staff_role:
-            read_only_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
+            public_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
+
+        # Member Only Overwrites (All other channels: hidden from unverified @everyone, unlocked with Member role)
+        member_only_overwrites = {
+            guild.default_role: discord.PermissionOverwrite(view_channel=False),
+            guild.me: discord.PermissionOverwrite(send_messages=True, manage_channels=True, view_channel=True),
+        }
+        if member_role:
+            member_only_overwrites[member_role] = discord.PermissionOverwrite(view_channel=True, send_messages=False)
+        if staff_role:
+            member_only_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
+        if admin_role:
+            member_only_overwrites[admin_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
 
         staff_only_overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
             guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True),
         }
         if staff_role:
-            staff_only_overwrites[staff_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True)
+            staff_only_overwrites[staff_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True)
         if admin_role:
-            staff_only_overwrites[admin_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True)
+            staff_only_overwrites[admin_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True)
 
         if selected_style == "gothic":
             structure = [
                 (
                     "🔷 ────── MAIN ────── 🔷",
                     [
-                        ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", read_only_overwrites, None),
-                        ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", read_only_overwrites, None),
-                        ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", read_only_overwrites, None),
-                        ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", read_only_overwrites, "vouch"),
-                        ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", read_only_overwrites, None),
-                        ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", read_only_overwrites, None),
-                        ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", read_only_overwrites, None),
+                        ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", public_overwrites, "welcome"),
+                        ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", member_only_overwrites, None),
+                        ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", public_overwrites, "rules"),
+                        ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", member_only_overwrites, "vouch"),
+                        ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", member_only_overwrites, None),
+                        ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", member_only_overwrites, None),
+                        ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", member_only_overwrites, None),
                     ],
                 ),
                 (
                     "🔷 ────── CALL OF DUTY ────── 🔷",
                     [
-                        ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", read_only_overwrites, None),
-                        ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", read_only_overwrites, None),
-                        ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", read_only_overwrites, None),
-                        ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", read_only_overwrites, None),
-                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", read_only_overwrites, None),
+                        ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", member_only_overwrites, None),
+                        ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", member_only_overwrites, None),
+                        ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", member_only_overwrites, None),
+                        ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", member_only_overwrites, None),
+                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", member_only_overwrites, None),
                     ],
                 ),
                 (
                     "🔷 ────── TICKETS & SUPPORT ────── 🔷",
                     [
-                        ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", read_only_overwrites, "ticket"),
+                        ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", member_only_overwrites, "ticket"),
                     ],
                 ),
                 (
@@ -332,35 +397,35 @@ class Admin(commands.Cog):
                 (
                     "🏆 ─── INFORMATION ─── 🏆",
                     [
-                        ("👋・bienvenue", "Bienvenue !", read_only_overwrites, None),
-                        ("📢・annonces", "Annonces officielles", read_only_overwrites, None),
-                        ("🚨・reglement", "Règles du serveur", read_only_overwrites, None),
-                        ("⭐・avis-clients", "Avis et vouches", read_only_overwrites, "vouch"),
-                        ("🎁・giveaways", "Concours", read_only_overwrites, None),
-                        ("🌐・website", "Site internet", read_only_overwrites, None),
-                        ("🎬・media", "Vidéos et démonstrations", read_only_overwrites, None),
+                        ("👋・bienvenue", "Bienvenue !", public_overwrites, "welcome"),
+                        ("📢・annonces", "Annonces officielles", member_only_overwrites, None),
+                        ("🚨・reglement", "Règles du serveur", public_overwrites, "rules"),
+                        ("⭐・avis-clients", "Avis et vouches", member_only_overwrites, "vouch"),
+                        ("🎁・giveaways", "Concours", member_only_overwrites, None),
+                        ("🌐・website", "Site internet", member_only_overwrites, None),
+                        ("🎬・media", "Vidéos et démonstrations", member_only_overwrites, None),
                     ],
                 ),
                 (
                     "🎮 ─── CALL OF DUTY ─── 🎮",
                     [
-                        ("⚡・spoof-ranked", "Produit Spoof Ranked", read_only_overwrites, None),
-                        ("🔥・mcore", "Produit MCore", read_only_overwrites, None),
-                        ("🔮・spectre", "Produit Spectre", read_only_overwrites, None),
-                        ("⚙️・gen-compte-steam", "Générateur Steam", read_only_overwrites, None),
-                        ("🔑・essai-gratuit", "Essais gratuits", read_only_overwrites, None),
+                        ("⚡・spoof-ranked", "Produit Spoof Ranked", member_only_overwrites, None),
+                        ("🔥・mcore", "Produit MCore", member_only_overwrites, None),
+                        ("🔮・spectre", "Produit Spectre", member_only_overwrites, None),
+                        ("⚙️・gen-compte-steam", "Générateur Steam", member_only_overwrites, None),
+                        ("🔑・essai-gratuit", "Essais gratuits", member_only_overwrites, None),
                     ],
                 ),
                 (
                     "🎯 ─── VALORANT ─── 🎯",
                     [
-                        ("⚡・pulse-internal", "Produit Pulse Internal", read_only_overwrites, None),
+                        ("⚡・pulse-internal", "Produit Pulse Internal", member_only_overwrites, None),
                     ],
                 ),
                 (
                     "🛒 ─── SUPPORT & TICKETS ─── 🛒",
                     [
-                        ("🎫・creer-un-ticket", "Ouvrir un ticket", read_only_overwrites, "ticket"),
+                        ("🎫・creer-un-ticket", "Ouvrir un ticket", member_only_overwrites, "ticket"),
                     ],
                 ),
                 (
@@ -383,33 +448,33 @@ class Admin(commands.Cog):
                 (
                     "✦ ─── INFORMATION ─── ✦",
                     [
-                        ("👋・ᴡᴇʟᴄᴏᴍᴇ", "Welcome to Core Market !", read_only_overwrites, "welcome"),
-                        ("📢・ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ", "Official announcements", read_only_overwrites, None),
-                        ("🚨・ʀᴜʟᴇꜱ", "Server rules and guidelines", read_only_overwrites, None),
-                        ("⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ", "Customer reviews and vouches", read_only_overwrites, "vouch"),
-                        ("🎁・ɢɪᴠᴇᴀᴡᴀYꜱ", "Giveaways and contests", read_only_overwrites, None),
-                        ("🌐・ᴏꜰꜰɪᴄɪᴀʟ-ᴡᴇʙꜱɪᴛᴇ", "Official links and website", read_only_overwrites, None),
-                        ("🎬・ᴍᴇᴅɪᴀ-ꜱʜᴏᴡᴄᴀꜱᴇ", "Demonstrations and showcase", read_only_overwrites, None),
+                        ("👋・ᴡᴇʟᴄᴏᴍᴇ", "Welcome to Core Market !", public_overwrites, "welcome"),
+                        ("📢・ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛꜱ", "Official announcements", member_only_overwrites, None),
+                        ("🚨・ʀᴜʟᴇꜱ", "Server rules and guidelines", public_overwrites, "rules"),
+                        ("⭐・ʀᴇᴠɪᴇᴡꜱ-ᴠᴏᴜᴄʜᴇꜱ", "Customer reviews and vouches", member_only_overwrites, "vouch"),
+                        ("🎁・ɢɪᴠᴇᴀᴡᴀYꜱ", "Giveaways and contests", member_only_overwrites, None),
+                        ("🌐・ᴏꜰꜰɪᴄɪᴀʟ-ᴡᴇʙꜱɪᴛᴇ", "Official links and website", member_only_overwrites, None),
+                        ("🎬・ᴍᴇᴅɪᴀ-ꜱʜᴏᴡᴄᴀꜱᴇ", "Demonstrations and showcase", member_only_overwrites, None),
                     ],
                 ),
                 (
                     "✦ ─── CALL OF DUTY ─── ✦",
                     [
-                        ("🔴・ᴍᴄᴏʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "M-CORE External BO7 / Warzone", read_only_overwrites, "mcore"),
-                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "TRINITY SPECTRE BO7 / Warzone", read_only_overwrites, "spectre"),
-                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free trial requests", read_only_overwrites, "soon"),
+                        ("🔴・ᴍᴄᴏʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "M-CORE External BO7 / Warzone", member_only_overwrites, "mcore"),
+                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "TRINITY SPECTRE BO7 / Warzone", member_only_overwrites, "spectre"),
+                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free trial requests", member_only_overwrites, "soon"),
                     ],
                 ),
                 (
                     "✦ ─── VALORANT ─── ✦",
                     [
-                        ("⚡・ᴘᴜʟꜱᴇ-ɪɴᴛᴇʀɴᴀʟ", "Pulse Internal Valorant", read_only_overwrites, "pulse"),
+                        ("⚡・ᴘᴜʟꜱᴇ-ɪɴᴛᴇʀɴᴀʟ", "Pulse Internal Valorant", member_only_overwrites, "pulse"),
                     ],
                 ),
                 (
                     "✦ ─── SUPPORT & TICKETS ─── ✦",
                     [
-                        ("🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ", "Open a ticket for purchase or support", read_only_overwrites, "ticket"),
+                        ("🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ", "Open a ticket for purchase or support", member_only_overwrites, "ticket"),
                     ],
                 ),
             ]
@@ -450,6 +515,25 @@ class Admin(commands.Cog):
                     )
                     embed.set_footer(text="Core Market • Premium Tools & Resell")
                     await ch.send(embed=embed)
+
+                # Auto post Rules & Verification Panel
+                elif action == "rules":
+                    embed = discord.Embed(
+                        title="🚨 Core Market — Server Rules & Verification",
+                        description=(
+                            "Welcome to **Core Market**! Please read and accept our server rules to unlock full access to all channels.\n\n"
+                            "📜 **Server Rules:**\n"
+                            "1️⃣ **Respect Everyone:** No toxicity, harassment, hate speech, or offensive behavior.\n"
+                            "2️⃣ **No Advertising / Spam:** Do not DM members, post invite links, or self-promote.\n"
+                            "3️⃣ **Use Appropriate Channels:** Keep discussions relevant to each channel.\n"
+                            "4️⃣ **Staff Decisions are Final:** Follow instructions from staff and admins.\n"
+                            "5️⃣ **No Scamming / Fraud:** Any attempt to scam will result in an instant permanent ban.\n\n"
+                            "✅ **Click the button below to accept the rules and unlock the server!**"
+                        ),
+                        color=discord.Color.from_str("#0070FF"),
+                    )
+                    embed.set_footer(text="Core Market • Rules & Verification")
+                    await ch.send(embed=embed, view=VerifyRulesView())
 
                 # Auto post Vouch button
                 elif action == "vouch":
@@ -537,6 +621,31 @@ class Admin(commands.Cog):
         embed.set_footer(text="Core Market • Premium Tools & Resell")
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ Message de bienvenue publié !", ephemeral=True)
+
+    @app_commands.command(
+        name="setup_rules",
+        description="Poster le panneau de règlement et de vérification avec le bouton d'acceptation",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_rules(self, interaction: discord.Interaction) -> None:
+        embed = discord.Embed(
+            title="🚨 Core Market — Server Rules & Verification",
+            description=(
+                "Welcome to **Core Market**! Please read and accept our server rules to unlock full access to all channels.\n\n"
+                "📜 **Server Rules:**\n"
+                "1️⃣ **Respect Everyone:** No toxicity, harassment, hate speech, or offensive behavior.\n"
+                "2️⃣ **No Advertising / Spam:** Do not DM members, post invite links, or self-promote.\n"
+                "3️⃣ **Use Appropriate Channels:** Keep discussions relevant to each channel.\n"
+                "4️⃣ **Staff Decisions are Final:** Follow instructions from staff and admins.\n"
+                "5️⃣ **No Scamming / Fraud:** Any attempt to scam will result in an instant permanent ban.\n\n"
+                "✅ **Click the button below to accept the rules and unlock the server!**"
+            ),
+            color=discord.Color.from_str("#0070FF"),
+        )
+        embed.set_footer(text="Core Market • Rules & Verification")
+        await interaction.channel.send(embed=embed, view=VerifyRulesView())
+        await interaction.response.send_message("✅ Panneau de règlement & vérification publié !", ephemeral=True)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
