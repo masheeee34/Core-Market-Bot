@@ -559,10 +559,14 @@ class Admin(commands.Cog):
 
             if category is None:
                 category = await guild.create_category(cat_name, overwrites=cat_ow)
+                await asyncio.sleep(0.2)
                 report.append(f"📁 Category created: **{cat_name}**")
             else:
+                # Only edit category if overwrites actually changed
                 try:
-                    await category.edit(overwrites=cat_ow)
+                    if category.overwrites != cat_ow:
+                        await category.edit(overwrites=cat_ow)
+                        await asyncio.sleep(0.2)
                 except Exception:
                     pass
 
@@ -587,12 +591,14 @@ class Admin(commands.Cog):
                 ch = existing
                 if ch is None:
                     ch = await category.create_text_channel(name=ch_name, topic=topic, overwrites=ow)
+                    await asyncio.sleep(0.2)
                     report.append(f"  └─ 💬 Channel created: {ch.mention}")
                 else:
-                    # Enforce overwrites on existing channels (only edit if parameters differ)
+                    # Enforce overwrites on existing channels (only edit if topic or overwrites differ)
                     try:
-                        if ch.name != ch_name or ch.topic != topic or ch.overwrites != ow:
-                            await ch.edit(overwrites=ow, name=ch_name, topic=topic)
+                        if ch.topic != topic or ch.overwrites != ow:
+                            await ch.edit(overwrites=ow, topic=topic)
+                            await asyncio.sleep(0.2)
                     except Exception:
                         pass
                     report.append(f"  └─ ℹ️ Channel updated: {ch.mention}")
