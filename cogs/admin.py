@@ -493,9 +493,26 @@ class Admin(commands.Cog):
 
         for cat_name, channels in structure:
             category = discord.utils.get(guild.categories, name=cat_name)
+
+            # Define category level overwrites for strict lockdown
+            is_staff_cat = "STAFF" in cat_name
+            is_info_cat = "INFORMATION" in cat_name or "MAIN" in cat_name
+
+            if is_staff_cat:
+                cat_ow = staff_only_overwrites
+            elif is_info_cat:
+                cat_ow = public_overwrites
+            else:
+                cat_ow = member_only_overwrites
+
             if category is None:
-                category = await guild.create_category(cat_name)
+                category = await guild.create_category(cat_name, overwrites=cat_ow)
                 report.append(f"📁 Category created: **{cat_name}**")
+            else:
+                try:
+                    await category.edit(overwrites=cat_ow)
+                except Exception:
+                    pass
 
             for ch_name, topic, ow, action in channels:
                 # Flexible channel lookup matching exact name or keyword
