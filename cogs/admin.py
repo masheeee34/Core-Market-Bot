@@ -25,13 +25,25 @@ ROLE_SPECS: list[tuple[str, discord.Colour, discord.Permissions]] = [
         "Member",
         discord.Colour.from_str("#3498DB"),
         discord.Permissions(
-            read_messages=True, send_messages=True, add_reactions=True, read_message_history=True
+            read_messages=True,
+            send_messages=True,
+            add_reactions=True,
+            read_message_history=True,
+            use_application_commands=True,
+            create_instant_invite=True,
         ),
     ),
     (
         "Customer",
         discord.Colour.gold(),
-        discord.Permissions.none(),
+        discord.Permissions(
+            read_messages=True,
+            send_messages=True,
+            add_reactions=True,
+            read_message_history=True,
+            use_application_commands=True,
+            create_instant_invite=True,
+        ),
     ),
 ]
 
@@ -335,13 +347,14 @@ class Admin(commands.Cog):
         member_role = discord.utils.get(guild.roles, name="Member")
         customer_role = discord.utils.get(guild.roles, name="Customer")
 
-        # Lock down @everyone base permissions on the server (disable expressions / emojis / soundboard)
+        # Lock down @everyone base permissions on the server (allow invites, disable expressions / emojis / soundboard)
         default_permissions = discord.Permissions(
             read_messages=True,
             read_message_history=True,
             send_messages=False,
             add_reactions=True,
             use_application_commands=True,
+            create_instant_invite=True,
             create_expressions=False,
             manage_expressions=False,
             create_public_threads=False,
@@ -770,20 +783,38 @@ class Admin(commands.Cog):
     async def on_member_join(self, member: discord.Member) -> None:
         """Auto welcome new members when they join the server."""
         guild = member.guild
-        ch = (
-            discord.utils.get(guild.text_channels, name="👋・ᴡᴇʟᴄᴏᴍᴇ")
-            or discord.utils.get(guild.text_channels, name="👋・bienvenue")
-            or discord.utils.get(guild.text_channels, name="welcome")
-        )
+        ch = None
+        for tc in guild.text_channels:
+            tc_lower = tc.name.lower()
+            if "welcome" in tc_lower or "bienvenue" in tc_lower or "👋" in tc.name:
+                ch = tc
+                break
+
         if ch is not None:
-            ticket_ch = discord.utils.get(guild.text_channels, name="🎫・ᴄʀᴇᴀᴛᴇ-ᴛɪᴄᴋᴇᴛ") or ch
+            rules_ch = None
+            ticket_ch = None
+            for tc in guild.text_channels:
+                tc_lower = tc.name.lower()
+                if "rule" in tc_lower or "reglement" in tc_lower:
+                    rules_ch = tc
+                elif "ticket" in tc_lower:
+                    ticket_ch = tc
+
+            rules_mention = rules_ch.mention if rules_ch else "#rules"
+            ticket_mention = ticket_ch.mention if ticket_ch else "#tickets"
+
             embed = discord.Embed(
-                title=f"👋 Welcome to Core Market, {member.name}!",
-                description=f"Hey {member.mention}, welcome to **Core Market**!\nOpen a ticket in {ticket_ch.mention} if you need help or want to buy.",
+                title=f"👋  WELCOME TO CORE MARKET, {member.name.upper()}!",
+                description=(
+                    f"> Hey {member.mention}, welcome to **Core Market**!\n\n"
+                    f"▸ **` Step 1 ` Accept Rules:** Read guidelines in {rules_mention} to unlock all channels.\n"
+                    f"▸ **` Step 2 ` Need Assistance?** Open a ticket in {ticket_mention} for any questions or orders!"
+                ),
                 color=discord.Color.from_str("#0070FF"),
             )
             if member.display_avatar:
                 embed.set_thumbnail(url=member.display_avatar.url)
+            embed.set_footer(text=f"CORE MARKET • Member #{guild.member_count}")
             await ch.send(content=f"👋 {member.mention}", embed=embed)
 
     @commands.Cog.listener()
