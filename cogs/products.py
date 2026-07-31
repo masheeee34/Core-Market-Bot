@@ -542,6 +542,34 @@ class Products(commands.Cog):
         await self._send_product_panel(interaction, key, role_staff, salon_logs)
 
     @app_commands.command(
+        name="setup_spectre",
+        description="Poster le message de vente TRINITY SPECTRE BO7 / WARZONE avec bouton d'achat",
+    )
+    @app_commands.describe(
+        langue="Langue de l'embed (français ou anglais)",
+        role_staff="Rôle staff ayant accès au ticket (optionnel)",
+        salon_logs="Salon des logs/transcripts (optionnel)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_spectre(
+        self,
+        interaction: discord.Interaction,
+        langue: app_commands.Choice[str] | None = None,
+        role_staff: discord.Role | None = None,
+        salon_logs: discord.TextChannel | None = None,
+    ) -> None:
+        lang = langue.value if langue else "fr"
+        key = "spectre_fr" if lang == "fr" else "spectre"
+        await self._send_product_panel(interaction, key, role_staff, salon_logs)
+
+    @app_commands.command(
         name="setup_product",
         description="Poster le message de vente d'un produit spécifique",
     )
@@ -558,6 +586,8 @@ class Products(commands.Cog):
             app_commands.Choice(name="🟡 COLORBOT PRIVATE (EN 🇬🇧)", value="colorbot"),
             app_commands.Choice(name="🔴 M-CORE BO7/WARZONE (FR 🇫🇷)", value="mcore_fr"),
             app_commands.Choice(name="🔴 M-CORE BO7/WARZONE (EN 🇬🇧)", value="mcore"),
+            app_commands.Choice(name="🔮 TRINITY SPECTRE BO7/WARZONE (FR 🇫🇷)", value="spectre_fr"),
+            app_commands.Choice(name="🔮 TRINITY SPECTRE BO7/WARZONE (EN 🇬🇧)", value="spectre"),
         ]
     )
     @app_commands.default_permissions(administrator=True)
