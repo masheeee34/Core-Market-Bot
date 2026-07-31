@@ -99,9 +99,15 @@ async def main() -> None:
     await run_webserver()
     asyncio.create_task(keep_alive())
 
-    bot = TicketBot()
-    async with bot:
-        await bot.start(DISCORD_TOKEN)
+    while True:
+        try:
+            log.info("Connexion à Discord en cours...")
+            bot = TicketBot()
+            async with bot:
+                await bot.start(DISCORD_TOKEN)
+        except Exception as e:
+            log.error("Erreur de connexion Discord : %s. Nouvelle tentative dans 5s...", e)
+            await asyncio.sleep(5)
 
 
 if __name__ == "__main__":
