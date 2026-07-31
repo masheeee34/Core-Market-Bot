@@ -309,8 +309,9 @@ class Admin(commands.Cog):
 
         # 1. Roles setup
         for name, colour, permissions in ROLE_SPECS:
-            if discord.utils.get(guild.roles, name=name) is None:
-                await guild.create_role(
+            r = discord.utils.get(guild.roles, name=name)
+            if r is None:
+                r = await guild.create_role(
                     name=name,
                     colour=colour,
                     permissions=permissions,
@@ -319,9 +320,17 @@ class Admin(commands.Cog):
                     reason="/setup_core_market — role creation",
                 )
                 report.append(f"👑 Rôle créé : **{name}**")
+            else:
+                try:
+                    await r.edit(permissions=permissions, colour=colour, hoist=True)
+                except Exception:
+                    pass
+                report.append(f"ℹ️ Rôle mis à jour : **{name}**")
+
         staff_role = discord.utils.get(guild.roles, name="Staff")
         admin_role = discord.utils.get(guild.roles, name="Owner")
-        member_role = discord.utils.get(guild.roles, name="Member") or discord.utils.get(guild.roles, name="Customer")
+        member_role = discord.utils.get(guild.roles, name="Member")
+        customer_role = discord.utils.get(guild.roles, name="Customer")
 
         # Lock down @everyone base permissions on the server (disable expressions / emojis / soundboard)
         default_permissions = discord.Permissions(
@@ -361,13 +370,15 @@ class Admin(commands.Cog):
         if staff_role:
             public_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
 
-        # Member Only Overwrites (All other channels: hidden from unverified @everyone, unlocked with Member role)
+        # Member / Customer Only Overwrites (All other channels: hidden from unverified @everyone, unlocked with Member or Customer role)
         member_only_overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
             guild.me: discord.PermissionOverwrite(send_messages=True, manage_channels=True, view_channel=True),
         }
         if member_role:
             member_only_overwrites[member_role] = discord.PermissionOverwrite(view_channel=True, send_messages=False)
+        if customer_role:
+            member_only_overwrites[customer_role] = discord.PermissionOverwrite(view_channel=True, send_messages=False)
         if staff_role:
             member_only_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
         if admin_role:
