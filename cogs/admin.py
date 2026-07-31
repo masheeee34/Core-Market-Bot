@@ -208,16 +208,31 @@ class Admin(commands.Cog):
 
     @app_commands.command(
         name="setup_core_market",
-        description="Générer automatiquement la structure complète du serveur Core Market (salons, catégories, rôles)",
+        description="Générer automatiquement la structure du serveur (design propre et moderne)",
+    )
+    @app_commands.describe(
+        style="Style typographique des salons (Small Caps moderne par défaut ou Simple)",
+    )
+    @app_commands.choices(
+        style=[
+            app_commands.Choice(name="Moderne Small Caps (⚡・ꜱᴘᴏᴏꜰ-ʀᴀɴᴋᴇᴅ)", value="small_caps"),
+            app_commands.Choice(name="Clean Simple (⚡・spoof-ranked)", value="clean"),
+            app_commands.Choice(name="Gothique (🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉)", value="gothic"),
+        ]
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
-    async def setup_core_market(self, interaction: discord.Interaction) -> None:
+    async def setup_core_market(
+        self,
+        interaction: discord.Interaction,
+        style: app_commands.Choice[str] | None = None,
+    ) -> None:
         await interaction.response.defer(ephemeral=True)
         guild = interaction.guild
         if guild is None:
             return
 
+        selected_style = style.value if style else "small_caps"
         report: list[str] = []
 
         # 1. Roles setup
@@ -255,43 +270,120 @@ class Admin(commands.Cog):
         if admin_role:
             staff_only_overwrites[admin_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_messages=True)
 
-        structure = [
-            (
-                "🔷 ────── MAIN ────── 🔷",
-                [
-                    ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", read_only_overwrites),
-                    ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", read_only_overwrites),
-                    ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", read_only_overwrites),
-                    ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", read_only_overwrites),
-                    ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", read_only_overwrites),
-                    ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", read_only_overwrites),
-                    ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", read_only_overwrites),
-                ],
-            ),
-            (
-                "🔷 ────── CALL OF DUTY ────── 🔷",
-                [
-                    ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", read_only_overwrites),
-                    ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", read_only_overwrites),
-                    ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", read_only_overwrites),
-                    ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", read_only_overwrites),
-                    ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", read_only_overwrites),
-                ],
-            ),
-            (
-                "🔷 ────── TICKETS & SUPPORT ────── 🔷",
-                [
-                    ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", read_only_overwrites),
-                ],
-            ),
-            (
-                "🔒 ────── STAFF ONLY ────── 🔒",
-                [
-                    ("💬 ┃ 𝖘𝖙𝖆𝖋𝖋-𝖈𝖍𝖆𝖙", "Discussion réservée à l'équipe", staff_only_overwrites),
-                    ("📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘", "Logs automatiques des tickets", staff_only_overwrites),
-                ],
-            ),
-        ]
+        if selected_style == "gothic":
+            structure = [
+                (
+                    "🔷 ────── MAIN ────── 🔷",
+                    [
+                        ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", read_only_overwrites),
+                        ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", read_only_overwrites),
+                        ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", read_only_overwrites),
+                        ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", read_only_overwrites),
+                        ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", read_only_overwrites),
+                        ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", read_only_overwrites),
+                        ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🔷 ────── CALL OF DUTY ────── 🔷",
+                    [
+                        ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", read_only_overwrites),
+                        ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", read_only_overwrites),
+                        ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", read_only_overwrites),
+                        ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", read_only_overwrites),
+                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🔷 ────── TICKETS & SUPPORT ────── 🔷",
+                    [
+                        ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🔒 ────── STAFF ONLY ────── 🔒",
+                    [
+                        ("💬 ┃ 𝖘𝖙𝖆𝖋𝖋-𝖈𝖍𝖆𝖙", "Discussion réservée à l'équipe", staff_only_overwrites),
+                        ("📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘", "Logs automatiques des tickets", staff_only_overwrites),
+                    ],
+                ),
+            ]
+        elif selected_style == "clean":
+            structure = [
+                (
+                    "🏆 ─── INFORMATION ─── 🏆",
+                    [
+                        ("👋・bienvenue", "Bienvenue !", read_only_overwrites),
+                        ("📢・annonces", "Annonces officielles", read_only_overwrites),
+                        ("🚨・reglement", "Règles du serveur", read_only_overwrites),
+                        ("⭐・avis-clients", "Avis et vouches", read_only_overwrites),
+                        ("🎁・giveaways", "Concours", read_only_overwrites),
+                        ("🌐・website", "Site internet", read_only_overwrites),
+                        ("🎬・media", "Vidéos et démonstrations", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🎮 ─── CALL OF DUTY ─── 🎮",
+                    [
+                        ("⚡・spoof-ranked", "Produit Spoof Ranked", read_only_overwrites),
+                        ("🔥・mcore", "Produit MCore", read_only_overwrites),
+                        ("🔮・spectre", "Produit Spectre", read_only_overwrites),
+                        ("⚙️・gen-compte-steam", "Générateur Steam", read_only_overwrites),
+                        ("🔑・essai-gratuit", "Essais gratuits", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🛒 ─── SUPPORT & TICKETS ─── 🛒",
+                    [
+                        ("🎫・creer-un-ticket", "Ouvrir un ticket", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🔒 ─── STAFF ONLY ─── 🔒",
+                    [
+                        ("💬・staff-chat", "Chat d'équipe", staff_only_overwrites),
+                        ("📜・logs-tickets", "Logs des tickets", staff_only_overwrites),
+                    ],
+                ),
+            ]
+        else: # small_caps (default ultra clean)
+            structure = [
+                (
+                    "✦ ─── INFORMATION ─── ✦",
+                    [
+                        ("👋・ʙɪᴇɴᴠᴇɴᴜᴇ", "Bienvenue sur Core Market !", read_only_overwrites),
+                        ("📢・ᴀɴɴᴏɴᴄᴇꜱ", "Annonces officielles", read_only_overwrites),
+                        ("🚨・ʀᴇɢʟᴇᴍᴇɴᴛ", "Règles et consignes", read_only_overwrites),
+                        ("⭐・ᴀᴠɪꜱ-ᴄʟɪᴇɴᴛꜱ", "Avis clients et retours", read_only_overwrites),
+                        ("🎁・ɢɪᴠᴇᴀᴡᴀʏꜱ", "Concours et cadeaux", read_only_overwrites),
+                        ("🌐・ꜱɪᴛᴇ-ᴏꜰꜰɪᴄɪᴇʟ", "Liens officiels", read_only_overwrites),
+                        ("🎬・ᴅᴇᴍᴏɴꜱᴛʀᴀᴛɪᴏɴꜱ", "Vidéos et présentations", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "✦ ─── CALL OF DUTY ─── ✦",
+                    [
+                        ("⚡・ꜱᴘᴏᴏꜰ-ʀᴀɴᴋᴇᴅ", "Offres Spoof Ranked", read_only_overwrites),
+                        ("🔥・ᴍᴄᴏʀᴇ", "Offres MCore External", read_only_overwrites),
+                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ", "Offres Spectre", read_only_overwrites),
+                        ("⚙️・ɢᴇɴ-ᴄᴏᴍᴘᴛᴇ-ꜱᴛᴇᴀᴍ", "Comptes Steam", read_only_overwrites),
+                        ("🔑・ᴇꜱꜱᴀɪ-ɢʀᴀᴛᴜɪᴛ", "Obtenir un test gratuit", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "✦ ─── SUPPORT & TICKETS ─── ✦",
+                    [
+                        ("🎫・ᴄʀᴇᴇʀ-ᴜɴ-ᴛɪᴄᴋᴇᴛ", "Ouvrir un ticket pour acheter ou obtenir du support", read_only_overwrites),
+                    ],
+                ),
+                (
+                    "🔒 ─── STAFF ONLY ─── 🔒",
+                    [
+                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Salon réservé à l'équipe", staff_only_overwrites),
+                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Transcripts et historique", staff_only_overwrites),
+                    ],
+                ),
+            ]
 
         for cat_name, channels in structure:
             category = discord.utils.get(guild.categories, name=cat_name)
@@ -306,13 +398,13 @@ class Admin(commands.Cog):
                     report.append(f"  └─ 💬 Salon créé : {ch.mention}")
 
                     # Auto post Vouch button in Avis-client
-                    if "Avis-client" in ch_name or "avis" in ch_name.lower():
+                    if "avis" in ch_name.lower():
                         from cogs.vouch import VouchButtonView
-                        await ch.send(content="**Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
+                        await ch.send(content="**⭐ Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
 
                     # Auto post Ticket panel in create-ticket
-                    if "create-ticket" in ch_name and staff_role:
-                        logs_ch = discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘") or ch
+                    if "ticket" in ch_name.lower() and staff_role and "logs" not in ch_name.lower():
+                        logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘") or ch
                         await ch.send(content="**Créer un ticket / Create a ticket**", view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"))
                 else:
                     report.append(f"  └─ ℹ️ Salon existant : {existing.mention}")
