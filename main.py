@@ -36,10 +36,8 @@ log = logging.getLogger("ticketbot")
 
 
 class TicketBot(commands.Bot):
-    def __init__(self, enable_members_intent: bool = True) -> None:
+    def __init__(self) -> None:
         intents = discord.Intents.default()
-        if enable_members_intent:
-            intents.members = True
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self) -> None:
@@ -101,15 +99,9 @@ async def main() -> None:
     await run_webserver()
     asyncio.create_task(keep_alive())
 
-    try:
-        bot = TicketBot(enable_members_intent=True)
-        async with bot:
-            await bot.start(DISCORD_TOKEN)
-    except discord.errors.PrivilegedIntentsRequired:
-        log.warning("PrivilegedIntentsRequired: désactivation de l'intent membres et relance...")
-        bot = TicketBot(enable_members_intent=False)
-        async with bot:
-            await bot.start(DISCORD_TOKEN)
+    bot = TicketBot()
+    async with bot:
+        await bot.start(DISCORD_TOKEN)
 
 
 if __name__ == "__main__":
