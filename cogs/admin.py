@@ -212,6 +212,7 @@ class Admin(commands.Cog):
     )
     @app_commands.describe(
         style="Style typographique des salons (Small Caps moderne par défaut ou Simple)",
+        supprimer_anciens_salons="Supprimer automatiquement tous les anciens salons et catégories avant de refaire le serveur (Par défaut: Oui)",
     )
     @app_commands.choices(
         style=[
@@ -226,6 +227,7 @@ class Admin(commands.Cog):
         self,
         interaction: discord.Interaction,
         style: app_commands.Choice[str] | None = None,
+        supprimer_anciens_salons: bool = True,
     ) -> None:
         await interaction.response.defer(ephemeral=True)
         guild = interaction.guild
@@ -234,6 +236,15 @@ class Admin(commands.Cog):
 
         selected_style = style.value if style else "small_caps"
         report: list[str] = []
+
+        # 0. Clean old channels and categories if requested
+        if supprimer_anciens_salons:
+            report.append("🧹 **Nettoyage des anciens salons et catégories effectué.**")
+            for ch in list(guild.channels):
+                try:
+                    await ch.delete(reason="/setup_core_market — auto clean")
+                except Exception:
+                    pass
 
         # 1. Roles setup
         for name, colour, permissions in ROLE_SPECS:
