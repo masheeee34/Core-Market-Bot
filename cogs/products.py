@@ -279,61 +279,71 @@ PRODUCTS: dict[str, dict[str, Any]] = {
         ],
     },
     "pulse_internal_fr": {
-        "raw_title": "PULSE INTERNAL VALORANT [FR]",
-        "title": "⚡ PULSE INTERNAL VALORANT ⚡",
-        "description": "*Solution interne haute performance pour Valorant*",
+        "raw_title": "TRINITY PULSE VALORANT [FR]",
+        "title": "⚡ TRINITY PULSE VALORANT ⚡",
+        "description": "*Solution interne haute performance avec émulateur sans redémarrage*",
         "button_label": "Acheter ici",
         "color": discord.Color.from_str("#3498DB"),
         "fields": [
             (
                 "💻 INFORMATIONS & COMPATIBILITÉ",
                 "• **OS :** Windows 10 & 11 (Toutes versions)\n"
-                "• **Anti-Cheat :** Vanguard Compatible\n"
-                "• **Processeur :** Intel & AMD",
+                "• **Processeur :** Intel & AMD\n"
+                "• **Cartes Graphiques :** Tous composants\n"
+                "• **Cartes Mères :** Compatible ASUS & Toutes cartes mères\n"
+                "• **Émulateur :** Émulateur No-Restart intégré 🌌",
                 False,
             ),
             (
-                "🎯 AIMBOT & VISUELS",
-                "• **Aimbot ultra fluide & ajustement du FOV**\n"
-                "• **ESP Joueur (Boîtes, Squelette, Santé)**\n"
-                "• **Spike ESP & Alertes de proximité**",
+                "🏆 FONCTIONNALITÉS",
+                "• **Aimbot :** Visée automatique ultra fluide & FOV ajustable\n"
+                "• **ESP & Chams :** ESP Joueurs, Squelette, Santé, Chams visuels\n"
+                "• **Unlock All & Models :** Déblocage des cosmétiques, modèles & skins personnalisés\n"
+                "• **Exploits & Anti-Aim :** Anti-Aim sur mesure & Exploits personnalisés\n"
+                "• **Système de Config :** Sauvegarde & chargement de profils sur mesure",
                 False,
             ),
             (
                 "💳 TARIFS",
-                "• **1 Jour :** 8.00 €\n"
-                "• **1 Semaine :** 25.00 €\n"
-                "• **1 Mois :** 50.00 €",
+                "• **3 Jours :** 11.99 €\n"
+                "• **7 Jours :** 24.99 €\n"
+                "• **30 Jours :** 39.99 €\n"
+                "• **À Vie (Lifetime) :** 109.99 €",
                 False,
             ),
         ],
     },
     "pulse_internal": {
-        "raw_title": "PULSE INTERNAL VALORANT [EN]",
-        "title": "⚡ PULSE INTERNAL VALORANT ⚡",
-        "description": "*High performance internal tool for Valorant*",
+        "raw_title": "TRINITY PULSE VALORANT [EN]",
+        "title": "⚡ TRINITY PULSE VALORANT ⚡",
+        "description": "*High performance internal tool with built-in no-restart emulator*",
         "button_label": "Buy Here",
         "color": discord.Color.from_str("#3498DB"),
         "fields": [
             (
                 "💻 INFORMATION & COMPATIBILITY",
                 "• **OS:** Windows 10 & 11 (All versions)\n"
-                "• **Anti-Cheat:** Vanguard Compatible\n"
-                "• **CPU:** Intel & AMD Supported",
+                "• **CPU:** Intel & AMD Supported\n"
+                "• **GPU:** All Components Supported\n"
+                "• **Motherboards:** Works on ASUS & All motherboards\n"
+                "• **Emulator:** Built-in No-Restart Emulator included 🌌",
                 False,
             ),
             (
-                "🎯 AIMBOT & VISUALS",
-                "• **Smooth Aimbot & FOV Customization**\n"
-                "• **Player ESP (Boxes, Skeleton, Health)**\n"
-                "• **Spike ESP & Distance Warning**",
+                "🏆 FEATURES",
+                "• **Aimbot:** Smooth aimbot & FOV adjustments\n"
+                "• **ESP & Chams:** Player ESP, Skeleton, Health, Visual Chams\n"
+                "• **Unlock All & Models:** Cosmetics unlock, Custom Models & Skins\n"
+                "• **Exploits & Anti-Aim:** Custom Anti-Aim & Custom Exploits\n"
+                "• **Config System:** Save & load custom profiles",
                 False,
             ),
             (
                 "💳 PRICING PLAN",
-                "• **1 Day:** 8.00 €\n"
-                "• **1 Week:** 25.00 €\n"
-                "• **1 Month:** 50.00 €",
+                "• **3 Days:** 11.99 €\n"
+                "• **7 Days:** 24.99 €\n"
+                "• **30 Days:** 39.99 €\n"
+                "• **Lifetime:** 109.99 €",
                 False,
             ),
         ],
