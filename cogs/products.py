@@ -438,8 +438,10 @@ class Products(commands.Cog):
         )
         logs_channel = (
             salon_logs
+            or discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
+            or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
+            or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘")
             or discord.utils.get(guild.text_channels, name="logs")
-            or discord.utils.get(guild.text_channels, name="ticket-logs")
             or interaction.channel
         )
 

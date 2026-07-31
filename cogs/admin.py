@@ -264,6 +264,14 @@ class Admin(commands.Cog):
         staff_role = discord.utils.get(guild.roles, name="Staff")
         admin_role = discord.utils.get(guild.roles, name="Owner")
 
+        # Auto assign Owner role to administrator running setup
+        if admin_role and isinstance(interaction.user, discord.Member) and admin_role not in interaction.user.roles:
+            try:
+                await interaction.user.add_roles(admin_role, reason="/setup_core_market — auto owner role assignment")
+                report.append(f"👑 Rôle **Owner** attribué à {interaction.user.mention}")
+            except Exception:
+                pass
+
         # Overwrites
         read_only_overwrites = {
             guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=True, view_channel=True),
