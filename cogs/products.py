@@ -278,6 +278,66 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
         ],
     },
+    "pulse_internal_fr": {
+        "raw_title": "PULSE INTERNAL VALORANT [FR]",
+        "title": "⚡ PULSE INTERNAL VALORANT ⚡",
+        "description": "*Solution interne haute performance pour Valorant*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#3498DB"),
+        "fields": [
+            (
+                "💻 INFORMATIONS & COMPATIBILITÉ",
+                "• **OS :** Windows 10 & 11 (Toutes versions)\n"
+                "• **Anti-Cheat :** Vanguard Compatible\n"
+                "• **Processeur :** Intel & AMD",
+                False,
+            ),
+            (
+                "🎯 AIMBOT & VISUELS",
+                "• **Aimbot ultra fluide & ajustement du FOV**\n"
+                "• **ESP Joueur (Boîtes, Squelette, Santé)**\n"
+                "• **Spike ESP & Alertes de proximité**",
+                False,
+            ),
+            (
+                "💳 TARIFS",
+                "• **1 Jour :** 8.00 €\n"
+                "• **1 Semaine :** 25.00 €\n"
+                "• **1 Mois :** 50.00 €",
+                False,
+            ),
+        ],
+    },
+    "pulse_internal": {
+        "raw_title": "PULSE INTERNAL VALORANT [EN]",
+        "title": "⚡ PULSE INTERNAL VALORANT ⚡",
+        "description": "*High performance internal tool for Valorant*",
+        "button_label": "Buy Here",
+        "color": discord.Color.from_str("#3498DB"),
+        "fields": [
+            (
+                "💻 INFORMATION & COMPATIBILITY",
+                "• **OS:** Windows 10 & 11 (All versions)\n"
+                "• **Anti-Cheat:** Vanguard Compatible\n"
+                "• **CPU:** Intel & AMD Supported",
+                False,
+            ),
+            (
+                "🎯 AIMBOT & VISUALS",
+                "• **Smooth Aimbot & FOV Customization**\n"
+                "• **Player ESP (Boxes, Skeleton, Health)**\n"
+                "• **Spike ESP & Distance Warning**",
+                False,
+            ),
+            (
+                "💳 PRICING PLAN",
+                "• **1 Day:** 8.00 €\n"
+                "• **1 Week:** 25.00 €\n"
+                "• **1 Month:** 50.00 €",
+                False,
+            ),
+        ],
+    },
 }
 
 

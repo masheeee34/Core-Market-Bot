@@ -344,6 +344,12 @@ class Admin(commands.Cog):
                     ],
                 ),
                 (
+                    "🎯 ─── VALORANT ─── 🎯",
+                    [
+                        ("⚡・pulse-internal", "Produit Pulse Internal", read_only_overwrites, None),
+                    ],
+                ),
+                (
                     "🛒 ─── SUPPORT & TICKETS ─── 🛒",
                     [
                         ("🎫・creer-un-ticket", "Ouvrir un ticket", read_only_overwrites, "ticket"),
@@ -379,6 +385,12 @@ class Admin(commands.Cog):
                         ("🔮・ꜱᴘᴇᴄᴛʀᴇ", "Offres Spectre", read_only_overwrites, None),
                         ("⚙️・ɢᴇɴ-ᴄᴏᴍᴘᴛᴇ-ꜱᴛᴇᴀᴍ", "Comptes Steam", read_only_overwrites, None),
                         ("🔑・ᴇꜱꜱᴀɪ-ɢʀᴀᴛᴜɪᴛ", "Obtenir un test gratuit", read_only_overwrites, None),
+                    ],
+                ),
+                (
+                    "✦ ─── VALORANT ─── ✦",
+                    [
+                        ("⚡・ᴘᴜʟꜱᴇ-ɪɴᴛᴇʀɴᴀʟ", "Offres Pulse Internal Valorant", read_only_overwrites, None),
                     ],
                 ),
                 (
