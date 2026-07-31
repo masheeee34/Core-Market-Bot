@@ -397,7 +397,7 @@ class Admin(commands.Cog):
                     [
                         ("🔴・ᴍᴄᴏʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "M-CORE External BO7 / Warzone", read_only_overwrites, "mcore"),
                         ("🔮・ꜱᴘᴇᴄᴛʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "TRINITY SPECTRE BO7 / Warzone", read_only_overwrites, "spectre"),
-                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free trial requests", read_only_overwrites, None),
+                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free trial requests", read_only_overwrites, "soon"),
                     ],
                 ),
                 (
@@ -459,12 +459,38 @@ class Admin(commands.Cog):
                         view = build_product_view(pkey, staff_role.id, logs_ch.id)
                         await ch.send(embed=embed, view=view)
 
+                # Auto post SOON GIF
+                elif action == "soon":
+                    embed = discord.Embed(
+                        title="⏳ COMING SOON",
+                        description="*Free trials will be available very soon! Stay tuned.*",
+                        color=discord.Color.from_str("#0070FF"),
+                    )
+                    embed.set_image(url="https://media.giphy.com/media/l1J9u3TZfzYTEpqaQ/giphy.gif")
+                    await ch.send(embed=embed)
+
         embed = discord.Embed(
             title="⚡ Configuration Core Market terminée !",
             color=discord.Color.blue(),
             description="\n".join(report[:30]) + ("\n..." if len(report) > 30 else ""),
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
+
+    @app_commands.command(
+        name="setup_soon",
+        description="Poster un message 'COMING SOON' avec un GIF animé",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_soon(self, interaction: discord.Interaction) -> None:
+        embed = discord.Embed(
+            title="⏳ COMING SOON",
+            description="*This feature/trial will be available very soon! Stay tuned.*",
+            color=discord.Color.from_str("#0070FF"),
+        )
+        embed.set_image(url="https://media.giphy.com/media/l1J9u3TZfzYTEpqaQ/giphy.gif")
+        await interaction.channel.send(embed=embed)
+        await interaction.response.send_message("✅ Message COMING SOON publié !", ephemeral=True)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
