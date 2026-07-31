@@ -589,17 +589,20 @@ class Admin(commands.Cog):
                     ch = await category.create_text_channel(name=ch_name, topic=topic, overwrites=ow)
                     report.append(f"  └─ 💬 Channel created: {ch.mention}")
                 else:
-                    # Enforce overwrites on existing channels
+                    # Enforce overwrites on existing channels (only edit if parameters differ)
                     try:
-                        await ch.edit(overwrites=ow, name=ch_name, topic=topic)
+                        if ch.name != ch_name or ch.topic != topic or ch.overwrites != ow:
+                            await ch.edit(overwrites=ow, name=ch_name, topic=topic)
                     except Exception:
                         pass
                     report.append(f"  └─ ℹ️ Channel updated: {ch.mention}")
 
-                # Purge old messages before posting fresh embeds
+                # Fast purge old bot messages before posting fresh embeds
                 if action and ch:
                     try:
-                        await ch.purge(limit=25)
+                        def is_bot_msg(m: discord.Message) -> bool:
+                            return m.author.id == self.bot.user.id
+                        await ch.purge(limit=5, check=is_bot_msg)
                     except Exception:
                         pass
 
