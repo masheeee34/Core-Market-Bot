@@ -36,9 +36,10 @@ log = logging.getLogger("ticketbot")
 
 
 class TicketBot(commands.Bot):
-    def __init__(self) -> None:
+    def __init__(self, enable_members_intent: bool = True) -> None:
         intents = discord.Intents.default()
-        intents.members = True
+        if enable_members_intent:
+            intents.members = True
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self) -> None:
@@ -52,8 +53,6 @@ class TicketBot(commands.Bot):
 
     async def on_ready(self) -> None:
         log.info("Connecté en tant que %s (id=%s)", self.user, self.user.id)
-        # Sync par serveur : les nouvelles commandes apparaissent immédiatement
-        # (la propagation globale peut prendre jusqu'à 1 h chez Discord).
         if not self._synced:
             self._synced = True
             for guild in self.guilds:
@@ -100,12 +99,17 @@ async def main() -> None:
     await run_webserver()
     asyncio.create_task(keep_alive())
 
+    enable_members = True
     while True:
         try:
-            log.info("Connexion à Discord en cours...")
-            bot = TicketBot()
+            log.info("Connexion à Discord en cours (members_intent=%s)...", enable_members)
+            bot = TicketBot(enable_members_intent=enable_members)
             async with bot:
                 await bot.start(DISCORD_TOKEN)
+        except discord.errors.PrivilegedIntentsRequired:
+            log.warning("PrivilegedIntentsRequired: désactivation de l'intent membres et relance...")
+            enable_members = False
+            await asyncio.sleep(2)
         except Exception as e:
             log.error("Erreur de connexion Discord : %s. Nouvelle tentative dans 5s...", e)
             await asyncio.sleep(5)
