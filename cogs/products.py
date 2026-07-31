@@ -184,246 +184,238 @@ PRODUCTS: dict[str, dict[str, Any]] = {
     },
     "mcore_fr": {
         "raw_title": "M-CORE EXTERNAL BO7 / WARZONE [FR]",
-        "title": "🔴 M-CORE EXTERNAL BO7 / WARZONE 🔴",
-        "description": "*Solution externe premium pour Black Ops 7 & Warzone*",
+        "title": "🔴  M-CORE EXTERNAL BO7 / WARZONE",
+        "description": "*Solution externe haut de gamme pour Call of Duty BO7 & Warzone*",
         "button_label": "Acheter ici",
         "color": discord.Color.from_str("#E74C3C"),
         "fields": [
             (
-                "💻 INFORMATIONS & COMPATIBILITÉ",
-                "• **OS :** Windows 10 & 11 (Toutes versions, compatible 25H2 ✅)\n"
-                "• **Plateforme :** BattleNet, Steam, Activision, Xbox / PC GamePass\n"
-                "• **Bypass OBS :** Oui (Streamproof)\n"
-                "• **Manette :** 100% Compatible avec manette 🎮",
+                "💻  INFORMATIONS & COMPATIBILITÉ",
+                "```ansi\n\u001b[1;30m[ COMPATIBILITY SYSTEM ]\u001b[0m\n```\n"
+                "▸ **OS :** Windows 10 & 11 (Toutes versions, 25H2 inclus ✅)\n"
+                "▸ **Plateformes :** BattleNet, Steam, Activision, Xbox GamePass\n"
+                "▸ **Bypass Stream :** Invisible sur OBS, Medal, Discord, Streamlabs\n"
+                "▸ **Manette :** 100% Compatible PS / Xbox / PC 🎮",
                 False,
             ),
             (
-                "🎯 AIMBOT",
-                "• **Visée :** Activer/Désactiver le verrouillage de cible\n"
-                "• **Os ciblés :** Casque, Tête, Cou, Poitrine, Bassin, Aléatoire\n"
-                "• **Réglages :** Fluidité (Smooth), Contrôle du recul, Prédiction de trajectoire\n"
-                "• **Filtres :** Ennemis uniquement, Vérification visuelle, Visée collante, Saut à terre / réanimation\n"
-                "• **Ciblage Intelligent :** Sélection par distance, FOV ou Smart",
+                "🎯  AIMBOT & VISÉE HUMANISÉE",
+                "▸ **Verrouillage :** Visée lissée avec contrôle du recul\n"
+                "▸ **Hitbox :** Tête, Cou, Poitrine, Bassin ou Aléatoire\n"
+                "▸ **Prédiction :** Calcul de trajectoire & mouvement\n"
+                "▸ **Filtres :** Ennemis uniquement, vérification visuelle, visée collante",
                 False,
             ),
             (
-                "👁 ESP & VISUELS",
-                "• **Boîtes ESP :** 2D, 3D, Angles, Remplies\n"
-                "• **Joueurs :** Squelette, Barre de santé, Distance, Noms, ID Équipe, Bulle ESP\n"
-                "• **Radar & Drone :** Radar 2D, Drone avancé (Point / Directionnel), Boussole ESP\n"
-                "• **Avertissements & Traçage :** Avertissement de visée ennemie, Traceurs de balles\n"
-                "• **Butin & Items :** Munitions, Armes, Argent, Plaques de blindage, Caches d'approvisionnement",
+                "👁  ESP & VISUELS AVANCÉS",
+                "▸ **Boîtes ESP :** 2D, 3D, Corner & Remplies\n"
+                "▸ **Joueurs :** Squelette, Barre de vie, Noms, Distance & ID Équipe\n"
+                "▸ **Radar & Drone :** Radar 2D, Drone avancé & Boussole ESP\n"
+                "▸ **Loot ESP :** Munitions, Armes, Argent & Plaques de blindage",
                 False,
             ),
             (
-                "⚙️ PARAMÈTRES & MISC",
-                "• **FOV :** FOV Changer & Dynamic FOV\n"
-                "• **Configurations :** Sauvegarder, Charger et Créer des profils",
-                False,
-            ),
-            (
-                "💳 TARIFS",
-                "• **24 Heures :** 5.99 €\n"
-                "• **1 Semaine :** 15.99 €\n"
-                "• **30 Jours :** 35.99 €",
+                "💳  GRILLE DE TARIFS",
+                "```ansi\n\u001b[1;31m[ PRICING PLANS ]\u001b[0m\n```\n"
+                "▸ **24 Heures :** `5.99 €`\n"
+                "▸ **1 Semaine :** `15.99 €`\n"
+                "▸ **30 Jours :** `35.99 €`",
                 False,
             ),
         ],
     },
     "mcore": {
         "raw_title": "M-CORE EXTERNAL BO7 / WARZONE [EN]",
-        "title": "🔴 M-CORE EXTERNAL BO7 / WARZONE 🔴",
-        "description": "*Premium External Tool for Black Ops 7 & Warzone*",
+        "title": "🔴  M-CORE EXTERNAL BO7 / WARZONE",
+        "description": "*High-End External Software for Black Ops 7 & Warzone*",
         "button_label": "Buy Here",
         "color": discord.Color.from_str("#E74C3C"),
         "fields": [
             (
-                "💻 INFORMATION & COMPATIBILITY",
-                "• **OS:** Windows 10 & 11 (All versions, 25H2 ready ✅)\n"
-                "• **Platform:** BattleNet, Steam, Activision, Xbox / PC GamePass\n"
-                "• **OBS Bypass:** Yes (Streamproof)\n"
-                "• **Controller:** 100% Controller Compatible 🎮",
+                "💻  INFORMATION & COMPATIBILITY",
+                "```ansi\n\u001b[1;30m[ COMPATIBILITY SYSTEM ]\u001b[0m\n```\n"
+                "▸ **OS:** Windows 10 & 11 (All versions, 25H2 ready ✅)\n"
+                "▸ **Platform:** BattleNet, Steam, Activision, Xbox GamePass\n"
+                "▸ **Streamproof:** Hide on OBS, Medal, Discord, Streamlabs\n"
+                "▸ **Controller:** 100% Controller Compatible 🎮",
                 False,
             ),
             (
-                "🎯 AIMBOT",
-                "• **Aimbot:** Enable/Disable target lock\n"
-                "• **Hitbox:** Head, Helmet, Neck, Chest, Pelvis, Any\n"
-                "• **Settings:** Smoothness slider, Recoil control, Motion prediction\n"
-                "• **Filters:** Enemies only, Visible check, Sticky aim, Downed/Reviving targets\n"
-                "• **Smart Targeting:** Closest by Smart / FOV / Distance",
+                "🎯  AIMBOT & HUMANIZED TARGETING",
+                "▸ **Target Lock:** Smooth aimbot with recoil compensation\n"
+                "▸ **Hitbox Selection:** Head, Neck, Chest, Pelvis, Any\n"
+                "▸ **Prediction:** Motion calculation & velocity lead\n"
+                "▸ **Smart Filters:** Enemies only, Visible check, Downed targets",
                 False,
             ),
             (
-                "👁 ESP & VISUALS",
-                "• **ESP Boxes:** 2D, 3D, Corner, Filled 2D/3D\n"
-                "• **Player ESP:** Skeleton, Health Bar, Distance, Names, Team ID, Snaplines\n"
-                "• **Radar & UAV:** 2D Radar, Advanced UAV, Compass ESP\n"
-                "• **Alerts & Tracers:** Aim warnings, Bullet tracers\n"
-                "• **Loot ESP:** Ammo, Weapons, Cash, Armor plates, Supply boxes",
+                "👁  ADVANCED ESP & VISUALS",
+                "▸ **ESP Boxes:** 2D, 3D, Corner, Filled 2D/3D\n"
+                "▸ **Player ESP:** Skeleton, Health bar, Names, Distance & Team ID\n"
+                "▸ **Radar & UAV:** 2D Radar, Advanced UAV, Compass ESP\n"
+                "▸ **Loot ESP:** Ammo, Weapons, Cash, Armor plates",
                 False,
             ),
             (
-                "⚙️ SETTINGS & MISC",
-                "• **FOV:** FOV Changer & Dynamic FOV\n"
-                "• **Configs:** Save, Load, and Create custom profiles",
-                False,
-            ),
-            (
-                "💳 PRICING PLAN",
-                "• **24 Hours:** 5.99 €\n"
-                "• **1 Week:** 15.99 €\n"
-                "• **30 Days:** 35.99 €",
+                "💳  PRICING PLANS",
+                "```ansi\n\u001b[1;31m[ PRICING PLANS ]\u001b[0m\n```\n"
+                "▸ **24 Hours:** `5.99 €`\n"
+                "▸ **1 Week:** `15.99 €`\n"
+                "▸ **30 Days:** `35.99 €`",
                 False,
             ),
         ],
     },
     "spectre_fr": {
         "raw_title": "TRINITY SPECTRE BO7 / WARZONE [FR]",
-        "title": "🔮 TRINITY SPECTRE BO7 / WARZONE 🔮",
-        "description": "*Solution externe indétectable pour Call of Duty*",
+        "title": "🔮  TRINITY SPECTRE BO7 / WARZONE",
+        "description": "*Solution externe totalement indétectable & streamproof pour Call of Duty*",
         "button_label": "Acheter ici",
         "color": discord.Color.from_str("#9B59B6"),
         "fields": [
             (
-                "💻 INFORMATIONS & COMPATIBILITÉ",
-                "• **OS :** Windows 10 & 11 (Supporté jusqu'à 25H2)\n"
-                "• **Processeur :** Intel & AMD\n"
-                "• **Cartes Graphiques :** Tous composants\n"
-                "• **Manette :** Compatible PS / Xbox / PC 🎮\n"
-                "• **Type :** Externe (Indétectable)\n"
-                "• **Bypass Stream :** Cachez le sur OBS, Medal, Discord, Streamlabs",
+                "💻  INFORMATIONS & COMPATIBILITÉ",
+                "```ansi\n\u001b[1;30m[ COMPATIBILITY SYSTEM ]\u001b[0m\n```\n"
+                "▸ **OS :** Windows 10 & 11 (Supporté jusqu'à 25H2 ✅)\n"
+                "▸ **Hardware :** Intel & AMD (Toutes cartes graphiques)\n"
+                "▸ **Manette :** Prise en charge manettes PS / Xbox / PC 🎮\n"
+                "▸ **Bypass Stream :** Cachez le sur OBS, Medal, Discord, Streamlabs",
                 False,
             ),
             (
-                "🏆 FONCTIONNALITÉS",
-                "• **Aimbot :** Prédiction de visée, Choix de l'os (Aim Bone), Visée humanisée\n"
-                "• **ESP & Visuels :** ESP Joueurs, Zombies, Radar 2D & Boussole\n"
-                "• **Stats :** Stats du lobby & plus encore",
+                "🏆  FONCTIONNALITÉS EXCLUSIVES",
+                "▸ **Humanized Aimbot :** Visée lissée avec prédiction de mouvements\n"
+                "▸ **Aim Bone :** Choix de la zone d'impact personnalisée\n"
+                "▸ **Visuals & ESP :** ESP Joueurs, Zombies, Radar 2D & Boussole\n"
+                "▸ **Lobby Stats :** Statistiques du lobby en temps réel",
                 False,
             ),
             (
-                "🎮 PLATEFORMES & ANTI-CHEAT",
-                "• **Plateformes :** Steam (Conseillé), BattleNet, Xbox Gamepass\n"
-                "• **Anti-Cheat :** Ricochet (Contourné / Externe au jeu)",
+                "🎮  PLATEFORMES & ANTI-CHEAT",
+                "▸ **Plateformes :** Steam (Conseillé), BattleNet, Xbox GamePass\n"
+                "▸ **Anti-Cheat :** Contournement Ricochet (R1cc0ch3t External)",
                 False,
             ),
             (
-                "💳 TARIFS",
-                "• **24 Heures :** 7.99 €\n"
-                "• **1 Semaine :** 21.99 €\n"
-                "• **1 Mois :** 44.99 €\n"
-                "• **À Vie (Lifetime) :** 119.99 €",
+                "💳  GRILLE DE TARIFS",
+                "```ansi\n\u001b[1;35m[ PRICING PLANS ]\u001b[0m\n```\n"
+                "▸ **24 Heures :** `7.99 €`\n"
+                "▸ **1 Semaine :** `21.99 €`\n"
+                "▸ **1 Mois :** `44.99 €`\n"
+                "▸ **À Vie (Lifetime) :** `119.99 €`",
                 False,
             ),
         ],
     },
     "spectre": {
         "raw_title": "TRINITY SPECTRE BO7 / WARZONE [EN]",
-        "title": "🔮 TRINITY SPECTRE BO7 / WARZONE 🔮",
+        "title": "🔮  TRINITY SPECTRE BO7 / WARZONE",
         "description": "*Undetectable external tool for Call of Duty*",
         "button_label": "Buy Here",
         "color": discord.Color.from_str("#9B59B6"),
         "fields": [
             (
-                "💻 INFORMATION & COMPATIBILITY",
-                "• **OS:** Windows 10 & 11 (Supported up to 25H2)\n"
-                "• **CPU:** Intel & AMD Supported\n"
-                "• **GPU:** All Components Supported\n"
-                "• **Controller:** PS / Xbox / PC Compatible 🎮\n"
-                "• **Type:** External (Undetectable)\n"
-                "• **Streamproof:** Hide on OBS, Medal, Discord, Streamlabs",
+                "💻  INFORMATION & COMPATIBILITY",
+                "```ansi\n\u001b[1;30m[ COMPATIBILITY SYSTEM ]\u001b[0m\n```\n"
+                "▸ **OS:** Windows 10 & 11 (Supported up to 25H2 ✅)\n"
+                "▸ **Hardware:** Intel & AMD Supported (All GPUs)\n"
+                "▸ **Controller:** PS / Xbox / PC Compatible 🎮\n"
+                "▸ **Streamproof:** Hide on OBS, Medal, Discord, Streamlabs",
                 False,
             ),
             (
-                "🏆 FEATURES",
-                "• **Aimbot:** Aim prediction, Aim Bone selection, Humanized aim\n"
-                "• **ESP & Visuals:** Player ESP, Zombies, 2D Radar & Compass\n"
-                "• **Stats:** Lobby stats & more",
+                "🏆  EXCLUSIVE FEATURES",
+                "▸ **Humanized Aimbot:** Smooth aimbot with motion prediction\n"
+                "▸ **Aim Bone:** Target bone selection & smooth curves\n"
+                "▸ **Visuals & ESP:** Player ESP, Zombies, 2D Radar & Compass\n"
+                "▸ **Lobby Stats:** Real-time lobby statistics",
                 False,
             ),
             (
-                "🎮 PLATFORMS & ANTI-CHEAT",
-                "• **Platforms:** Steam (Recommended), BattleNet, Xbox Gamepass\n"
-                "• **Anti-Cheat:** Ricochet (Bypassed / External)",
+                "🎮  PLATFORMS & ANTI-CHEAT",
+                "▸ **Platforms:** Steam (Recommended), BattleNet, Xbox GamePass\n"
+                "▸ **Anti-Cheat:** Ricochet Bypass (R1cc0ch3t External)",
                 False,
             ),
             (
-                "💳 PRICING PLAN",
-                "• **24 Hours:** 7.99 €\n"
-                "• **1 Week:** 21.99 €\n"
-                "• **1 Month:** 44.99 €\n"
-                "• **Lifetime:** 119.99 €",
+                "💳  PRICING PLANS",
+                "```ansi\n\u001b[1;35m[ PRICING PLANS ]\u001b[0m\n```\n"
+                "▸ **24 Hours:** `7.99 €`\n"
+                "▸ **1 Week:** `21.99 €`\n"
+                "▸ **1 Month:** `44.99 €`\n"
+                "▸ **Lifetime:** `119.99 €`",
                 False,
             ),
         ],
     },
     "pulse_internal_fr": {
         "raw_title": "TRINITY PULSE VALORANT [FR]",
-        "title": "⚡ TRINITY PULSE VALORANT ⚡",
-        "description": "*Solution interne haute performance avec émulateur sans redémarrage*",
+        "title": "⚡  TRINITY PULSE VALORANT",
+        "description": "*Logiciel interne ultime avec émulateur no-restart intégré*",
         "button_label": "Acheter ici",
         "color": discord.Color.from_str("#3498DB"),
         "fields": [
             (
-                "💻 INFORMATIONS & COMPATIBILITÉ",
-                "• **OS :** Windows 10 & 11 (Toutes versions)\n"
-                "• **Processeur :** Intel & AMD\n"
-                "• **Cartes Graphiques :** Tous composants\n"
-                "• **Cartes Mères :** Compatible ASUS & Toutes cartes mères\n"
-                "• **Émulateur :** Émulateur No-Restart intégré 🌌",
+                "💻  INFORMATIONS & COMPATIBILITÉ",
+                "```ansi\n\u001b[1;30m[ COMPATIBILITY SYSTEM ]\u001b[0m\n```\n"
+                "▸ **OS :** Windows 10 & 11 (Toutes versions)\n"
+                "▸ **Hardware :** Compatible ASUS & Toutes cartes mères\n"
+                "▸ **Processeur :** Support Intel & AMD\n"
+                "▸ **Émulateur :** Émulateur No-Restart intégré (Zero reboot) 🌌",
                 False,
             ),
             (
-                "🏆 FONCTIONNALITÉS",
-                "• **Aimbot :** Visée automatique ultra fluide & FOV ajustable\n"
-                "• **ESP & Chams :** ESP Joueurs, Squelette, Santé, Chams visuels\n"
-                "• **Unlock All & Models :** Déblocage des cosmétiques, modèles & skins personnalisés\n"
-                "• **Exploits & Anti-Aim :** Anti-Aim sur mesure & Exploits personnalisés\n"
-                "• **Système de Config :** Sauvegarde & chargement de profils sur mesure",
+                "🏆  FONCTIONNALITÉS INTERNES",
+                "▸ **Aimbot :** Visée automatique ultra réactive avec FOV dynamique\n"
+                "▸ **ESP & Chams :** ESP Joueurs, Squelette, Santé & Chams personnalisés\n"
+                "▸ **Unlock All :** Déblocage skins, modèles & personnages sur mesure\n"
+                "▸ **Anti-Aim & Exploits :** Anti-Aim customisé & Exploits avancés\n"
+                "▸ **Config System :** Sauvegarde & chargement de profils instantanés",
                 False,
             ),
             (
-                "💳 TARIFS",
-                "• **3 Jours :** 11.99 €\n"
-                "• **7 Jours :** 24.99 €\n"
-                "• **30 Jours :** 39.99 €\n"
-                "• **À Vie (Lifetime) :** 109.99 €",
+                "💳  GRILLE DE TARIFS",
+                "```ansi\n\u001b[1;34m[ PRICING PLANS ]\u001b[0m\n```\n"
+                "▸ **3 Jours :** `11.99 €`\n"
+                "▸ **7 Jours :** `24.99 €`\n"
+                "▸ **30 Jours :** `39.99 €`\n"
+                "▸ **À Vie (Lifetime) :** `109.99 €`",
                 False,
             ),
         ],
     },
     "pulse_internal": {
         "raw_title": "TRINITY PULSE VALORANT [EN]",
-        "title": "⚡ TRINITY PULSE VALORANT ⚡",
+        "title": "⚡  TRINITY PULSE VALORANT",
         "description": "*High performance internal tool with built-in no-restart emulator*",
         "button_label": "Buy Here",
         "color": discord.Color.from_str("#3498DB"),
         "fields": [
             (
-                "💻 INFORMATION & COMPATIBILITY",
-                "• **OS:** Windows 10 & 11 (All versions)\n"
-                "• **CPU:** Intel & AMD Supported\n"
-                "• **GPU:** All Components Supported\n"
-                "• **Motherboards:** Works on ASUS & All motherboards\n"
-                "• **Emulator:** Built-in No-Restart Emulator included 🌌",
+                "💻  INFORMATION & COMPATIBILITY",
+                "```ansi\n\u001b[1;30m[ COMPATIBILITY SYSTEM ]\u001b[0m\n```\n"
+                "▸ **OS:** Windows 10 & 11 (All versions)\n"
+                "▸ **Hardware:** Works on ASUS & All motherboards\n"
+                "▸ **CPU:** Intel & AMD Supported\n"
+                "▸ **Emulator:** Built-in No-Restart Emulator included 🌌",
                 False,
             ),
             (
-                "🏆 FEATURES",
-                "• **Aimbot:** Smooth aimbot & FOV adjustments\n"
-                "• **ESP & Chams:** Player ESP, Skeleton, Health, Visual Chams\n"
-                "• **Unlock All & Models:** Cosmetics unlock, Custom Models & Skins\n"
-                "• **Exploits & Anti-Aim:** Custom Anti-Aim & Custom Exploits\n"
-                "• **Config System:** Save & load custom profiles",
+                "🏆  INTERNAL FEATURES",
+                "▸ **Aimbot:** Ultra responsive aimbot & dynamic FOV\n"
+                "▸ **ESP & Chams:** Player ESP, Skeleton, Health, Visual Chams\n"
+                "▸ **Unlock All & Models:** Cosmetics unlock, Custom Models & Skins\n"
+                "▸ **Exploits & Anti-Aim:** Custom Anti-Aim & Custom Exploits\n"
+                "▸ **Config System:** Save & load custom profiles",
                 False,
             ),
             (
-                "💳 PRICING PLAN",
-                "• **3 Days:** 11.99 €\n"
-                "• **7 Days:** 24.99 €\n"
-                "• **30 Days:** 39.99 €\n"
-                "• **Lifetime:** 109.99 €",
+                "💳  PRICING PLANS",
+                "```ansi\n\u001b[1;34m[ PRICING PLANS ]\u001b[0m\n```\n"
+                "▸ **3 Days:** `11.99 €`\n"
+                "▸ **7 Days:** `24.99 €`\n"
+                "▸ **30 Days:** `39.99 €`\n"
+                "▸ **Lifetime:** `109.99 €`",
                 False,
             ),
         ],
