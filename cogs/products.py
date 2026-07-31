@@ -278,6 +278,86 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
         ],
     },
+    "spectre_fr": {
+        "raw_title": "TRINITY SPECTRE BO7 / WARZONE [FR]",
+        "title": "🔮 TRINITY SPECTRE BO7 / WARZONE 🔮",
+        "description": "*Solution externe indétectable pour Call of Duty*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#9B59B6"),
+        "fields": [
+            (
+                "💻 INFORMATIONS & COMPATIBILITÉ",
+                "• **OS :** Windows 10 & 11 (Supporté jusqu'à 25H2)\n"
+                "• **Processeur :** Intel & AMD\n"
+                "• **Cartes Graphiques :** Tous composants\n"
+                "• **Manette :** Compatible PS / Xbox / PC 🎮\n"
+                "• **Type :** Externe (Indétectable)\n"
+                "• **Bypass Stream :** Cachez le sur OBS, Medal, Discord, Streamlabs",
+                False,
+            ),
+            (
+                "🏆 FONCTIONNALITÉS",
+                "• **Aimbot :** Prédiction de visée, Choix de l'os (Aim Bone), Visée humanisée\n"
+                "• **ESP & Visuels :** ESP Joueurs, Zombies, Radar 2D & Boussole\n"
+                "• **Stats :** Stats du lobby & plus encore",
+                False,
+            ),
+            (
+                "🎮 PLATEFORMES & ANTI-CHEAT",
+                "• **Plateformes :** Steam (Conseillé), BattleNet, Xbox Gamepass\n"
+                "• **Anti-Cheat :** Ricochet (Contourné / Externe au jeu)",
+                False,
+            ),
+            (
+                "💳 TARIFS",
+                "• **24 Heures :** 7.99 €\n"
+                "• **1 Semaine :** 21.99 €\n"
+                "• **1 Mois :** 44.99 €\n"
+                "• **À Vie (Lifetime) :** 119.99 €",
+                False,
+            ),
+        ],
+    },
+    "spectre": {
+        "raw_title": "TRINITY SPECTRE BO7 / WARZONE [EN]",
+        "title": "🔮 TRINITY SPECTRE BO7 / WARZONE 🔮",
+        "description": "*Undetectable external tool for Call of Duty*",
+        "button_label": "Buy Here",
+        "color": discord.Color.from_str("#9B59B6"),
+        "fields": [
+            (
+                "💻 INFORMATION & COMPATIBILITY",
+                "• **OS:** Windows 10 & 11 (Supported up to 25H2)\n"
+                "• **CPU:** Intel & AMD Supported\n"
+                "• **GPU:** All Components Supported\n"
+                "• **Controller:** PS / Xbox / PC Compatible 🎮\n"
+                "• **Type:** External (Undetectable)\n"
+                "• **Streamproof:** Hide on OBS, Medal, Discord, Streamlabs",
+                False,
+            ),
+            (
+                "🏆 FEATURES",
+                "• **Aimbot:** Aim prediction, Aim Bone selection, Humanized aim\n"
+                "• **ESP & Visuals:** Player ESP, Zombies, 2D Radar & Compass\n"
+                "• **Stats:** Lobby stats & more",
+                False,
+            ),
+            (
+                "🎮 PLATFORMS & ANTI-CHEAT",
+                "• **Platforms:** Steam (Recommended), BattleNet, Xbox Gamepass\n"
+                "• **Anti-Cheat:** Ricochet (Bypassed / External)",
+                False,
+            ),
+            (
+                "💳 PRICING PLAN",
+                "• **24 Hours:** 7.99 €\n"
+                "• **1 Week:** 21.99 €\n"
+                "• **1 Month:** 44.99 €\n"
+                "• **Lifetime:** 119.99 €",
+                False,
+            ),
+        ],
+    },
     "pulse_internal_fr": {
         "raw_title": "TRINITY PULSE VALORANT [FR]",
         "title": "⚡ TRINITY PULSE VALORANT ⚡",
