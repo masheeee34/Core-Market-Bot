@@ -286,36 +286,36 @@ class Admin(commands.Cog):
                 (
                     "🔷 ────── MAIN ────── 🔷",
                     [
-                        ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", read_only_overwrites),
-                        ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", read_only_overwrites),
-                        ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", read_only_overwrites),
-                        ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", read_only_overwrites),
-                        ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", read_only_overwrites),
-                        ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", read_only_overwrites),
-                        ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", read_only_overwrites),
+                        ("👋 ┃ 𝕭𝖎𝖊𝖓𝖛𝖊𝖓𝖚𝖊", "Bienvenue sur Core Market !", read_only_overwrites, None),
+                        ("📌 ┃ 𝕬𝖓𝖓𝖔𝖓𝖈𝖊𝖘", "Annonces officielles", read_only_overwrites, None),
+                        ("🚨 ┃ 𝕬𝖛𝖊𝖗𝖙𝖎𝖘𝖘𝖊𝖒𝖊𝖓𝖙", "Règles et avertissements", read_only_overwrites, None),
+                        ("💫 ┃ 𝕬𝖛𝖎𝖘-𝖈𝖑𝖎𝖊𝖓𝖙", "Laissez votre avis après un achat", read_only_overwrites, "vouch"),
+                        ("🎁 ┃ 𝕲𝖎𝖛𝖊𝖆𝖜𝖆𝖞", "Concours et giveaways", read_only_overwrites, None),
+                        ("🌐 ┃ 𝖂𝖊𝖇𝖘𝖎𝖙𝖊", "Liens officiels et site web", read_only_overwrites, None),
+                        ("📹 ┃ 𝕸𝖊𝖉𝖎𝖆", "Vidéos et démonstrations", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "🔷 ────── CALL OF DUTY ────── 🔷",
                     [
-                        ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", read_only_overwrites),
-                        ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", read_only_overwrites),
-                        ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", read_only_overwrites),
-                        ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", read_only_overwrites),
-                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", read_only_overwrites),
+                        ("🌌 ┃ 𝕾𝖕𝖔𝖔𝖋-𝕽𝖆𝖓𝖐𝖊𝖉", "Produit Spoof Ranked", read_only_overwrites, None),
+                        ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", read_only_overwrites, None),
+                        ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", read_only_overwrites, None),
+                        ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", read_only_overwrites, None),
+                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "🔷 ────── TICKETS & SUPPORT ────── 🔷",
                     [
-                        ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", read_only_overwrites),
+                        ("🎫 ┃ 𝖈𝖗𝖊𝖆𝖙𝖊-𝖙𝖎𝖈𝖐𝖊𝖙", "Ouvrir un ticket de support ou de commande", read_only_overwrites, "ticket"),
                     ],
                 ),
                 (
                     "🔒 ────── STAFF ONLY ────── 🔒",
                     [
-                        ("💬 ┃ 𝖘𝖙𝖆𝖋𝖋-𝖈𝖍𝖆𝖙", "Discussion réservée à l'équipe", staff_only_overwrites),
-                        ("📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘", "Logs automatiques des tickets", staff_only_overwrites),
+                        ("💬 ┃ 𝖘𝖙𝖆𝖋𝖋-𝖈𝖍𝖆𝖙", "Discussion réservée à l'équipe", staff_only_overwrites, None),
+                        ("📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘", "Logs automatiques des tickets", staff_only_overwrites, None),
                     ],
                 ),
             ]
@@ -324,36 +324,36 @@ class Admin(commands.Cog):
                 (
                     "🏆 ─── INFORMATION ─── 🏆",
                     [
-                        ("👋・bienvenue", "Bienvenue !", read_only_overwrites),
-                        ("📢・annonces", "Annonces officielles", read_only_overwrites),
-                        ("🚨・reglement", "Règles du serveur", read_only_overwrites),
-                        ("⭐・avis-clients", "Avis et vouches", read_only_overwrites),
-                        ("🎁・giveaways", "Concours", read_only_overwrites),
-                        ("🌐・website", "Site internet", read_only_overwrites),
-                        ("🎬・media", "Vidéos et démonstrations", read_only_overwrites),
+                        ("👋・bienvenue", "Bienvenue !", read_only_overwrites, None),
+                        ("📢・annonces", "Annonces officielles", read_only_overwrites, None),
+                        ("🚨・reglement", "Règles du serveur", read_only_overwrites, None),
+                        ("⭐・avis-clients", "Avis et vouches", read_only_overwrites, "vouch"),
+                        ("🎁・giveaways", "Concours", read_only_overwrites, None),
+                        ("🌐・website", "Site internet", read_only_overwrites, None),
+                        ("🎬・media", "Vidéos et démonstrations", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "🎮 ─── CALL OF DUTY ─── 🎮",
                     [
-                        ("⚡・spoof-ranked", "Produit Spoof Ranked", read_only_overwrites),
-                        ("🔥・mcore", "Produit MCore", read_only_overwrites),
-                        ("🔮・spectre", "Produit Spectre", read_only_overwrites),
-                        ("⚙️・gen-compte-steam", "Générateur Steam", read_only_overwrites),
-                        ("🔑・essai-gratuit", "Essais gratuits", read_only_overwrites),
+                        ("⚡・spoof-ranked", "Produit Spoof Ranked", read_only_overwrites, None),
+                        ("🔥・mcore", "Produit MCore", read_only_overwrites, None),
+                        ("🔮・spectre", "Produit Spectre", read_only_overwrites, None),
+                        ("⚙️・gen-compte-steam", "Générateur Steam", read_only_overwrites, None),
+                        ("🔑・essai-gratuit", "Essais gratuits", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "🛒 ─── SUPPORT & TICKETS ─── 🛒",
                     [
-                        ("🎫・creer-un-ticket", "Ouvrir un ticket", read_only_overwrites),
+                        ("🎫・creer-un-ticket", "Ouvrir un ticket", read_only_overwrites, "ticket"),
                     ],
                 ),
                 (
                     "🔒 ─── STAFF ONLY ─── 🔒",
                     [
-                        ("💬・staff-chat", "Chat d'équipe", staff_only_overwrites),
-                        ("📜・logs-tickets", "Logs des tickets", staff_only_overwrites),
+                        ("💬・staff-chat", "Chat d'équipe", staff_only_overwrites, None),
+                        ("📜・logs-tickets", "Logs des tickets", staff_only_overwrites, None),
                     ],
                 ),
             ]
@@ -362,36 +362,36 @@ class Admin(commands.Cog):
                 (
                     "✦ ─── INFORMATION ─── ✦",
                     [
-                        ("👋・ʙɪᴇɴᴠᴇɴᴜᴇ", "Bienvenue sur Core Market !", read_only_overwrites),
-                        ("📢・ᴀɴɴᴏɴᴄᴇꜱ", "Annonces officielles", read_only_overwrites),
-                        ("🚨・ʀᴇɢʟᴇᴍᴇɴᴛ", "Règles et consignes", read_only_overwrites),
-                        ("⭐・ᴀᴠɪꜱ-ᴄʟɪᴇɴᴛꜱ", "Avis clients et retours", read_only_overwrites),
-                        ("🎁・ɢɪᴠᴇᴀᴡᴀʏꜱ", "Concours et cadeaux", read_only_overwrites),
-                        ("🌐・ꜱɪᴛᴇ-ᴏꜰꜰɪᴄɪᴇʟ", "Liens officiels", read_only_overwrites),
-                        ("🎬・ᴅᴇᴍᴏɴꜱᴛʀᴀᴛɪᴏɴꜱ", "Vidéos et présentations", read_only_overwrites),
+                        ("👋・ʙɪᴇɴᴠᴇɴᴜᴇ", "Bienvenue sur Core Market !", read_only_overwrites, None),
+                        ("📢・ᴀɴɴᴏɴᴄᴇꜱ", "Annonces officielles", read_only_overwrites, None),
+                        ("🚨・ʀᴇɢʟᴇᴍᴇɴᴛ", "Règles et consignes", read_only_overwrites, None),
+                        ("⭐・ᴀᴠɪꜱ-ᴄʟɪᴇɴᴛꜱ", "Avis clients et retours", read_only_overwrites, "vouch"),
+                        ("🎁・ɢɪᴠᴇᴀᴡᴀʏꜱ", "Concours et cadeaux", read_only_overwrites, None),
+                        ("🌐・ꜱɪᴛᴇ-ᴏꜰꜰɪᴄɪᴇʟ", "Liens officiels", read_only_overwrites, None),
+                        ("🎬・ᴅᴇᴍᴏɴꜱᴛʀᴀᴛɪᴏɴꜱ", "Vidéos et présentations", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "✦ ─── CALL OF DUTY ─── ✦",
                     [
-                        ("⚡・ꜱᴘᴏᴏꜰ-ʀᴀɴᴋᴇᴅ", "Offres Spoof Ranked", read_only_overwrites),
-                        ("🔥・ᴍᴄᴏʀᴇ", "Offres MCore External", read_only_overwrites),
-                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ", "Offres Spectre", read_only_overwrites),
-                        ("⚙️・ɢᴇɴ-ᴄᴏᴍᴘᴛᴇ-ꜱᴛᴇᴀᴍ", "Comptes Steam", read_only_overwrites),
-                        ("🔑・ᴇꜱꜱᴀɪ-ɢʀᴀᴛᴜɪᴛ", "Obtenir un test gratuit", read_only_overwrites),
+                        ("⚡・ꜱᴘᴏᴏꜰ-ʀᴀɴᴋᴇᴅ", "Offres Spoof Ranked", read_only_overwrites, None),
+                        ("🔥・ᴍᴄᴏʀᴇ", "Offres MCore External", read_only_overwrites, None),
+                        ("🔮・ꜱᴘᴇᴄᴛʀᴇ", "Offres Spectre", read_only_overwrites, None),
+                        ("⚙️・ɢᴇɴ-ᴄᴏᴍᴘᴛᴇ-ꜱᴛᴇᴀᴍ", "Comptes Steam", read_only_overwrites, None),
+                        ("🔑・ᴇꜱꜱᴀɪ-ɢʀᴀᴛᴜɪᴛ", "Obtenir un test gratuit", read_only_overwrites, None),
                     ],
                 ),
                 (
                     "✦ ─── SUPPORT & TICKETS ─── ✦",
                     [
-                        ("🎫・ᴄʀᴇᴇʀ-ᴜɴ-ᴛɪᴄᴋᴇᴛ", "Ouvrir un ticket pour acheter ou obtenir du support", read_only_overwrites),
+                        ("🎫・ᴄʀᴇᴇʀ-ᴜɴ-ᴛɪᴄᴋᴇᴛ", "Ouvrir un ticket pour acheter ou obtenir du support", read_only_overwrites, "ticket"),
                     ],
                 ),
                 (
                     "🔒 ─── STAFF ONLY ─── 🔒",
                     [
-                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Salon réservé à l'équipe", staff_only_overwrites),
-                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Transcripts et historique", staff_only_overwrites),
+                        ("💬・ꜱᴛᴀꜰꜰ-ᴄʜᴀᴛ", "Salon réservé à l'équipe", staff_only_overwrites, None),
+                        ("📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ", "Transcripts et historique", staff_only_overwrites, None),
                     ],
                 ),
             ]
@@ -405,7 +405,7 @@ class Admin(commands.Cog):
                 category = await guild.create_category(cat_name)
                 report.append(f"📁 Catégorie créée : **{cat_name}**")
 
-            for ch_name, topic, ow in channels:
+            for ch_name, topic, ow, action in channels:
                 existing = discord.utils.get(category.text_channels, name=ch_name)
                 ch = existing
                 if ch is None:
@@ -414,15 +414,23 @@ class Admin(commands.Cog):
                 else:
                     report.append(f"  └─ ℹ️ Salon existant : {ch.mention}")
 
-                # Auto post Vouch button in Avis-client
-                if "avis" in ch_name.lower():
+                # Auto post Vouch button
+                if action == "vouch":
                     from cogs.vouch import VouchButtonView
                     await ch.send(content="**⭐ Laissez un avis sur votre achat / Leave a review after purchase!**", view=VouchButtonView())
 
-                # Auto post Ticket panel in create-ticket
-                if "ticket" in ch_name.lower() and "logs" not in ch_name.lower():
-                    logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘") or ch
-                    await ch.send(content="**Créer un ticket / Create a ticket**", view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"))
+                # Auto post Ticket panel
+                if action == "ticket":
+                    logs_ch = (
+                        discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
+                        or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
+                        or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘")
+                        or ch
+                    )
+                    await ch.send(
+                        content="**Créer un ticket / Create a ticket**",
+                        view=build_panel_view(staff_role.id, logs_ch.id, lang="fr"),
+                    )
 
         embed = discord.Embed(
             title="⚡ Configuration Core Market terminée !",
