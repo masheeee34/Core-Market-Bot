@@ -483,6 +483,10 @@ class Admin(commands.Cog):
 
             clean_text = message.content.replace(f"<@{self.bot.user.id}>", "").replace(f"<@!{self.bot.user.id}>", "").strip()
 
+            # Clean raw custom emoji IDs from external server copies (e.g. :123456789:)
+            import re
+            clean_text = re.sub(r":\d+:", "• ", clean_text)
+
             if clean_text:
                 lines = [l.strip() for l in clean_text.split("\n") if l.strip()]
                 title = lines[0]
