@@ -378,13 +378,19 @@ class Admin(commands.Cog):
             except Exception:
                 pass
 
-        # Public Overwrites: Welcome & Rules (Visible to @everyone without Member role)
+        # Public Overwrites: Welcome & Rules (Always visible to EVERYONE: @everyone, Member, Customer, Staff, Owner)
         public_overwrites = {
             guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=True, view_channel=True),
             guild.me: discord.PermissionOverwrite(send_messages=True, manage_channels=True, view_channel=True),
         }
+        if member_role:
+            public_overwrites[member_role] = discord.PermissionOverwrite(send_messages=False, add_reactions=True, view_channel=True)
+        if customer_role:
+            public_overwrites[customer_role] = discord.PermissionOverwrite(send_messages=False, add_reactions=True, view_channel=True)
         if staff_role:
             public_overwrites[staff_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
+        if admin_role:
+            public_overwrites[admin_role] = discord.PermissionOverwrite(send_messages=True, manage_messages=True, view_channel=True)
 
         # Member / Customer Only Overwrites (All other channels: hidden from unverified @everyone, unlocked with Member or Customer role)
         member_only_overwrites = {
