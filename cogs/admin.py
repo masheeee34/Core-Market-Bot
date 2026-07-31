@@ -319,12 +319,31 @@ class Admin(commands.Cog):
                     reason="/setup_core_market — role creation",
                 )
                 report.append(f"👑 Rôle créé : **{name}**")
-            else:
-                report.append(f"ℹ️ Rôle existant : **{name}**")
-
         staff_role = discord.utils.get(guild.roles, name="Staff")
         admin_role = discord.utils.get(guild.roles, name="Owner")
         member_role = discord.utils.get(guild.roles, name="Member") or discord.utils.get(guild.roles, name="Customer")
+
+        # Lock down @everyone base permissions on the server (disable expressions / emojis / soundboard)
+        default_permissions = discord.Permissions(
+            read_messages=True,
+            read_message_history=True,
+            send_messages=False,
+            add_reactions=True,
+            use_application_commands=True,
+            create_expressions=False,
+            manage_expressions=False,
+            create_public_threads=False,
+            create_private_threads=False,
+            send_tts_messages=False,
+            embed_links=False,
+            attach_files=False,
+            mention_everyone=False,
+        )
+        try:
+            await guild.default_role.edit(permissions=default_permissions, reason="/setup_core_market — lockdown @everyone permissions")
+            report.append("🔒 Permissions **@everyone** restreintes (désactivation émojis / soundboard).")
+        except Exception:
+            pass
 
         # Auto assign Owner role to administrator running setup
         if admin_role and isinstance(interaction.user, discord.Member) and admin_role not in interaction.user.roles:
