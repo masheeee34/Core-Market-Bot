@@ -679,22 +679,22 @@ class Admin(commands.Cog):
 
                 # Auto post product sales embeds (FR version default for clean server presentation)
                 elif action in ("mcore", "spectre", "pulse"):
-                    from cogs.products import build_product_embeds, build_product_view
+                    from cogs.products import build_product_embed, build_product_view
                     pkey = "mcore_fr" if action == "mcore" else ("spectre_fr" if action == "spectre" else "pulse_internal_fr")
-                    embeds = build_product_embeds(pkey)
-                    if embeds:
+                    embed = build_product_embed(pkey)
+                    if embed:
                         logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or ch
                         view = build_product_view(pkey, staff_role.id, logs_ch.id)
                         sent = False
                         if os.path.exists("banner.gif"):
                             try:
                                 banner_file = discord.File("banner.gif", filename="banner.gif")
-                                await ch.send(file=banner_file, embeds=embeds, view=view)
+                                await ch.send(file=banner_file, embed=embed, view=view)
                                 sent = True
                             except Exception as e:
                                 pass
                         if not sent:
-                            await ch.send(embed=embeds[1], view=view)
+                            await ch.send(embed=embed, view=view)
 
                 # Auto post SOON GIF
                 elif action == "soon":
