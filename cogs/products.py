@@ -426,24 +426,29 @@ PRODUCTS: dict[str, dict[str, Any]] = {
 
 BANNER_GIF_URL = "attachment://banner.gif"
 
-def build_product_embed(product_key: str, image_url: str | None = None) -> discord.Embed | None:
+def build_product_embeds(product_key: str) -> list[discord.Embed] | None:
     data = PRODUCTS.get(product_key)
     if not data:
         return None
 
-    embed = discord.Embed(
+    # Top Banner Embed (GIF on top)
+    banner_embed = discord.Embed(color=data["color"])
+    banner_embed.set_image(url=BANNER_GIF_URL)
+
+    # Product Details Embed (Specs & Pricing below)
+    product_embed = discord.Embed(
         title=data["title"],
         description=data["description"],
         color=data["color"],
     )
-    img = image_url or data.get("image") or BANNER_GIF_URL
-    if img:
-        embed.set_image(url=img)
-
     for name, value, inline in data["fields"]:
-        embed.add_field(name=name, value=value, inline=inline)
+        product_embed.add_field(name=name, value=value, inline=inline)
 
-    return embed
+    return [banner_embed, product_embed]
+
+def build_product_embed(product_key: str) -> discord.Embed | None:
+    embeds = build_product_embeds(product_key)
+    return embeds[1] if embeds else None
 
 
 class BuyProductButton(
@@ -534,8 +539,8 @@ class Products(commands.Cog):
             or interaction.channel
         )
 
-        embed = build_product_embed(product_key)
-        if embed is None:
+        embeds = build_product_embeds(product_key)
+        if not embeds:
             await interaction.response.send_message(
                 f"⚠️ Produit `{product_key}` introuvable.", ephemeral=True
             )
@@ -544,9 +549,9 @@ class Products(commands.Cog):
         view = build_product_view(product_key, staff_role.id, logs_channel.id)
         if os.path.exists("banner.gif"):
             banner_file = discord.File("banner.gif", filename="banner.gif")
-            await interaction.channel.send(file=banner_file, embed=embed, view=view)
+            await interaction.channel.send(file=banner_file, embeds=embeds, view=view)
         else:
-            await interaction.channel.send(embed=embed, view=view)
+            await interaction.channel.send(embed=embeds[1], view=view)
         await interaction.response.send_message(
             f"✅ Panel **{PRODUCTS[product_key]['raw_title']}** posté ! (Staff: {staff_role.mention}, Logs: {logs_channel.mention})",
             ephemeral=True,
