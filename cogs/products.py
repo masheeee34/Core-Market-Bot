@@ -3,6 +3,7 @@ Zero-database design: product key, staff role ID, and logs channel ID are encode
 in the button custom_id (e.g., buy_product:unlockall_fr:123456789:987654321).
 """
 
+import os
 from typing import Any
 
 import discord
@@ -423,7 +424,9 @@ PRODUCTS: dict[str, dict[str, Any]] = {
 }
 
 
-def build_product_embed(product_key: str) -> discord.Embed | None:
+BANNER_GIF_URL = "attachment://banner.gif"
+
+def build_product_embed(product_key: str, image_url: str | None = None) -> discord.Embed | None:
     data = PRODUCTS.get(product_key)
     if not data:
         return None
@@ -433,6 +436,10 @@ def build_product_embed(product_key: str) -> discord.Embed | None:
         description=data["description"],
         color=data["color"],
     )
+    img = image_url or data.get("image") or BANNER_GIF_URL
+    if img:
+        embed.set_image(url=img)
+
     for name, value, inline in data["fields"]:
         embed.add_field(name=name, value=value, inline=inline)
 
@@ -535,7 +542,11 @@ class Products(commands.Cog):
             return
 
         view = build_product_view(product_key, staff_role.id, logs_channel.id)
-        await interaction.channel.send(embed=embed, view=view)
+        if os.path.exists("banner.gif"):
+            banner_file = discord.File("banner.gif", filename="banner.gif")
+            await interaction.channel.send(file=banner_file, embed=embed, view=view)
+        else:
+            await interaction.channel.send(embed=embed, view=view)
         await interaction.response.send_message(
             f"✅ Panel **{PRODUCTS[product_key]['raw_title']}** posté ! (Staff: {staff_role.mention}, Logs: {logs_channel.mention})",
             ephemeral=True,

@@ -685,7 +685,11 @@ class Admin(commands.Cog):
                     if embed:
                         logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or ch
                         view = build_product_view(pkey, staff_role.id, logs_ch.id)
-                        await ch.send(embed=embed, view=view)
+                        if os.path.exists("banner.gif"):
+                            banner_file = discord.File("banner.gif", filename="banner.gif")
+                            await ch.send(file=banner_file, embed=embed, view=view)
+                        else:
+                            await ch.send(embed=embed, view=view)
 
                 # Auto post SOON GIF
                 elif action == "soon":
