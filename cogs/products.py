@@ -547,10 +547,15 @@ class Products(commands.Cog):
             return
 
         view = build_product_view(product_key, staff_role.id, logs_channel.id)
+        sent = False
         if os.path.exists("banner.gif"):
-            banner_file = discord.File("banner.gif", filename="banner.gif")
-            await interaction.channel.send(file=banner_file, embeds=embeds, view=view)
-        else:
+            try:
+                banner_file = discord.File("banner.gif", filename="banner.gif")
+                await interaction.channel.send(file=banner_file, embeds=embeds, view=view)
+                sent = True
+            except Exception:
+                pass
+        if not sent:
             await interaction.channel.send(embed=embeds[1], view=view)
         await interaction.response.send_message(
             f"✅ Panel **{PRODUCTS[product_key]['raw_title']}** posté ! (Staff: {staff_role.mention}, Logs: {logs_channel.mention})",
