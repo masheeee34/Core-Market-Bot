@@ -700,7 +700,7 @@ class Admin(commands.Cog):
                 # Auto post Free Trial Panel
                 elif action == "trial":
                     from cogs.trial import send_trial_panel
-                    trial_lang = "fr" if (selected_style in ("gothic", "clean")) else "en"
+                    trial_lang = "en"
                     try:
                         await send_trial_panel(ch, lang=trial_lang)
                     except Exception as e:
