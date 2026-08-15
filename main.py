@@ -26,6 +26,7 @@ COGS = [
     "cogs.vouch",
     "cogs.security",
     "cogs.language",
+    "cogs.trial",
 ]
 
 logging.basicConfig(

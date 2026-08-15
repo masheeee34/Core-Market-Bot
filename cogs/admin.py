@@ -436,7 +436,7 @@ class Admin(commands.Cog):
                         ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", member_only_overwrites, None),
                         ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", member_only_overwrites, None),
                         ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", member_only_overwrites, None),
-                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Demandes d'essai gratuit", member_only_overwrites, None),
+                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Essai gratuit BO7 24H & Clés", member_only_overwrites, "trial"),
                     ],
                 ),
                 (
@@ -474,7 +474,7 @@ class Admin(commands.Cog):
                         ("🔥・mcore", "Produit MCore", member_only_overwrites, None),
                         ("🔮・spectre", "Produit Spectre", member_only_overwrites, None),
                         ("⚙️・gen-compte-steam", "Générateur Steam", member_only_overwrites, None),
-                        ("🔑・essai-gratuit", "Essais gratuits", member_only_overwrites, None),
+                        ("🔑・essai-gratuit", "Essai gratuit BO7 24H & Clés", member_only_overwrites, "trial"),
                     ],
                 ),
                 (
@@ -523,7 +523,7 @@ class Admin(commands.Cog):
                     [
                         ("🔴・ᴍᴄᴏʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "M-CORE External BO7 / Warzone", member_only_overwrites, "mcore"),
                         ("🔮・ꜱᴘᴇᴄᴛʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "TRINITY SPECTRE BO7 / Warzone", member_only_overwrites, "spectre"),
-                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free trial requests", member_only_overwrites, "soon"),
+                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free BO7 24H trial & keys", member_only_overwrites, "trial"),
                     ],
                 ),
                 (
@@ -582,6 +582,7 @@ class Admin(commands.Cog):
                             or (action == "mcore" and ("mcore" in tc_lower))
                             or (action == "spectre" and ("spectre" in tc_lower))
                             or (action == "pulse" and ("pulse" in tc_lower))
+                            or (action == "trial" and ("trial" in tc_lower or "essai" in tc_lower))
                         ):
                             existing = tc
                             break
@@ -695,6 +696,15 @@ class Admin(commands.Cog):
                                 pass
                         if not sent:
                             await ch.send(embed=embed, view=view)
+
+                # Auto post Free Trial Panel
+                elif action == "trial":
+                    from cogs.trial import send_trial_panel
+                    trial_lang = "fr" if (selected_style in ("gothic", "clean")) else "en"
+                    try:
+                        await send_trial_panel(ch, lang=trial_lang)
+                    except Exception as e:
+                        print(f"Error auto-posting trial panel: {e}")
 
                 # Auto post SOON GIF
                 elif action == "soon":
