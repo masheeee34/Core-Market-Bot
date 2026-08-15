@@ -436,7 +436,7 @@ class Admin(commands.Cog):
                         ("🌌 ┃ 𝕸𝕮𝖔𝖗𝖊", "Produit MCore External", member_only_overwrites, None),
                         ("🌌 ┃ 𝕾𝖕𝖊𝖈𝖙𝖗𝖊", "Produit Spectre", member_only_overwrites, None),
                         ("🌌 ┃ 𝕲𝖊𝖓-𝖈𝖔𝖒𝖕𝖙𝖊-𝖘𝖙𝖊𝖆𝖒", "Générateur de comptes Steam", member_only_overwrites, None),
-                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Essai gratuit BO7 24H & Clés", member_only_overwrites, "trial"),
+                        ("🔑 ┃ 𝕰𝖘𝖘𝖆𝖎-𝖌𝖗𝖆𝖙𝖚𝖎𝖙", "Essai gratuit BO7 1H & Clés", member_only_overwrites, "trial"),
                     ],
                 ),
                 (
@@ -474,7 +474,7 @@ class Admin(commands.Cog):
                         ("🔥・mcore", "Produit MCore", member_only_overwrites, None),
                         ("🔮・spectre", "Produit Spectre", member_only_overwrites, None),
                         ("⚙️・gen-compte-steam", "Générateur Steam", member_only_overwrites, None),
-                        ("🔑・essai-gratuit", "Essai gratuit BO7 24H & Clés", member_only_overwrites, "trial"),
+                        ("🔑・essai-gratuit", "Essai gratuit BO7 1H & Clés", member_only_overwrites, "trial"),
                     ],
                 ),
                 (
@@ -523,7 +523,7 @@ class Admin(commands.Cog):
                     [
                         ("🔴・ᴍᴄᴏʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "M-CORE External BO7 / Warzone", member_only_overwrites, "mcore"),
                         ("🔮・ꜱᴘᴇᴄᴛʀᴇ-ᴇxᴛᴇʀɴᴀʟ", "TRINITY SPECTRE BO7 / Warzone", member_only_overwrites, "spectre"),
-                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free BO7 24H trial & keys", member_only_overwrites, "trial"),
+                        ("🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ", "Free BO7 1H trial & keys", member_only_overwrites, "trial"),
                     ],
                 ),
                 (

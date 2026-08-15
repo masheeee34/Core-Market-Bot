@@ -118,7 +118,7 @@ def build_trial_embed(lang: str = "en") -> discord.Embed:
     embed = discord.Embed(
         title="🎁  CORE MARKET — BO7 EXTERNAL FREE TRIAL",
         description=(
-            "> **Experience our premium BO7 / Warzone software for FREE (24H Trial)!**\n"
+            "> **Experience our premium BO7 / Warzone software for FREE (1-Hour Trial)!**\n"
             "> Claim your unique trial license key below and follow the official setup guide.\n\n"
             "```ansi\n"
             "\u001b[1;36m[ ⚡ INCLUDED TRIAL FEATURES ]\u001b[0m\n"
@@ -130,7 +130,7 @@ def build_trial_embed(lang: str = "en") -> discord.Embed:
             "```ansi\n"
             "\u001b[1;34m[ 📋 QUICK START INSTRUCTIONS ]\u001b[0m\n"
             "```\n"
-            "**` 1 `** Click the green **🎁 Claim Free Trial (24H)** button below\n"
+            "**` 1 `** Click the green **🎁 Claim Free Trial (1H)** button below\n"
             "**` 2 `** Download the loader package from **📥 Download Loader (Mega)**\n"
             "**` 3 `** Read the step-by-step **📖 Setup Guide (GitBook)** (Virtualization / Security)\n"
             "**` 4 `** Open the loader, paste your trial key, and dominate the game!"
@@ -147,7 +147,7 @@ def build_trial_embed(lang: str = "en") -> discord.Embed:
         ),
         inline=False,
     )
-    embed.set_footer(text="CORE MARKET • Limit: 1 trial key per member")
+    embed.set_footer(text="CORE MARKET • Limit: 1 trial key per member (1-Hour Trial)")
 
     if os.path.exists("banner.gif"):
         embed.set_image(url="attachment://banner.gif")
@@ -183,7 +183,7 @@ class TrialClaimView(discord.ui.View):
         )
 
     @discord.ui.button(
-        label="Claim Free Trial (24H)",
+        label="Claim Free Trial (1H)",
         emoji="🎁",
         style=discord.ButtonStyle.success,
         custom_id="trial_claim_button_v1",
@@ -251,7 +251,7 @@ class TrialClaimView(discord.ui.View):
                 embed_already = discord.Embed(
                     title="ℹ️  YOU HAVE ALREADY CLAIMED YOUR TRIAL KEY",
                     description=(
-                        f"Hello {user.mention}, you have already received your free 24H trial key.\n\n"
+                        f"Hello {user.mention}, you have already received your free 1-hour trial key.\n\n"
                         f"🔑 **Your BO7 Trial Key :**\n"
                         f"```{key}```\n"
                         f"📥 **Download Loader :** [Download Loader via Mega]({LOADER_MEGA_URL})\n"
@@ -260,7 +260,7 @@ class TrialClaimView(discord.ui.View):
                     ),
                     color=discord.Color.from_str("#0070FF"),
                 )
-                embed_already.set_footer(text="CORE MARKET • 24H Free Trial")
+                embed_already.set_footer(text="CORE MARKET • 1-Hour Free Trial")
                 await interaction.followup.send(embed=embed_already, ephemeral=True)
                 return
 
@@ -295,7 +295,7 @@ class TrialClaimView(discord.ui.View):
         embed_success = discord.Embed(
             title="🎉  YOUR BO7 FREE TRIAL KEY IS READY!",
             description=(
-                f"Congratulations {user.mention}! Here is your **BO7 External (24H Trial)** license key.\n\n"
+                f"Congratulations {user.mention}! Here is your **BO7 External (1-Hour Trial)** license key.\n\n"
                 "```ansi\n"
                 "\u001b[1;32m[ 🔑 YOUR PERSONAL TRIAL LICENSE KEY ]\u001b[0m\n"
                 "```\n"
@@ -311,7 +311,7 @@ class TrialClaimView(discord.ui.View):
             ),
             color=discord.Color.green(),
         )
-        embed_success.set_footer(text="CORE MARKET • Enjoy your session!")
+        embed_success.set_footer(text="CORE MARKET • Enjoy your session! (1-Hour Trial)")
         await interaction.followup.send(embed=embed_success, ephemeral=True)
 
         # 5. Backup DM delivery

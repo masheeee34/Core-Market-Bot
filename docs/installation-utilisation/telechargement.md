@@ -26,5 +26,5 @@ Téléchargement Officiel MultiLoader (Mega)
    * Descendez jusqu'à *Exclusions* > *Ajouter ou supprimer des exclusions* > Choisissez le dossier `C:\CoreLoader`.
 4. **Extrayez** le contenu de l'archive dans ce dossier.
 5. Faites un clic droit sur le Loader > **Exécuter en tant qu'administrateur**.
-6. Collez votre clé de licence (ou votre clé d'essai gratuit **24H Trial** obtenue sur Discord).
+6. Collez votre clé de licence (ou votre clé d'essai gratuit **1H Trial** obtenue sur Discord).
 7. Suivez les invites du loader puis lancez votre jeu !
