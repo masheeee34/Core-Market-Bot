@@ -17,6 +17,7 @@ from core.engine import (
     NVENC_ACTIVE,
     build_9_16_vertical_short,
     convert_to_mp4,
+    detect_action_highlights,
     get_video_duration,
 )
 from core.metadata import generate_clip_social_metadata
@@ -88,6 +89,9 @@ async def run_generation_background(
     yt_url: str | None,
     local_video_path: str | None,
     mode: str,
+    clip_len: float,
+    num_clips: int,
+    custom_start: float | None,
     script: str,
     voice_key: str,
     sub_style: str,
@@ -132,7 +136,7 @@ async def run_generation_background(
 
         if script:
             task["message"] = "Generating AI Neural Voiceover & Subtitles..."
-            task["percent"] = 40
+            task["percent"] = 35
             audio_out = str(TEMP_DIR / f"voice_{uuid.uuid4().hex[:8]}.mp3")
             ass_out = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:8]}.ass")
 
@@ -148,46 +152,53 @@ async def run_generation_background(
                 )
                 subtitles_ass = ass_out
 
-        # Step 3: Video duration & Render
+        # Step 3: Intelligent Highlight Detection & Render
         duration = await asyncio.to_thread(get_video_duration, source_mp4)
-        task["message"] = f"Rendering with NVIDIA RTX 3050 NVENC (Duration: {int(duration)}s)..."
-        task["percent"] = 55
+        task["message"] = "Analyzing audio peaks & detecting top action moments..."
+        task["percent"] = 45
 
         generated_clips = []
 
         if mode == "multi_shorts":
-            short_len = 30.0
-            num_shorts = max(1, min(5, int(duration // short_len)))
-            if duration < 30.0:
-                num_shorts = 1
-                short_len = max(5.0, duration)
+            if custom_start is not None and custom_start >= 0:
+                start_timestamps = [custom_start]
+            else:
+                # Automatic intelligent peak action detection
+                start_timestamps = await asyncio.to_thread(
+                    detect_action_highlights,
+                    source_mp4,
+                    max_highlights=num_clips,
+                    clip_duration=clip_len,
+                )
 
-            for i in range(num_shorts):
-                start_t = i * short_len
+            total_cuts = len(start_timestamps)
+            for idx, start_t in enumerate(start_timestamps):
                 clip_id = uuid.uuid4().hex[:6]
-                out_filename = f"short_{i+1}_{clip_id}.mp4"
+                out_filename = f"short_{idx+1}_{clip_id}.mp4"
                 out_filepath = str(OUTPUT_DIR / out_filename)
 
-                task["message"] = f"Rendering Short #{i+1} of {num_shorts} (RTX 3050 NVENC)..."
-                task["percent"] = 55 + int((i / num_shorts) * 40)
+                start_min = int(start_t // 60)
+                start_sec = int(start_t % 60)
+                task["message"] = f"Rendering Action Short #{idx+1}/{total_cuts} at {start_min:02d}:{start_sec:02d} (RTX 3050 NVENC)..."
+                task["percent"] = 50 + int((idx / total_cuts) * 45)
 
                 success = await asyncio.to_thread(
                     build_9_16_vertical_short,
                     video_path=source_mp4,
                     output_path=out_filepath,
                     start_time=start_t,
-                    duration=short_len,
-                    audio_path=audio_path if i == 0 else None,
-                    subtitles_ass_path=subtitles_ass if i == 0 else None,
+                    duration=clip_len,
+                    audio_path=audio_path if idx == 0 else None,
+                    subtitles_ass_path=subtitles_ass if idx == 0 else None,
                     watermark_top=top_banner,
                     watermark_bottom=bottom_cta,
                 )
 
                 if success and os.path.exists(out_filepath):
-                    meta = generate_clip_social_metadata(clip_title=f"{source_title} - Part {i+1}")
+                    meta = generate_clip_social_metadata(clip_title=f"{source_title} - Clutch Highlight #{idx+1}")
                     clip_entry = {
                         "filename": out_filename,
-                        "title": f"Short #{i+1} • {source_title}",
+                        "title": f"Action Highlight #{idx+1} ({start_min:02d}:{start_sec:02d})",
                         "meta": meta,
                     }
                     save_clip_metadata(clip_entry)
@@ -202,11 +213,13 @@ async def run_generation_background(
             task["message"] = "Rendering Full Video with RTX 3050 NVENC..."
             task["percent"] = 75
 
+            start_t = custom_start if (custom_start is not None and custom_start >= 0) else 0.0
+
             success = await asyncio.to_thread(
                 build_9_16_vertical_short,
                 video_path=source_mp4,
                 output_path=out_filepath,
-                start_time=0.0,
+                start_time=start_t,
                 duration=render_len,
                 audio_path=audio_path,
                 subtitles_ass_path=subtitles_ass,
@@ -226,7 +239,7 @@ async def run_generation_background(
 
         task["status"] = "done"
         task["percent"] = 100
-        task["message"] = f"Finished! Generated {len(generated_clips)} video(s) successfully 🎉"
+        task["message"] = f"Finished! Generated {len(generated_clips)} action clip(s) successfully 🎉"
         task["clips"] = generated_clips
 
     except Exception as e:
@@ -242,6 +255,9 @@ async def generate_handler(request: web.Request) -> web.Response:
     local_video_path = None
     yt_url = None
     mode = "multi_shorts"
+    clip_len = 30.0
+    num_clips = 3
+    custom_start = None
     script = ""
     voice_key = "en_gamer_christopher"
     sub_style = "hormozi_yellow"
@@ -271,6 +287,27 @@ async def generate_handler(request: web.Request) -> web.Response:
                 yt_url = value.strip()
             elif name == "mode":
                 mode = value
+            elif name == "clip_len":
+                try:
+                    clip_len = float(value)
+                except ValueError:
+                    clip_len = 30.0
+            elif name == "num_clips":
+                try:
+                    num_clips = int(value)
+                except ValueError:
+                    num_clips = 3
+            elif name == "custom_start":
+                if value.strip():
+                    try:
+                        # Support both seconds (45) and MM:SS (01:25) format
+                        if ":" in value:
+                            m, s = value.strip().split(":")
+                            custom_start = float(m) * 60 + float(s)
+                        else:
+                            custom_start = float(value)
+                    except ValueError:
+                        custom_start = None
             elif name == "script":
                 script = value.strip()
             elif name == "voice":
@@ -289,7 +326,7 @@ async def generate_handler(request: web.Request) -> web.Response:
     TASKS[task_id] = {
         "status": "running",
         "percent": 10,
-        "message": "Starting rendering job...",
+        "message": "Starting intelligent action clipping job...",
         "clips": [],
     }
 
@@ -299,6 +336,9 @@ async def generate_handler(request: web.Request) -> web.Response:
             yt_url=yt_url,
             local_video_path=local_video_path,
             mode=mode,
+            clip_len=clip_len,
+            num_clips=num_clips,
+            custom_start=custom_start,
             script=script,
             voice_key=voice_key,
             sub_style=sub_style,

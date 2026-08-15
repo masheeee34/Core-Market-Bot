@@ -1,3 +1,4 @@
+import array
 import logging
 import os
 import subprocess
@@ -65,6 +66,83 @@ def convert_to_mp4(input_path: str, output_path: str) -> bool:
         return False
 
 
+def detect_action_highlights(
+    video_path: str,
+    max_highlights: int = 4,
+    clip_duration: float = 30.0,
+) -> list[float]:
+    """
+    Intelligently scans the entire video in ~0.5s to find gunfights, clutches,
+    and high-intensity action peaks via audio energy profiling.
+    Returns a list of optimal start timestamps (in seconds).
+    """
+    try:
+        cmd = [
+            FFMPEG_EXE,
+            "-y",
+            "-i",
+            video_path,
+            "-vn",
+            "-ac",
+            "1",
+            "-ar",
+            "1000",
+            "-f",
+            "s16le",
+            "pipe:1",
+        ]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        raw, _ = proc.communicate()
+
+        samples = array.array("h")
+        samples.frombytes(raw)
+        total_duration = len(samples) / 1000.0
+
+        if total_duration <= clip_duration:
+            return [0.0]
+
+        # Calculate energy in 2-second windows (2000 samples)
+        window = 2000
+        energies = []
+        times = []
+        for i in range(0, len(samples) - window, window):
+            chunk = samples[i : i + window]
+            rms = sum(x * x for x in chunk) / len(chunk)
+            energies.append(rms)
+            times.append(i / 1000.0)
+
+        # Sort indices by highest sound energy / action intensity
+        indexed_energies = sorted(enumerate(energies), key=lambda x: x[1], reverse=True)
+
+        peaks: list[float] = []
+        for idx, _ in indexed_energies:
+            t = times[idx]
+            # Skip first 15s (lobby / waiting) and last 10s
+            if t < 15.0 or t > total_duration - 15.0:
+                continue
+            # Ensure peaks are separated by at least clip_duration
+            if all(abs(t - p) >= clip_duration for p in peaks):
+                peaks.append(t)
+            if len(peaks) >= max_highlights:
+                break
+
+        # Fallback if video is quiet or short
+        if not peaks:
+            step = max(clip_duration, total_duration / max_highlights)
+            return [min(total_duration - clip_duration, i * step) for i in range(max_highlights)]
+
+        peaks.sort()
+
+        # Center the clip starting ~6 seconds before the action peak
+        start_times = [max(0.0, p - 6.0) for p in peaks]
+        log.info("Detected %d action highlights: %s", len(start_times), [round(s, 1) for s in start_times])
+        return start_times
+
+    except Exception as e:
+        log.error("Error in action detection: %s", e)
+        return [0.0]
+
+
 def build_9_16_vertical_short(
     video_path: str,
     output_path: str,
@@ -84,10 +162,6 @@ def build_9_16_vertical_short(
     """
     video_codec = "h264_nvenc" if NVENC_ACTIVE else "libx264"
 
-    # Filtergraph: Split input into background (scale & blur) + foreground (crisp centered overlay)
-    # [0:v] split [bg][fg]; [bg] scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=20:5,eq=brightness=-0.2 [bg_blurred];
-    # [fg] scale=1080:-1 [fg_scaled]; [bg_blurred][fg_scaled] overlay=(W-w)/2:(H-h)/2 [base]
-    
     filter_complex_parts = [
         "[0:v]split=2[v_bg][v_fg];"
         "[v_bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5,eq=brightness=-0.15[bg_blur];"
@@ -134,26 +208,27 @@ def build_9_16_vertical_short(
         video_path,
     ]
 
-    # Add custom Voiceover Audio if specified
+    # Add custom Voiceover Audio if specified or boost raw game audio
     if audio_path and os.path.exists(audio_path):
         cmd.extend(["-i", audio_path])
-        # Mix gameplay background audio (-15dB) with AI voiceover (100%)
+        # Mix gameplay background audio (-12dB) with AI voiceover (100%)
         cmd.extend([
             "-filter_complex",
-            filter_complex + ";[0:a]volume=0.25[bg_a];[1:a]volume=1.0[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]",
+            filter_complex + ";[0:a]volume=0.35[bg_a];[1:a]volume=1.1[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]",
             "-map",
             "[final_v]",
             "-map",
             "[final_a]",
         ])
     else:
+        # Boost raw game audio by +3dB for punchy mobile TikTok audio
         cmd.extend([
             "-filter_complex",
-            filter_complex,
+            filter_complex + ";[0:a]volume=1.4[final_a]",
             "-map",
             "[final_v]",
             "-map",
-            "0:a?",
+            "[final_a]?",
         ])
 
     cmd.extend([
@@ -173,7 +248,7 @@ def build_9_16_vertical_short(
     ])
 
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        subprocess.run(cmd, capture_output=True, text=True, check=True)
         return True
     except subprocess.CalledProcessError as e:
         log.error("Error rendering Short: %s", e.stderr)

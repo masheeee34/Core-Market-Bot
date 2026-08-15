@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORE STUDIO AI — Next-Gen Auto Video & Shorts Generator</title>
+  <title>CORE STUDIO AI — Next-Gen Auto Video & Action Shorts Generator</title>
   <link rel="stylesheet" href="/static/app.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
       <span class="brand-icon">⚡</span>
       <div>
         <div class="brand-title">CORE STUDIO AI</div>
-        <span class="brand-badge">Auto Shorts & Video Engine</span>
+        <span class="brand-badge">Intelligent Action Highlights & Shorts</span>
       </div>
     </div>
     <div class="gpu-status">
@@ -26,13 +26,13 @@
   </header>
 
   <main>
-    <!-- LEFT PANEL: Configuration & Creation Form -->
+    <!-- LEFT PANEL: Video Ingestion & Smart Cutting Options -->
     <section class="card">
       <div class="card-header">
-        <div class="card-title">🎬 Video Source & Options</div>
+        <div class="card-title">🎬 Video Source & Intelligent Cutting</div>
       </div>
 
-      <!-- Mode Selector Tabs -->
+      <!-- Source Tabs -->
       <div class="tabs">
         <button class="tab-btn active" id="tabUploadBtn" onclick="switchSourceTab('upload')">📁 Local File (MKV/MP4)</button>
         <button class="tab-btn" id="tabYtBtn" onclick="switchSourceTab('youtube')">🔴 YouTube URL</button>
@@ -56,23 +56,51 @@
         </div>
       </div>
 
-      <!-- Mode: Full Video or Multi-Shorts -->
+      <!-- Video Preview Player (For scrubbing and selecting timestamps) -->
+      <div id="videoPreviewContainer" style="display: none; flex-direction: column; gap: 8px;">
+        <label>👀 Video Preview & Timestamp Picker :</label>
+        <video id="sourceVideoPlayer" controls style="width: 100%; max-height: 220px; background: #000; border-radius: var(--radius-md); border: 1px solid var(--border-color);"></video>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-secondary" type="button" onclick="setTimestampFromPlayer()" style="flex: 1;">
+            🎯 Set Start Time to Current Position (<span id="playerCurrentTimeDisplay">00:00</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- Cutting Strategy Settings -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label for="clipLen">Clip Duration :</label>
+          <select id="clipLen">
+            <option value="15">⚡ 15 Seconds (Fast-paced)</option>
+            <option value="30" selected>🔥 30 Seconds (Viral Standard)</option>
+            <option value="60">🎥 60 Seconds (Full Clutch)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="numClips">Number of Highlights :</label>
+          <select id="numClips">
+            <option value="1">1 Top Action Clip</option>
+            <option value="3" selected>3 Best Action Clips</option>
+            <option value="5">5 Best Action Clips</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Custom Start Time (Optional) -->
       <div class="form-group">
-        <label for="renderMode">Creation Mode :</label>
-        <select id="renderMode" onchange="toggleModeSettings()">
-          <option value="multi_shorts" selected>🔥 Multi-Shorts Slicer (Generate 3 to 10 Viral 9:16 Shorts)</option>
-          <option value="full_video">🎥 Single Full Video (9:16 Vertical or 16:9)</option>
-        </select>
+        <label for="customStart">Start Time (Leave empty for ⚡ Auto-Detect Kills & Combat) :</label>
+        <input type="text" id="customStart" placeholder="e.g. 01:25 or 85s (empty = auto-detect best moments)" />
       </div>
 
       <!-- AI Voiceover Script (Optional) -->
       <div class="form-group">
-        <label for="voiceScript">AI Voiceover Script (Optional - leave empty for raw gameplay) :</label>
-        <textarea id="voiceScript" rows="3" placeholder="e.g. Nobody believed this setup was 100% undetected until this insane clutch! Get your 1-hour free trial now in bio."></textarea>
+        <label for="voiceScript">AI Voiceover Script (Optional — leave empty for raw game audio) :</label>
+        <textarea id="voiceScript" rows="2" placeholder="e.g. Nobody believed this setup was 100% undetected until this insane clutch! Get your 1-hour free trial now in bio."></textarea>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <!-- Voice Choice -->
         <div class="form-group">
           <label for="voiceSelect">AI Neural Voice :</label>
           <select id="voiceSelect">
@@ -84,7 +112,6 @@
           </select>
         </div>
 
-        <!-- Subtitles Style -->
         <div class="form-group">
           <label for="subStyleSelect">Subtitles Theme :</label>
           <select id="subStyleSelect">
@@ -110,7 +137,7 @@
       <!-- Progress display -->
       <div class="progress-container" id="progressContainer">
         <div class="progress-status">
-          <span id="progressText">Rendering with RTX 3050 NVENC...</span>
+          <span id="progressText">Analyzing action peaks with RTX 3050 NVENC...</span>
           <span id="progressPercent">0%</span>
         </div>
         <div class="progress-bar-bg">
@@ -120,14 +147,14 @@
 
       <!-- Action Button -->
       <button class="btn-primary" id="generateBtn" onclick="startGeneration()">
-        <span>🚀 Generate Videos & Shorts (RTX Accelerated)</span>
+        <span>🚀 Cut Best Action Moments & Generate Shorts (RTX Accelerated)</span>
       </button>
     </section>
 
     <!-- RIGHT PANEL: Generated Clips & Viral Metadata Gallery -->
     <section class="card">
       <div class="card-header">
-        <div class="card-title">📦 Ready-to-Post Clips & Metadata</div>
+        <div class="card-title">📦 Ready-to-Post Action Clips</div>
         <button class="btn-secondary" onclick="loadClipsGallery()">🔄 Refresh</button>
       </div>
 

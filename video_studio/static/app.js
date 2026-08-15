@@ -14,6 +14,38 @@ function handleFileSelect(e) {
   if (file) {
     selectedFile = file;
     document.getElementById("dropzoneLabel").textContent = `Selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+    setupVideoPreview(file);
+  }
+}
+
+function setupVideoPreview(file) {
+  const container = document.getElementById("videoPreviewContainer");
+  const player = document.getElementById("sourceVideoPlayer");
+  const timeDisplay = document.getElementById("playerCurrentTimeDisplay");
+
+  if (file.name.toLowerCase().endsWith(".mp4") || file.name.toLowerCase().endsWith(".webm")) {
+    const blobUrl = URL.createObjectURL(file);
+    player.src = blobUrl;
+    container.style.display = "flex";
+
+    player.ontimeupdate = () => {
+      const cur = player.currentTime;
+      const m = Math.floor(cur / 60);
+      const s = Math.floor(cur % 60);
+      timeDisplay.textContent = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    };
+  } else {
+    container.style.display = "none";
+  }
+}
+
+function setTimestampFromPlayer() {
+  const player = document.getElementById("sourceVideoPlayer");
+  if (player && !isNaN(player.currentTime)) {
+    const cur = player.currentTime;
+    const m = Math.floor(cur / 60);
+    const s = Math.floor(cur % 60);
+    document.getElementById("customStart").value = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   }
 }
 
@@ -31,12 +63,9 @@ if (dropzone) {
     if (e.dataTransfer.files.length > 0) {
       selectedFile = e.dataTransfer.files[0];
       document.getElementById("dropzoneLabel").textContent = `Selected: ${selectedFile.name} (${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB)`;
+      setupVideoPreview(selectedFile);
     }
   });
-}
-
-function toggleModeSettings() {
-  const mode = document.getElementById("renderMode").value;
 }
 
 async function startGeneration() {
@@ -59,7 +88,7 @@ async function startGeneration() {
   btn.disabled = true;
   progressContainer.style.display = "flex";
   progressFill.style.width = "10%";
-  progressText.textContent = "Uploading & Initializing...";
+  progressText.textContent = "Uploading & Initializing Action Scanner...";
   progressPercent.textContent = "10%";
 
   const formData = new FormData();
@@ -69,8 +98,11 @@ async function startGeneration() {
     formData.append("youtube_url", ytUrl);
   }
 
-  formData.append("mode", document.getElementById("renderMode").value);
-  formData.append("script", document.getElementById("voiceScript").value);
+  formData.append("mode", "multi_shorts");
+  formData.append("clip_len", document.getElementById("clipLen").value);
+  formData.append("num_clips", document.getElementById("numClips").value);
+  formData.append("custom_start", document.getElementById("customStart").value.trim());
+  formData.append("script", document.getElementById("voiceScript").value.trim());
   formData.append("voice", document.getElementById("voiceSelect").value);
   formData.append("sub_style", document.getElementById("subStyleSelect").value);
   formData.append("top_banner", document.getElementById("topBannerText").value);
