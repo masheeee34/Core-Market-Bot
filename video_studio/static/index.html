@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORE STUDIO AI — Next-Gen Auto Video & Shorts Generator</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <div>
+        <div class="brand-title">CORE STUDIO AI</div>
+        <span class="brand-badge">Auto Shorts & Video Engine</span>
+      </div>
+    </div>
+    <div class="gpu-status">
+      <span class="gpu-dot"></span>
+      <span id="gpuStatusText">NVIDIA RTX 3050 NVENC ACTIVE</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT PANEL: Configuration & Creation Form -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">🎬 Video Source & Options</div>
+      </div>
+
+      <!-- Mode Selector Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tabUploadBtn" onclick="switchSourceTab('upload')">📁 Local File (MKV/MP4)</button>
+        <button class="tab-btn" id="tabYtBtn" onclick="switchSourceTab('youtube')">🔴 YouTube URL</button>
+      </div>
+
+      <!-- Tab 1: Local Upload -->
+      <div id="sourceUploadSection">
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          <span class="dropzone-icon">📥</span>
+          <div class="dropzone-text" id="dropzoneLabel">Click or Drag & Drop MKV / MP4 / MOV</div>
+          <div class="dropzone-subtext">Hardware acceleration converts MKV automatically</div>
+          <input type="file" id="fileInput" accept=".mkv,.mp4,.mov,.avi,.webm" style="display: none;" onchange="handleFileSelect(event)">
+        </div>
+      </div>
+
+      <!-- Tab 2: YouTube URL -->
+      <div id="sourceYtSection" style="display: none;">
+        <div class="form-group">
+          <label for="ytUrl">YouTube Gameplay / Montage URL :</label>
+          <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=..." />
+        </div>
+      </div>
+
+      <!-- Mode: Full Video or Multi-Shorts -->
+      <div class="form-group">
+        <label for="renderMode">Creation Mode :</label>
+        <select id="renderMode" onchange="toggleModeSettings()">
+          <option value="multi_shorts" selected>🔥 Multi-Shorts Slicer (Generate 3 to 10 Viral 9:16 Shorts)</option>
+          <option value="full_video">🎥 Single Full Video (9:16 Vertical or 16:9)</option>
+        </select>
+      </div>
+
+      <!-- AI Voiceover Script (Optional) -->
+      <div class="form-group">
+        <label for="voiceScript">AI Voiceover Script (Optional - leave empty for raw gameplay) :</label>
+        <textarea id="voiceScript" rows="3" placeholder="e.g. Nobody believed this setup was 100% undetected until this insane clutch! Get your 1-hour free trial now in bio."></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <!-- Voice Choice -->
+        <div class="form-group">
+          <label for="voiceSelect">AI Neural Voice :</label>
+          <select id="voiceSelect">
+            <option value="en_gamer_christopher">🇺🇸 Christopher (Gamer / Dynamic)</option>
+            <option value="en_guy_authentic">🇺🇸 Guy (Energetic)</option>
+            <option value="en_jenny_female">🇺🇸 Jenny (Clear Female)</option>
+            <option value="fr_henri_impact">🇫🇷 Henri (Impact / Grave)</option>
+            <option value="fr_vivienne_natural">🇫🇷 Vivienne (Naturelle)</option>
+          </select>
+        </div>
+
+        <!-- Subtitles Style -->
+        <div class="form-group">
+          <label for="subStyleSelect">Subtitles Theme :</label>
+          <select id="subStyleSelect">
+            <option value="hormozi_yellow">🟡 Hormozi Yellow Pop (Viral)</option>
+            <option value="cyber_cyan">🔵 Cyber Cyan (High Tech)</option>
+            <option value="toxic_green">🟢 Toxic Green</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Watermarks & CTA -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label for="topBannerText">Top Banner Text :</label>
+          <input type="text" id="topBannerText" value="⚡ CORE MARKET • 1H FREE TRIAL" />
+        </div>
+        <div class="form-group">
+          <label for="bottomCtaText">Bottom CTA Banner :</label>
+          <input type="text" id="bottomCtaText" value="👉 LINK IN BIO • DISCORD.GG/NPXP9UK9JG" />
+        </div>
+      </div>
+
+      <!-- Progress display -->
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-status">
+          <span id="progressText">Rendering with RTX 3050 NVENC...</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button class="btn-primary" id="generateBtn" onclick="startGeneration()">
+        <span>🚀 Generate Videos & Shorts (RTX Accelerated)</span>
+      </button>
+    </section>
+
+    <!-- RIGHT PANEL: Generated Clips & Viral Metadata Gallery -->
+    <section class="card">
+      <div class="card-header">
+        <div class="card-title">📦 Ready-to-Post Clips & Metadata</div>
+        <button class="btn-secondary" onclick="loadClipsGallery()">🔄 Refresh</button>
+      </div>
+
+      <div class="gallery" id="clipsGallery">
+        <!-- Clips dynamically populated via JS -->
+        <div style="color: var(--text-muted); font-size: 14px; text-align: center; grid-column: 1 / -1; padding: 40px;">
+          No generated clips yet. Upload a video or enter a YouTube URL to start creating! 🎬
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
