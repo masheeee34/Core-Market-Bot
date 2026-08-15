@@ -35,6 +35,9 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
 META_FILE = OUTPUT_DIR / "metadata.json"
 
+# In-memory background task tracking
+TASKS: dict[str, dict[str, Any]] = {}
+
 
 def load_all_metadata() -> list[dict[str, Any]]:
     if not META_FILE.exists():
@@ -70,6 +73,166 @@ async def status_handler(_: web.Request) -> web.Response:
 async def clips_handler(_: web.Request) -> web.Response:
     clips = load_all_metadata()
     return web.json_response(clips)
+
+
+async def task_status_handler(request: web.Request) -> web.Response:
+    task_id = request.match_info.get("task_id", "")
+    task = TASKS.get(task_id)
+    if not task:
+        return web.json_response({"status": "error", "error": "Task not found."}, status=404)
+    return web.json_response(task)
+
+
+async def run_generation_background(
+    task_id: str,
+    yt_url: str | None,
+    local_video_path: str | None,
+    mode: str,
+    script: str,
+    voice_key: str,
+    sub_style: str,
+    top_banner: str,
+    bottom_cta: str,
+) -> None:
+    task = TASKS[task_id]
+    try:
+        # Step 1: Video source acquisition
+        task["message"] = "Fetching / Preparing Video Source..."
+        task["percent"] = 20
+
+        source_mp4 = None
+        source_title = "Gameplay"
+
+        if yt_url:
+            task["message"] = "Downloading YouTube Video (High Definition)..."
+            yt_res = await asyncio.to_thread(download_youtube_video, yt_url, str(TEMP_DIR))
+            if not yt_res or not os.path.exists(yt_res["filepath"]):
+                task["status"] = "error"
+                task["error"] = "Failed to download YouTube video. Please check the URL."
+                return
+            source_mp4 = yt_res["filepath"]
+            source_title = yt_res.get("title", "YouTube Video")
+        elif local_video_path and os.path.exists(local_video_path):
+            source_title = Path(local_video_path).stem
+            if not local_video_path.lower().endswith(".mp4"):
+                task["message"] = "Converting MKV/Source to MP4 with GPU..."
+                conv_out = str(TEMP_DIR / f"converted_{uuid.uuid4().hex[:8]}.mp4")
+                conv_ok = await asyncio.to_thread(convert_to_mp4, local_video_path, conv_out)
+                source_mp4 = conv_out if conv_ok else local_video_path
+            else:
+                source_mp4 = local_video_path
+        else:
+            task["status"] = "error"
+            task["error"] = "No valid video file or YouTube URL provided."
+            return
+
+        # Step 2: Voiceover & Subtitles (if script provided)
+        audio_path = None
+        subtitles_ass = None
+
+        if script:
+            task["message"] = "Generating AI Neural Voiceover & Subtitles..."
+            task["percent"] = 40
+            audio_out = str(TEMP_DIR / f"voice_{uuid.uuid4().hex[:8]}.mp3")
+            ass_out = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:8]}.ass")
+
+            success_tts, word_cues = await generate_voiceover(script, audio_out, voice_key=voice_key)
+            if success_tts:
+                audio_path = audio_out
+                await asyncio.to_thread(
+                    generate_hormozi_ass_subtitles,
+                    word_cues,
+                    ass_out,
+                    raw_text=script,
+                    style_theme=sub_style,
+                )
+                subtitles_ass = ass_out
+
+        # Step 3: Video duration & Render
+        duration = await asyncio.to_thread(get_video_duration, source_mp4)
+        task["message"] = f"Rendering with NVIDIA RTX 3050 NVENC (Duration: {int(duration)}s)..."
+        task["percent"] = 55
+
+        generated_clips = []
+
+        if mode == "multi_shorts":
+            short_len = 30.0
+            num_shorts = max(1, min(5, int(duration // short_len)))
+            if duration < 30.0:
+                num_shorts = 1
+                short_len = max(5.0, duration)
+
+            for i in range(num_shorts):
+                start_t = i * short_len
+                clip_id = uuid.uuid4().hex[:6]
+                out_filename = f"short_{i+1}_{clip_id}.mp4"
+                out_filepath = str(OUTPUT_DIR / out_filename)
+
+                task["message"] = f"Rendering Short #{i+1} of {num_shorts} (RTX 3050 NVENC)..."
+                task["percent"] = 55 + int((i / num_shorts) * 40)
+
+                success = await asyncio.to_thread(
+                    build_9_16_vertical_short,
+                    video_path=source_mp4,
+                    output_path=out_filepath,
+                    start_time=start_t,
+                    duration=short_len,
+                    audio_path=audio_path if i == 0 else None,
+                    subtitles_ass_path=subtitles_ass if i == 0 else None,
+                    watermark_top=top_banner,
+                    watermark_bottom=bottom_cta,
+                )
+
+                if success and os.path.exists(out_filepath):
+                    meta = generate_clip_social_metadata(clip_title=f"{source_title} - Part {i+1}")
+                    clip_entry = {
+                        "filename": out_filename,
+                        "title": f"Short #{i+1} • {source_title}",
+                        "meta": meta,
+                    }
+                    save_clip_metadata(clip_entry)
+                    generated_clips.append(clip_entry)
+        else:
+            # Single Full Video
+            clip_id = uuid.uuid4().hex[:6]
+            out_filename = f"full_video_{clip_id}.mp4"
+            out_filepath = str(OUTPUT_DIR / out_filename)
+            render_len = min(duration, 60.0) if duration > 0 else 30.0
+
+            task["message"] = "Rendering Full Video with RTX 3050 NVENC..."
+            task["percent"] = 75
+
+            success = await asyncio.to_thread(
+                build_9_16_vertical_short,
+                video_path=source_mp4,
+                output_path=out_filepath,
+                start_time=0.0,
+                duration=render_len,
+                audio_path=audio_path,
+                subtitles_ass_path=subtitles_ass,
+                watermark_top=top_banner,
+                watermark_bottom=bottom_cta,
+            )
+
+            if success and os.path.exists(out_filepath):
+                meta = generate_clip_social_metadata(clip_title=source_title)
+                clip_entry = {
+                    "filename": out_filename,
+                    "title": source_title,
+                    "meta": meta,
+                }
+                save_clip_metadata(clip_entry)
+                generated_clips.append(clip_entry)
+
+        task["status"] = "done"
+        task["percent"] = 100
+        task["message"] = f"Finished! Generated {len(generated_clips)} video(s) successfully 🎉"
+        task["clips"] = generated_clips
+
+    except Exception as e:
+        log.error("Fatal error in generation task %s: %s", task_id, e, exc_info=True)
+        task["status"] = "error"
+        task["error"] = str(e)
 
 
 async def generate_handler(request: web.Request) -> web.Response:
@@ -119,118 +282,34 @@ async def generate_handler(request: web.Request) -> web.Response:
             elif name == "bottom_cta":
                 bottom_cta = value
 
-    # 1. Acquire video source
-    source_mp4 = None
-    source_title = "Gameplay"
+    if not yt_url and not local_video_path:
+        return web.json_response({"success": False, "error": "Please provide a video file or YouTube URL."}, status=400)
 
-    if yt_url:
-        log.info("Downloading YouTube video: %s", yt_url)
-        yt_res = download_youtube_video(yt_url, str(TEMP_DIR))
-        if not yt_res or not os.path.exists(yt_res["filepath"]):
-            return web.json_response({"success": False, "error": "Could not download YouTube video."}, status=400)
-        source_mp4 = yt_res["filepath"]
-        source_title = yt_res.get("title", "YouTube Video")
-    elif local_video_path and os.path.exists(local_video_path):
-        source_title = Path(local_video_path).stem
-        if not local_video_path.lower().endswith(".mp4"):
-            log.info("Converting %s to MP4 via NVENC...", local_video_path)
-            conv_out = str(TEMP_DIR / f"converted_{uuid.uuid4().hex[:8]}.mp4")
-            if convert_to_mp4(local_video_path, conv_out):
-                source_mp4 = conv_out
-            else:
-                source_mp4 = local_video_path
-        else:
-            source_mp4 = local_video_path
-    else:
-        return web.json_response({"success": False, "error": "No valid video file or YouTube URL provided."}, status=400)
+    task_id = uuid.uuid4().hex[:8]
+    TASKS[task_id] = {
+        "status": "running",
+        "percent": 10,
+        "message": "Starting rendering job...",
+        "clips": [],
+    }
 
-    # 2. Voiceover & Subtitles (if script provided)
-    audio_path = None
-    subtitles_ass = None
-
-    if script:
-        log.info("Generating AI voiceover & word-level subtitles...")
-        audio_out = str(TEMP_DIR / f"voice_{uuid.uuid4().hex[:8]}.mp3")
-        ass_out = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:8]}.ass")
-
-        success_tts, word_cues = await generate_voiceover(script, audio_out, voice_key=voice_key)
-        if success_tts:
-            audio_path = audio_out
-            generate_hormozi_ass_subtitles(word_cues, ass_out, raw_text=script, style_theme=sub_style)
-            subtitles_ass = ass_out
-
-    # 3. Multi-Shorts or Full Video Render
-    duration = get_video_duration(source_mp4)
-    log.info("Source video duration: %.1f seconds", duration)
-
-    generated_clips = []
-
-    if mode == "multi_shorts":
-        short_len = 30.0  # 30-second viral format
-        num_shorts = max(1, min(5, int(duration // short_len)))
-        if duration < 30.0:
-            num_shorts = 1
-            short_len = max(5.0, duration)
-
-        for i in range(num_shorts):
-            start_t = i * short_len
-            clip_id = uuid.uuid4().hex[:6]
-            out_filename = f"short_{i+1}_{clip_id}.mp4"
-            out_filepath = str(OUTPUT_DIR / out_filename)
-
-            log.info("Rendering Short %d/%d (Start: %.1fs, Len: %.1fs)...", i + 1, num_shorts, start_t, short_len)
-            success = build_9_16_vertical_short(
-                video_path=source_mp4,
-                output_path=out_filepath,
-                start_time=start_t,
-                duration=short_len,
-                audio_path=audio_path if i == 0 else None,
-                subtitles_ass_path=subtitles_ass if i == 0 else None,
-                watermark_top=top_banner,
-                watermark_bottom=bottom_cta,
-            )
-
-            if success and os.path.exists(out_filepath):
-                meta = generate_clip_social_metadata(clip_title=f"{source_title} - Part {i+1}")
-                clip_entry = {
-                    "filename": out_filename,
-                    "title": f"Short #{i+1} • {source_title}",
-                    "meta": meta,
-                }
-                save_clip_metadata(clip_entry)
-                generated_clips.append(clip_entry)
-    else:
-        # Full single video
-        clip_id = uuid.uuid4().hex[:6]
-        out_filename = f"full_video_{clip_id}.mp4"
-        out_filepath = str(OUTPUT_DIR / out_filename)
-
-        render_len = min(duration, 60.0) if duration > 0 else 30.0
-        success = build_9_16_vertical_short(
-            video_path=source_mp4,
-            output_path=out_filepath,
-            start_time=0.0,
-            duration=render_len,
-            audio_path=audio_path,
-            subtitles_ass_path=subtitles_ass,
-            watermark_top=top_banner,
-            watermark_bottom=bottom_cta,
+    asyncio.create_task(
+        run_generation_background(
+            task_id=task_id,
+            yt_url=yt_url,
+            local_video_path=local_video_path,
+            mode=mode,
+            script=script,
+            voice_key=voice_key,
+            sub_style=sub_style,
+            top_banner=top_banner,
+            bottom_cta=bottom_cta,
         )
-
-        if success and os.path.exists(out_filepath):
-            meta = generate_clip_social_metadata(clip_title=source_title)
-            clip_entry = {
-                "filename": out_filename,
-                "title": source_title,
-                "meta": meta,
-            }
-            save_clip_metadata(clip_entry)
-            generated_clips.append(clip_entry)
+    )
 
     return web.json_response({
         "success": True,
-        "count": len(generated_clips),
-        "clips": generated_clips,
+        "task_id": task_id,
     })
 
 
@@ -239,6 +318,7 @@ def create_app() -> web.Application:
     app.router.add_get("/", index_handler)
     app.router.add_get("/api/status", status_handler)
     app.router.add_get("/api/clips", clips_handler)
+    app.router.add_get("/api/task_status/{task_id}", task_status_handler)
     app.router.add_post("/api/generate", generate_handler)
     app.router.add_static("/static/", path=STATIC_DIR, name="static")
     app.router.add_static("/output/", path=OUTPUT_DIR, name="output")

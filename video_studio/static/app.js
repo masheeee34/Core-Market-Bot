@@ -37,7 +37,6 @@ if (dropzone) {
 
 function toggleModeSettings() {
   const mode = document.getElementById("renderMode").value;
-  // Can adjust UI if needed
 }
 
 async function startGeneration() {
@@ -59,9 +58,9 @@ async function startGeneration() {
 
   btn.disabled = true;
   progressContainer.style.display = "flex";
-  progressFill.style.width = "15%";
-  progressText.textContent = "Uploading & Preparing Video...";
-  progressPercent.textContent = "15%";
+  progressFill.style.width = "10%";
+  progressText.textContent = "Uploading & Initializing...";
+  progressPercent.textContent = "10%";
 
   const formData = new FormData();
   if (currentSourceTab === "upload") {
@@ -78,32 +77,55 @@ async function startGeneration() {
   formData.append("bottom_cta", document.getElementById("bottomCtaText").value);
 
   try {
-    progressFill.style.width = "45%";
-    progressText.textContent = "Processing with RTX 3050 NVENC & AI Voice...";
-    progressPercent.textContent = "45%";
-
     const res = await fetch("/api/generate", {
       method: "POST",
       body: formData,
     });
 
     const data = await res.json();
-    if (data.success) {
-      progressFill.style.width = "100%";
-      progressText.textContent = "Generation Complete! 🎉";
-      progressPercent.textContent = "100%";
-      setTimeout(() => {
-        progressContainer.style.display = "none";
-        loadClipsGallery();
-      }, 1500);
-    } else {
-      alert("Error: " + (data.error || "Failed to generate video."));
+    if (!data.success || !data.task_id) {
+      alert("Error: " + (data.error || "Failed to start generation job."));
       progressContainer.style.display = "none";
+      btn.disabled = false;
+      return;
     }
+
+    // Poll task status in real-time
+    const taskId = data.task_id;
+    const pollInterval = setInterval(async () => {
+      try {
+        const pollRes = await fetch(`/api/task_status/${taskId}`);
+        const taskInfo = await pollRes.json();
+
+        if (taskInfo.status === "running") {
+          progressFill.style.width = `${taskInfo.percent}%`;
+          progressPercent.textContent = `${taskInfo.percent}%`;
+          progressText.textContent = taskInfo.message;
+        } else if (taskInfo.status === "done") {
+          clearInterval(pollInterval);
+          progressFill.style.width = "100%";
+          progressPercent.textContent = "100%";
+          progressText.textContent = taskInfo.message;
+          btn.disabled = false;
+
+          setTimeout(() => {
+            progressContainer.style.display = "none";
+            loadClipsGallery();
+          }, 1500);
+        } else if (taskInfo.status === "error") {
+          clearInterval(pollInterval);
+          alert("Render Error: " + (taskInfo.error || "Unknown error occurred."));
+          progressContainer.style.display = "none";
+          btn.disabled = false;
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 700);
+
   } catch (err) {
-    alert("Generation failed: " + err.message);
+    alert("Generation request failed: " + err.message);
     progressContainer.style.display = "none";
-  } finally {
     btn.disabled = false;
   }
 }
@@ -138,7 +160,7 @@ async function loadClipsGallery() {
           </div>
 
           <div class="clip-actions">
-            <a href="/output/${encodeURIComponent(clip.filename)}" download class="btn-primary" style="flex: 1; padding: 10px; font-size: 13px; text-decoration: none;">
+            <a href="/output/${encodeURIComponent(clip.filename)}" download class="btn-primary" style="flex: 1; padding: 10px; font-size: 13px; text-decoration: none; text-align: center;">
               📥 Download MP4
             </a>
             <button class="btn-secondary" onclick="copyToClipboard('${escapeJs(clip.meta.title + '\n\n' + clip.meta.hashtags_string)}')">

@@ -3,3 +3,14 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.webm
+*.mp3
+*.ass
+video_studio/temp/
+video_studio/output/*.mp4
+video_studio/output/*.mkv
+video_studio/output/*.mov
