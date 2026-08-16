@@ -54,6 +54,9 @@ ACTIVITIES: list[tuple[discord.ActivityType, str]] = [
 
 class SilenceAudioSource(discord.AudioSource):
     """Generates continuous Opus silence frames to keep Discord RTC voice gateway connection alive 24/7."""
+    def is_opus(self) -> bool:
+        return True
+
     def read(self) -> bytes:
         return b"\xf8\xff\xfe"
 
@@ -88,12 +91,14 @@ class AISupportCog(commands.Cog):
     async def before_rotating_presence(self) -> None:
         await self.bot.wait_until_ready()
 
-    @tasks.loop(seconds=45)
+    @tasks.loop(seconds=60)
     async def voice_watchdog(self) -> None:
         """Maintains 24/7 voice presence in '🎧・if you need help' across guilds."""
         for guild in self.bot.guilds:
             try:
-                await self._ensure_voice_presence(guild)
+                # Only attempt reconnect if disconnected
+                if not guild.voice_client or not guild.voice_client.is_connected():
+                    await self._ensure_voice_presence(guild)
             except Exception as e:
                 log.debug("Voice watchdog check error on %s: %s", guild.name, e)
 
