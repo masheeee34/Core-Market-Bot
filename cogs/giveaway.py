@@ -93,20 +93,36 @@ class GiveawayModal(discord.ui.Modal, title="🎁 Create a Giveaway"):
         end_timestamp = int(end_dt.timestamp())
 
         embed = discord.Embed(
-            title="🎉  GIVEAWAY — " + str(self.prize).upper(),
+            title=f"🎁  SPECIAL COMMUNITY GIVEAWAY — {str(self.prize).upper()}",
             description=(
-                f"> Click the **🎁 Enter Giveaway** button below to participate!\n\n"
-                f"▸ **🏆 Prize :** `{self.prize}`\n"
-                f"▸ **👥 Winners :** `{winners_num}`\n"
-                f"▸ **⏳ Ends :** <t:{end_timestamp}:R> (<t:{end_timestamp}:f>)\n"
-                f"▸ **👑 Hosted by :** {interaction.user.mention}\n"
-                + (f"▸ **📜 Note :** *{self.notes}*\n" if str(self.notes).strip() else "")
+                "> **React now to win exclusive premium access on Core Market!**\n"
+                "> Click the green **🎉 Enter Giveaway** button below to record your participation.\n\n"
+                "```ansi\n"
+                "\u001b[1;33m[ 🏆 PRIZE & REWARD ]\u001b[0m\n"
+                "```\n"
+                f"▸ **Prize :** **`{self.prize}`**\n"
+                f"▸ **Total Winners :** **`{winners_num} lucky winner(s)`**\n\n"
+                "```ansi\n"
+                "\u001b[1;36m[ ⏳ EVENT DETAILS & TIMELINE ]\u001b[0m\n"
+                "```\n"
+                f"▸ **Ends In :** <t:{end_timestamp}:R> (<t:{end_timestamp}:f>)\n"
+                f"▸ **Hosted by :** {interaction.user.mention}\n"
+                + (f"▸ **Requirements :** *{self.notes}*\n\n" if str(self.notes).strip() else "\n")
+                + "```ansi\n"
+                "\u001b[1;32m[ ⚡ HOW TO PARTICIPATE ]\u001b[0m\n"
+                "```\n"
+                "**` 1 `** Click the **🎉 Enter Giveaway** button below.\n"
+                "**` 2 `** When the timer ends, our bot will automatically draw the winner(s)!\n"
+                "**` 3 `** If a license key is attached, it will be delivered straight to your DMs."
             ),
             color=discord.Color.from_str("#0070FF"),
         )
-        embed.set_footer(text="CORE MARKET • Automated Giveaway Engine")
+        embed.set_footer(text="CORE MARKET • Automated Giveaway Engine • Limit: 1 entry per member")
 
-        await interaction.response.send_message("✅ Creating giveaway...", ephemeral=True)
+        if os.path.exists("banner.gif"):
+            embed.set_image(url="attachment://banner.gif")
+
+        await interaction.response.send_message("✅ Giveaway created successfully!", ephemeral=True)
 
         view = GiveawayEntryView()
         msg = await interaction.channel.send(embed=embed, view=view)
@@ -133,7 +149,7 @@ class GiveawayEntryView(discord.ui.View):
     @discord.ui.button(
         label="Enter Giveaway (0)",
         emoji="🎉",
-        style=discord.ButtonStyle.primary,
+        style=discord.ButtonStyle.success,
         custom_id="giveaway_entry_btn",
     )
     async def enter(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -218,23 +234,34 @@ class GiveawayCog(commands.Cog):
         winners_mentions = ", ".join(f"<@{uid}>" for uid in picked_ids)
 
         embed = msg.embeds[0] if msg.embeds else discord.Embed(title="🎉 GIVEAWAY ENDED")
-        embed.color = discord.Color.gold()
+        embed.color = discord.Color.from_str("#FFD700")
+        embed.title = f"👑  GIVEAWAY CONCLUDED — {prize.upper()}"
         embed.description = (
-            f"**🏆 Prize :** `{prize}`\n\n"
-            f"👑 **Winner(s) :** {winners_mentions}\n"
-            f"👥 **Total Entries :** `{len(entries)}`"
+            "```ansi\n"
+            "\u001b[1;33m[ 🏆 OFFICIAL WINNER(S) ]\u001b[0m\n"
+            "```\n"
+            f"▸ **Prize :** **`{prize}`**\n"
+            f"▸ **Winner(s) :** {winners_mentions}\n"
+            f"▸ **Total Participants :** **`{len(entries)} members`**\n\n"
+            "🛡️ *Rewards have been sent via DM or can be claimed inside support tickets.*"
         )
+        embed.set_footer(text="CORE MARKET • Giveaway Concluded")
         await msg.edit(embed=embed, view=None)
 
         congrats_embed = discord.Embed(
-            title="🥳  GIVEAWAY WINNER ANNOUNCEMENT!",
+            title="🎉  CONGRATULATIONS TO THE WINNER(S)!",
             description=(
-                f"Congratulations {winners_mentions}! You won **{prize}**!\n\n"
-                f"📩 Check your DMs or open a ticket in support to claim your reward."
+                f"GG {winners_mentions}! You won the **`{prize}`** giveaway!\n\n"
+                "```ansi\n"
+                "\u001b[1;32m[ 🎁 HOW TO CLAIM YOUR PRIZE ]\u001b[0m\n"
+                "```\n"
+                "▸ Check your direct messages (DM) from Core Market.\n"
+                "▸ Or open a ticket in <#🎫・creer-un-ticket> to claim your license."
             ),
             color=discord.Color.green(),
         )
-        await channel.send(content=f"🎉 {winners_mentions}", embed=congrats_embed)
+        congrats_embed.set_footer(text="CORE MARKET • Official Winner Announcement")
+        await channel.send(content=f"👑 {winners_mentions}", embed=congrats_embed)
 
         # Optional Auto-DM secret key to winners
         if secret_key:
@@ -243,14 +270,19 @@ class GiveawayCog(commands.Cog):
                 if user:
                     try:
                         dm_embed = discord.Embed(
-                            title="🎁 YOUR GIVEAWAY REWARD IS HERE!",
+                            title="🎁  YOUR CORE MARKET GIVEAWAY REWARD!",
                             description=(
-                                f"Congratulations! You won **{prize}** on Core Market!\n\n"
-                                f"🔑 **Your License Key :**\n```{secret_key}```\n"
-                                f"📖 **Setup Guide :** https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation"
+                                f"Congratulations {user.mention}! You won **`{prize}`**!\n\n"
+                                "```ansi\n"
+                                "\u001b[1;32m[ 🔑 YOUR PERSONAL LICENSE KEY ]\u001b[0m\n"
+                                "```\n"
+                                f"```{secret_key}```\n\n"
+                                "▸ **Setup Guide :** https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation\n"
+                                "▸ **Support :** Need assistance? Open a ticket on our Discord server."
                             ),
                             color=discord.Color.green(),
                         )
+                        dm_embed.set_footer(text="CORE MARKET • Enjoy your prize!")
                         await user.send(embed=dm_embed)
                     except Exception:
                         pass
