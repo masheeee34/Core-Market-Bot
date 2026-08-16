@@ -39,9 +39,10 @@ log = logging.getLogger("ticketbot")
 
 
 class TicketBot(commands.Bot):
-    def __init__(self) -> None:
+    def __init__(self, with_privileged_intents: bool = False) -> None:
         intents = discord.Intents.default()
-        intents.members = True
+        if with_privileged_intents:
+            intents.members = True
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self) -> None:
@@ -101,11 +102,16 @@ async def main() -> None:
     await run_webserver()
     asyncio.create_task(keep_alive())
 
+    try_privileged = True
     while True:
         try:
-            log.info("Connexion à Discord en cours...")
-            bot = TicketBot()
+            log.info("Connexion à Discord (privileged_intents=%s)...", try_privileged)
+            bot = TicketBot(with_privileged_intents=try_privileged)
             await bot.start(DISCORD_TOKEN)
+        except discord.errors.PrivilegedIntentsRequired:
+            log.warning("Privileged Intents non activés sur le Developer Portal. Démarrage en mode standard...")
+            try_privileged = False
+            await asyncio.sleep(1)
         except Exception as e:
             log.error("Erreur de connexion Discord : %s. Nouvelle tentative dans 5s...", e)
             await asyncio.sleep(5)
