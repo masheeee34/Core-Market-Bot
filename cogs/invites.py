@@ -100,17 +100,23 @@ class InvitesCog(commands.Cog):
 
             if log_ch:
                 embed_log = discord.Embed(
-                    title="🔗  NEW REFERRAL JOINED",
+                    title="🔗  REFERRAL TRACKER — NEW JOIN",
                     description=(
+                        "```ansi\n"
+                        "\u001b[1;32m[ 📥 MEMBER JOINED VIA INVITE ]\u001b[0m\n"
+                        "```\n"
                         f"▸ **New Member :** {member.mention} (`{member.id}`)\n"
                         f"▸ **Invited By :** {inviter.mention} (`{inviter.id}`)\n"
-                        f"▸ **Invite Code :** `discord.gg/{used_code}`\n"
-                        f"▸ **Inviter Total Invites :** **`{total_valid}`**\n"
-                        f"▸ **Giveaway Tickets :** **`{total_valid + 1}`**"
+                        f"▸ **Invite Code :** `discord.gg/{used_code}`\n\n"
+                        "```ansi\n"
+                        "\u001b[1;33m[ 📊 INVITER UPDATED STATS ]\u001b[0m\n"
+                        "```\n"
+                        f"▸ **Total Active Invites :** **`{total_valid}`**\n"
+                        f"▸ **Giveaway Tickets Pool :** **`{total_valid + 1} Tickets`**"
                     ),
-                    color=discord.Color.green(),
+                    color=discord.Color.from_str("#0070FF"),
                 )
-                embed_log.set_footer(text="CORE MARKET • Referral Tracker")
+                embed_log.set_footer(text="CORE MARKET • Automated Referral System")
                 await log_ch.send(embed=embed_log)
 
             # 2. Direct DM Notification to the Inviter
@@ -118,14 +124,21 @@ class InvitesCog(commands.Cog):
                 embed_dm = discord.Embed(
                     title="🎉  NEW MEMBER JOINED WITH YOUR LINK!",
                     description=(
-                        f"Hey {inviter.mention}! **{member.name}** just joined Core Market using your invite link!\n\n"
-                        f"▸ **Your Valid Active Invites :** **`{total_valid}`**\n"
-                        f"▸ **Your Giveaway Bonus :** **`+{total_valid} Extra Tickets`** on all active giveaways!\n\n"
-                        "🚀 *Keep sharing your link to maximize your chances of winning!*"
+                        f"> **GG {inviter.name}!** **{member.name}** just joined Core Market using your invite!\n\n"
+                        "```ansi\n"
+                        "\u001b[1;33m[ 📊 YOUR REFERRAL STATS ]\u001b[0m\n"
+                        "```\n"
+                        f"▸ **Valid Active Invites :** **`{total_valid} members`**\n"
+                        f"▸ **Giveaway Multiplier :** **`+{total_valid} Extra Ticket(s)`**\n\n"
+                        "```ansi\n"
+                        "\u001b[1;36m[ ⚡ BOOST YOUR ODDS ]\u001b[0m\n"
+                        "```\n"
+                        "▸ Every valid invite gives you **+1 additional entry ticket** on all giveaways.\n"
+                        "▸ Keep sharing your personal link to increase your chances of winning!"
                     ),
                     color=discord.Color.from_str("#0070FF"),
                 )
-                embed_dm.set_footer(text="CORE MARKET • Invite Rewards")
+                embed_dm.set_footer(text="CORE MARKET • Referral Rewards Engine")
                 await inviter.send(embed=embed_dm)
             except Exception as e:
                 log.warning("Could not send DM to inviter %s: %s", inviter, e)
@@ -205,32 +218,45 @@ class InvitesCog(commands.Cog):
 
         if log_ch and isinstance(log_ch, discord.TextChannel):
             embed_log = discord.Embed(
-                title="🔗  [TEST] NEW REFERRAL JOINED",
+                title="🔗  REFERRAL TRACKER — [TEST SIMULATION]",
                 description=(
-                    f"▸ **New Member :** {interaction.user.mention}\n"
-                    f"▸ **Invited By :** {target.mention}\n"
-                    f"▸ **Invite Code :** `discord.gg/test-link`\n"
-                    f"▸ **Inviter Total Invites :** `5`\n"
-                    f"▸ **Giveaway Tickets :** `6 Tickets`"
+                    "```ansi\n"
+                    "\u001b[1;32m[ 📥 MEMBER JOINED VIA INVITE ]\u001b[0m\n"
+                    "```\n"
+                    f"▸ **New Member :** {interaction.user.mention} (`{interaction.user.id}`)\n"
+                    f"▸ **Invited By :** {target.mention} (`{target.id}`)\n"
+                    "▸ **Invite Code :** `discord.gg/test-promo`\n\n"
+                    "```ansi\n"
+                    "\u001b[1;33m[ 📊 INVITER UPDATED STATS ]\u001b[0m\n"
+                    "```\n"
+                    "▸ **Total Active Invites :** **`5 members`**\n"
+                    "▸ **Giveaway Tickets Pool :** **`6 Tickets`**"
                 ),
-                color=discord.Color.green(),
+                color=discord.Color.from_str("#0070FF"),
             )
-            embed_log.set_footer(text="CORE MARKET • Referral Tracker (Test Simulation)")
+            embed_log.set_footer(text="CORE MARKET • Automated Referral System (Test Simulation)")
             await log_ch.send(embed=embed_log)
 
         # 2. DM
         try:
             embed_dm = discord.Embed(
-                title="🎉  [TEST] NEW MEMBER JOINED WITH YOUR LINK!",
+                title="🎉  NEW MEMBER JOINED WITH YOUR LINK!",
                 description=(
-                    f"Hey {target.mention}! A new member just joined Core Market using your invite link!\n\n"
-                    f"▸ **Your Valid Active Invites :** `5`\n"
-                    f"▸ **Your Giveaway Bonus :** `+5 Extra Tickets` on all active giveaways!\n\n"
-                    "🚀 *Keep sharing your link to maximize your chances of winning!*"
+                    f"> **GG {target.name}!** A new member just joined Core Market using your invite!\n\n"
+                    "```ansi\n"
+                    "\u001b[1;33m[ 📊 YOUR REFERRAL STATS ]\u001b[0m\n"
+                    "```\n"
+                    "▸ **Valid Active Invites :** **`5 members`**\n"
+                    "▸ **Giveaway Multiplier :** **`+5 Extra Ticket(s)`**\n\n"
+                    "```ansi\n"
+                    "\u001b[1;36m[ ⚡ BOOST YOUR ODDS ]\u001b[0m\n"
+                    "```\n"
+                    "▸ Every valid invite gives you **+1 additional entry ticket** on all giveaways.\n"
+                    "▸ Keep sharing your personal link to increase your chances of winning!"
                 ),
                 color=discord.Color.from_str("#0070FF"),
             )
-            embed_dm.set_footer(text="CORE MARKET • Invite Rewards (Test Simulation)")
+            embed_dm.set_footer(text="CORE MARKET • Referral Rewards Engine (Test Simulation)")
             await target.send(embed=embed_dm)
             dm_status = "✅ DM envoyé avec succès !"
         except Exception as e:

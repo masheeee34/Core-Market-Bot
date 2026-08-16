@@ -317,16 +317,25 @@ class TrialClaimView(discord.ui.View):
         # 5. Backup DM delivery
         try:
             embed_dm = discord.Embed(
-                title="🎁  CORE MARKET — YOUR BO7 TRIAL KEY",
+                title="🎁  CORE MARKET — YOUR TRIAL LICENSE KEY",
                 description=(
-                    f"Here is a copy of your free trial key for **{guild.name if guild else 'Core Market'}** :\n\n"
-                    f"🔑 **Key :** `{key_given}`\n\n"
-                    f"📥 **Download Loader :** {LOADER_MEGA_URL}\n"
-                    f"📖 **Setup Guide :** {GUIDE_GITBOOK_URL}\n\n"
-                    f"Have fun playing!"
+                    "> **Thank you for trying Core Market BO7 / Warzone software!**\n"
+                    "> Here is your official trial license key and complete setup instructions.\n\n"
+                    "```ansi\n"
+                    "\u001b[1;32m[ 🔑 YOUR PERSONAL 1-HOUR LICENSE KEY ]\u001b[0m\n"
+                    "```\n"
+                    f"```{key_given}```\n"
+                    "```ansi\n"
+                    "\u001b[1;36m[ 📥 DOWNLOAD & QUICK START GUIDE ]\u001b[0m\n"
+                    "```\n"
+                    f"**` 1 ` Download Loader :** [Click to Download via Mega]({LOADER_MEGA_URL})\n"
+                    f"**` 2 ` Setup Guide :** [View Step-by-Step GitBook Guide]({GUIDE_GITBOOK_URL})\n"
+                    f"**` 3 ` Activation :** Run loader as Admin ➔ Paste your key ➔ Launch Game\n\n"
+                    "🛡️ *Ensure Virtualization (SVM / Intel VT-x) is enabled in BIOS before launching.*"
                 ),
                 color=discord.Color.from_str("#0070FF"),
             )
+            embed_dm.set_footer(text="CORE MARKET • 1-Hour Free Trial • Need help? Open a ticket!")
             await user.send(embed=embed_dm)
         except Exception:
             pass
