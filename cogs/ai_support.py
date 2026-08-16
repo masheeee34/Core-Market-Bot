@@ -52,15 +52,6 @@ ACTIVITIES: list[tuple[discord.ActivityType, str]] = [
 ]
 
 
-class SilenceAudioSource(discord.AudioSource):
-    """Generates continuous Opus silence frames to keep Discord RTC voice gateway connection alive 24/7."""
-    def is_opus(self) -> bool:
-        return True
-
-    def read(self) -> bytes:
-        return b"\xf8\xff\xfe"
-
-
 class AISupportCog(commands.Cog):
     """24/7 Voice Support Desk & Intelligent AI DM Knowledge Assistant with Staff Live Feed."""
 
@@ -74,7 +65,7 @@ class AISupportCog(commands.Cog):
         self.voice_watchdog.cancel()
         self.rotating_presence.cancel()
 
-    @tasks.loop(seconds=15)
+    @tasks.loop(seconds=30)
     async def rotating_presence(self) -> None:
         """Dynamically rotates the bot's rich presence activity and custom status."""
         try:
@@ -91,13 +82,14 @@ class AISupportCog(commands.Cog):
     async def before_rotating_presence(self) -> None:
         await self.bot.wait_until_ready()
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=120)
     async def voice_watchdog(self) -> None:
         """Maintains 24/7 voice presence in '🎧・if you need help' across guilds."""
         for guild in self.bot.guilds:
             try:
-                # Only attempt reconnect if disconnected
-                if not guild.voice_client or not guild.voice_client.is_connected():
+                # Only attempt reconnect if completely disconnected
+                voice_client = guild.voice_client
+                if not voice_client or not voice_client.is_connected():
                     await self._ensure_voice_presence(guild)
             except Exception as e:
                 log.debug("Voice watchdog check error on %s: %s", guild.name, e)
@@ -118,7 +110,8 @@ class AISupportCog(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
         """Instantly reconnect if the bot gets disconnected from the support voice channel."""
         if member == self.bot.user and after.channel is None:
-            await asyncio.sleep(2)
+            log.info("Bot voice disconnected, scheduling auto-reconnect...")
+            await asyncio.sleep(5)
             if member.guild:
                 await self._ensure_voice_presence(member.guild)
 
@@ -159,12 +152,7 @@ class AISupportCog(commands.Cog):
                         await voice_client.disconnect(force=True)
                     except Exception:
                         pass
-                vc = await vchannel.connect(reconnect=True, timeout=25.0, self_deaf=False, self_mute=True)
-                if not vc.is_playing():
-                    try:
-                        vc.play(SilenceAudioSource())
-                    except Exception:
-                        pass
+                await vchannel.connect(reconnect=True, timeout=30.0, self_deaf=False, self_mute=True)
                 log.info("Connected to 24/7 Voice Desk in %s", guild.name)
                 return True, f"Connecté avec succès à {vchannel.name} !"
             except Exception as e:
@@ -176,13 +164,6 @@ class AISupportCog(commands.Cog):
                 return True, f"Déplacé vers {vchannel.name} !"
             except Exception as e:
                 return False, f"Erreur de déplacement : {e}"
-
-        # Keep silence stream playing if stopped
-        if voice_client and not voice_client.is_playing():
-            try:
-                voice_client.play(SilenceAudioSource())
-            except Exception:
-                pass
 
         return True, f"Déjà connecté dans {vchannel.name}"
 
