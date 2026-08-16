@@ -172,10 +172,47 @@ class GiveawayEntryView(discord.ui.View):
         msg_id = str(interaction.message.id)
         data = load_giveaways()
         gw = data.get(msg_id)
+        now_ts = int(datetime.now(timezone.utc).timestamp())
 
-        if not gw or gw.get("ended"):
+        # Auto-reconstruct giveaway from Discord message embed if missing from local file after server restart
+        if not gw:
+            embed = interaction.message.embeds[0] if interaction.message.embeds else None
+            if not embed or not embed.description:
+                await interaction.response.send_message("❌ This giveaway has already ended.", ephemeral=True)
+                return
+
+            time_match = re.search(r"<t:(\d+):R>", embed.description)
+            if not time_match:
+                await interaction.response.send_message("❌ This giveaway has already ended.", ephemeral=True)
+                return
+
+            end_ts = int(time_match.group(1))
+            if now_ts >= end_ts or "CONCLUDED" in (embed.title or ""):
+                await interaction.response.send_message("❌ This giveaway has already ended.", ephemeral=True)
+                return
+
+            prize_title = embed.title.replace("🎁 SPECIAL COMMUNITY GIVEAWAY — ", "").strip() if embed.title else "Prize"
+            winners_match = re.search(r"(\d+)\s+lucky winner", embed.description)
+            winners_count = int(winners_match.group(1)) if winners_match else 1
+
+            gw = {
+                "channel_id": interaction.channel_id,
+                "guild_id": interaction.guild_id,
+                "prize": prize_title,
+                "winners_count": winners_count,
+                "end_timestamp": end_ts,
+                "host_id": interaction.user.id,
+                "secret_key": "",
+                "entries": {},
+                "ended": False,
+            }
+            data[msg_id] = gw
+
+        if gw.get("ended") and now_ts >= gw.get("end_timestamp", 0):
             await interaction.response.send_message("❌ This giveaway has already ended.", ephemeral=True)
             return
+        elif gw.get("ended") and now_ts < gw.get("end_timestamp", 0):
+            gw["ended"] = False
 
         user_id = interaction.user.id
         raw_entries = gw.get("entries", {})
