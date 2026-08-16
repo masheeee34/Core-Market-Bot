@@ -42,18 +42,27 @@ async def translate_text(text: str, target_lang: str) -> str:
 
 
 def extract_message_text(message: discord.Message) -> str:
-    # If the message is an auto-reply or button bar, look at the referenced announcement
+    """Extracts all text from message content, embed titles, descriptions, fields, and footers."""
+    # If the message is an auto-reply or button bar, look at the referenced message
     if message.reference and message.reference.resolved and isinstance(message.reference.resolved, discord.Message):
         message = message.reference.resolved
 
-    source_text = message.content or ""
-    embed_title = ""
-    embed_desc = ""
-    if message.embeds:
-        emb = message.embeds[0]
-        embed_title = emb.title or ""
-        embed_desc = emb.description or ""
-    return source_text or f"{embed_title}\n\n{embed_desc}".strip()
+    parts: list[str] = []
+    if message.content and message.content.strip():
+        parts.append(message.content.strip())
+
+    for emb in message.embeds:
+        if emb.title:
+            parts.append(f"**{emb.title}**")
+        if emb.description:
+            parts.append(emb.description)
+        for field in emb.fields:
+            parts.append(f"**{field.name}**\n{field.value}")
+        if emb.footer and emb.footer.text:
+            parts.append(f"*{emb.footer.text}*")
+
+    full = "\n\n".join(parts).strip()
+    return full[:3800] if len(full) > 3800 else full
 
 
 class LanguageSelectDropdown(discord.ui.Select):
