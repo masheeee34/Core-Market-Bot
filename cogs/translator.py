@@ -23,22 +23,24 @@ LANG_OPTIONS: list[dict[str, str]] = [
 ]
 
 
-async def translate_text(text: str, target_lang: str) -> str:
-    """Translates text asynchronously using Google Translate engine (0 API key needed)."""
+async def translate_text(text: str, target_lang: str, source_lang: str = "auto") -> tuple[str, str]:
+    """Translates text asynchronously and returns (translated_text, detected_source_lang)."""
     if not text.strip():
-        return ""
+        return "", "auto"
     lang_code = target_lang.split("-")[0] if "-" in target_lang and target_lang not in ("zh-CN", "zh-TW") else target_lang
-    url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl={lang_code}&dt=t&q={urllib.parse.quote(text)}"
+    url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={source_lang}&tl={lang_code}&dt=t&q={urllib.parse.quote(text)}"
 
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    return "".join([part[0] for part in data[0] if part and part[0]])
+                    translated = "".join([part[0] for part in data[0] if part and part[0]])
+                    detected_src = data[2] if len(data) > 2 and isinstance(data[2], str) else "auto"
+                    return translated, detected_src
     except Exception as e:
         log.error("Translation error: %s", e)
-    return text
+    return text, "auto"
 
 
 def extract_message_text(message: discord.Message) -> str:
@@ -96,7 +98,7 @@ class LanguageSelectDropdown(discord.ui.Select):
             await interaction.followup.send("⚠️ No translatable text found in this message.", ephemeral=True)
             return
 
-        translated = await translate_text(text, target_lang)
+        translated, _ = await translate_text(text, target_lang)
         embed = discord.Embed(
             title=f"🌐  TRANSLATION ({target_lang.upper()})",
             description=translated,
@@ -133,7 +135,7 @@ class TranslateButtonView(discord.ui.View):
             await interaction.followup.send("⚠️ No translatable text found in this message.", ephemeral=True)
             return
 
-        translated = await translate_text(text, target_lang)
+        translated, _ = await translate_text(text, target_lang)
         embed = discord.Embed(
             title=f"🌐  TRANSLATION ({user_locale.upper()})",
             description=f"> **Translated to your Discord language :**\n\n{translated}",
@@ -218,7 +220,7 @@ class TranslatorCog(commands.Cog):
             await interaction.followup.send("⚠️ No translatable text found in this message.", ephemeral=True)
             return
 
-        translated = await translate_text(full_text, target_lang)
+        translated, _ = await translate_text(full_text, target_lang)
         embed = discord.Embed(
             title=f"🌍  TRANSLATION ({target_lang.upper()})",
             description=f"> **Original Author :** {message.author.mention}\n\n{translated}",

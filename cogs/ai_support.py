@@ -126,55 +126,73 @@ class AISupportCog(commands.Cog):
         if not query:
             return
 
-        topics = load_knowledge_base()
-        best_topic = find_best_topic(query, topics)
+        # 1. Translate query to English for universal KB lookup & detect source language
+        translated_en, detected_lang = await translate_text(query, target_lang="en")
 
-        # Detect language / default to French or English
+        topics = load_knowledge_base()
+        best_topic = find_best_topic(query, topics) or find_best_topic(translated_en, topics)
+
+        is_french = detected_lang.startswith("fr") or any(
+            w in query.lower() for w in ("bonjour", "salut", "comment", "prix", "aide", "merci", "cle", "est", "je")
+        )
+
         GUIDE_URL = "https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation"
         LOADER_URL = "https://mega.nz/folder/w7VjQS6I#wav1HBID04Hj9w-N_2CVaQ"
 
         if best_topic:
-            answer = best_topic.get("response_fr" if is_french else "response_en", "")
+            raw_answer = best_topic.get("response_fr" if is_french else "response_en", "")
+            if not is_french and detected_lang not in ("en", "auto", ""):
+                answer, _ = await translate_text(best_topic.get("response_en", raw_answer), target_lang=detected_lang)
+            else:
+                answer = raw_answer
+
             embed_reply = discord.Embed(
                 title=f"🤖  CORE MARKET ASSISTANT — {best_topic['id'].replace('_', ' ').upper()}",
                 description=answer,
                 color=discord.Color.from_str("#0070FF"),
             )
         else:
-            description = (
-                f"> **Hello {user.name}! Welcome to Core Market AI Helpdesk.**\n"
-                "> I am your automated assistant. Ask me anything or browse our popular topics:\n\n"
-                "```ansi\n"
-                "\u001b[1;33m[ 💡 POPULAR QUESTIONS YOU CAN ASK ]\u001b[0m\n"
-                "```\n"
-                "▸ **🎁 Free Trial 1H :** Ask *\"how to get free trial\"* or claim in <#🎁・free-trial>\n"
-                "▸ **⚙️ BIOS Setup :** Ask *\"how to enable SVM / VT-x virtualization\"*\n"
-                "▸ **📥 Download Loader :** Ask *\"download link\"* to get our official files\n"
-                "▸ **💳 Pricing & Buy :** Ask *\"pricing\"* for M-Core & Trinity Spectre keys\n"
-                "▸ **🛡️ Streamproof :** Ask *\"is it undetected / streamproof\"*\n\n"
-                "```ansi\n"
-                "\u001b[1;32m[ 🎫 HUMAN SUPPORT & ORDERS ]\u001b[0m\n"
-                "```\n"
-                "▸ Need dedicated human assistance? Open a ticket in **<#🎫・creer-un-ticket>**."
-                if not is_french
-                else
-                f"> **Bonjour {user.name} ! Bienvenue sur l'assistance Core Market.**\n"
-                "> Je suis l'assistant intelligent. Posez-moi votre question ou consultez les sujets ci-dessous :\n\n"
-                "```ansi\n"
-                "\u001b[1;33m[ 💡 QUESTIONS FRÉQUENTES RECONNUES ]\u001b[0m\n"
-                "```\n"
-                "▸ **🎁 Clé d'essai 1H :** Demandez *\"comment avoir la clé d'essai\"* ou allez dans <#🎁・free-trial>\n"
-                "▸ **⚙️ Virtualisation BIOS :** Demandez *\"comment activer SVM / VT-x\"*\n"
-                "▸ **📥 Téléchargement Loader :** Demandez *\"lien de téléchargement\"*\n"
-                "▸ **💳 Tarifs & Achat :** Demandez *\"les prix\"* pour M-Core et Trinity Spectre\n"
-                "▸ **🛡️ Streamproof & Sécurité :** Demandez *\"est-ce indétectable\"*\n\n"
-                "```ansi\n"
-                "\u001b[1;32m[ 🎫 SUPPORT HUMAIN & COMMANDES ]\u001b[0m\n"
-                "```\n"
-                "▸ Besoin d'aide personnalisée ? Ouvrez un ticket dans **<#🎫・creer-un-ticket>**."
-            )
+            if is_french:
+                description = (
+                    f"> **Bonjour {user.name} ! Bienvenue sur l'assistance Core Market.**\n"
+                    "> Je suis l'assistant intelligent. Posez-moi votre question ou consultez les sujets ci-dessous :\n\n"
+                    "```ansi\n"
+                    "\u001b[1;33m[ 💡 QUESTIONS FRÉQUENTES RECONNUES ]\u001b[0m\n"
+                    "```\n"
+                    "▸ **🎁 Clé d'essai 1H :** Demandez *\"comment avoir la clé d'essai\"* ou allez dans <#🎁・free-trial>\n"
+                    "▸ **⚙️ Virtualisation BIOS :** Demandez *\"comment activer SVM / VT-x\"*\n"
+                    "▸ **📥 Téléchargement Loader :** Demandez *\"lien de téléchargement\"*\n"
+                    "▸ **💳 Tarifs & Achat :** Demandez *\"les prix\"* pour M-Core et Trinity Spectre\n"
+                    "▸ **🛡️ Streamproof & Sécurité :** Demandez *\"est-ce indétectable\"*\n\n"
+                    "```ansi\n"
+                    "\u001b[1;32m[ 🎫 SUPPORT HUMAIN & COMMANDES ]\u001b[0m\n"
+                    "```\n"
+                    "▸ Besoin d'aide personnalisée ? Ouvrez un ticket dans **<#🎫・creer-un-ticket>**."
+                )
+            else:
+                base_desc = (
+                    f"> **Hello {user.name}! Welcome to Core Market AI Helpdesk.**\n"
+                    "> I am your automated assistant. Ask me anything or browse our popular topics:\n\n"
+                    "```ansi\n"
+                    "\u001b[1;33m[ 💡 POPULAR QUESTIONS YOU CAN ASK ]\u001b[0m\n"
+                    "```\n"
+                    "▸ **🎁 Free Trial 1H :** Ask *\"how to get free trial\"* or claim in <#🎁・free-trial>\n"
+                    "▸ **⚙️ BIOS Setup :** Ask *\"how to enable SVM / VT-x virtualization\"*\n"
+                    "▸ **📥 Download Loader :** Ask *\"download link\"* to get our official files\n"
+                    "▸ **💳 Pricing & Buy :** Ask *\"pricing\"* for M-Core & Trinity Spectre keys\n"
+                    "▸ **🛡️ Streamproof :** Ask *\"is it undetected / streamproof\"*\n\n"
+                    "```ansi\n"
+                    "\u001b[1;32m[ 🎫 HUMAN SUPPORT & ORDERS ]\u001b[0m\n"
+                    "```\n"
+                    "▸ Need dedicated human assistance? Open a ticket in **<#🎫・creer-un-ticket>**."
+                )
+                if detected_lang not in ("en", "auto", ""):
+                    description, _ = await translate_text(base_desc, target_lang=detected_lang)
+                else:
+                    description = base_desc
+
             embed_reply = discord.Embed(
-                title="🤖  CORE MARKET • 24/7 AI HELPDESK",
+                title=f"🤖  CORE MARKET • 24/7 AI HELPDESK ({detected_lang.upper()})",
                 description=description,
                 color=discord.Color.from_str("#0070FF"),
             )
