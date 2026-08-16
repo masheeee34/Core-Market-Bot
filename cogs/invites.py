@@ -38,11 +38,10 @@ def get_user_valid_invites(guild_id: int, user_id: int) -> int:
 
 
 class InvitesCog(commands.Cog):
-    """Tracks invite links to power weighted giveaway tickets and referrals."""
+    """Tracks invite links to power weighted giveaway tickets, notifications, and referrals."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        # In-memory cache: guild_id -> { invite_code: uses_count }
         self._invite_cache: dict[int, dict[str, int]] = {}
 
     async def _cache_guild_invites(self, guild: discord.Guild) -> None:
@@ -70,25 +69,65 @@ class InvitesCog(commands.Cog):
         except Exception:
             return
 
-        inviter_id: int | None = None
+        inviter: discord.Member | discord.User | None = None
+        used_code: str | None = None
+
         for inv in current_invites:
             old_uses = old_cache.get(inv.code, 0)
-            if (inv.uses or 0) > old_uses and inv.inviter:
-                inviter_id = inv.inviter.id
+            if (inv.uses or 0) > old_uses:
+                inviter = inv.inviter
+                used_code = inv.code
                 break
 
         # Update cache
         self._invite_cache[guild.id] = {inv.code: inv.uses or 0 for inv in current_invites}
 
-        if inviter_id and inviter_id != member.id:
+        if inviter and inviter.id != member.id:
             data = load_invites_data()
             g_data = data.setdefault(str(guild.id), {})
-            u_data = g_data.setdefault(str(inviter_id), {"joins": [], "leaves": []})
+            u_data = g_data.setdefault(str(inviter.id), {"joins": [], "leaves": []})
 
             if member.id not in u_data["joins"]:
                 u_data["joins"].append(member.id)
                 save_invites_data(data)
-                log.info("Invite tracked: %s invited by %s", member, inviter_id)
+
+            total_valid = max(0, len(u_data["joins"]) - len(u_data.get("leaves", [])))
+
+            # 1. Staff Logs Notification
+            log_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(
+                guild.text_channels, name="📜・logs-tickets"
+            )
+            if log_ch:
+                embed_log = discord.Embed(
+                    title="🔗  NEW REFERRAL JOINED",
+                    description=(
+                        f"▸ **New Member :** {member.mention} (`{member.id}`)\n"
+                        f"▸ **Invited By :** {inviter.mention} (`{inviter.id}`)\n"
+                        f"▸ **Invite Code :** `discord.gg/{used_code}`\n"
+                        f"▸ **Inviter Total Invites :** **`{total_valid}`**\n"
+                        f"▸ **Giveaway Tickets :** **`{total_valid + 1}`**"
+                    ),
+                    color=discord.Color.green(),
+                )
+                embed_log.set_footer(text="CORE MARKET • Referral Tracker")
+                await log_ch.send(embed=embed_log)
+
+            # 2. Direct DM Notification to the Inviter
+            try:
+                embed_dm = discord.Embed(
+                    title="🎉  NEW MEMBER JOINED WITH YOUR LINK!",
+                    description=(
+                        f"Hey {inviter.mention}! **{member.name}** just joined Core Market using your invite link!\n\n"
+                        f"▸ **Your Valid Active Invites :** **`{total_valid}`**\n"
+                        f"▸ **Your Giveaway Bonus :** **`+{total_valid} Extra Tickets`** on all active giveaways!\n\n"
+                        "🚀 *Keep sharing your link to maximize your chances of winning!*"
+                    ),
+                    color=discord.Color.from_str("#0070FF"),
+                )
+                embed_dm.set_footer(text="CORE MARKET • Invite Rewards")
+                await inviter.send(embed=embed_dm)
+            except Exception:
+                pass
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member) -> None:
@@ -120,6 +159,34 @@ class InvitesCog(commands.Cog):
             color=discord.Color.from_str("#0070FF"),
         )
         embed.set_footer(text="CORE MARKET • Referral System")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @app_commands.command(name="invites_leaderboard", description="Display the top inviters on the server")
+    async def leaderboard(self, interaction: discord.Interaction) -> None:
+        guild_id = interaction.guild_id or 0
+        data = load_invites_data().get(str(guild_id), {})
+
+        scores = []
+        for uid_str, u_data in data.items():
+            valid = max(0, len(u_data.get("joins", [])) - len(u_data.get("leaves", [])))
+            if valid > 0:
+                scores.append((int(uid_str), valid))
+
+        scores.sort(key=lambda x: x[1], reverse=True)
+        top10 = scores[:10]
+
+        if not top10:
+            await interaction.response.send_message("ℹ️ No invites recorded yet.", ephemeral=True)
+            return
+
+        lines = [f"`#{i+1}` <@{uid}> — **{pts} invites** (`+{pts} giveaway tickets`)" for i, (uid, pts) in enumerate(top10)]
+
+        embed = discord.Embed(
+            title="🏆  TOP INVITERS LEADERBOARD",
+            description="\n".join(lines),
+            color=discord.Color.gold(),
+        )
+        embed.set_footer(text="CORE MARKET • Referral Leaderboard")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
