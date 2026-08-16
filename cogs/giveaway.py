@@ -277,6 +277,10 @@ class GiveawayCog(commands.Cog):
     def cog_unload(self) -> None:
         self.check_giveaways.cancel()
 
+    @check_giveaways.before_loop
+    async def before_check_giveaways(self) -> None:
+        await self.bot.wait_until_ready()
+
     @tasks.loop(seconds=15)
     async def check_giveaways(self) -> None:
         now_ts = int(datetime.now(timezone.utc).timestamp())
