@@ -142,6 +142,22 @@ class GiveawayModal(discord.ui.Modal, title="🎁 Create a Giveaway"):
         save_giveaways(data)
 
 
+from cogs.invites import get_user_valid_invites
+
+
+def pick_weighted_winners(entries_dict: dict[str, int], count: int) -> list[int]:
+    """Picks unique winners weighted by their ticket counts (1 base + 1 per valid invite)."""
+    pool = {k: max(1, int(v)) for k, v in entries_dict.items()}
+    winners: list[int] = []
+    for _ in range(min(count, len(pool))):
+        users = list(pool.keys())
+        weights = list(pool.values())
+        chosen = random.choices(users, weights=weights, k=1)[0]
+        winners.append(int(chosen))
+        del pool[chosen]
+    return winners
+
+
 class GiveawayEntryView(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)
@@ -162,24 +178,58 @@ class GiveawayEntryView(discord.ui.View):
             return
 
         user_id = interaction.user.id
-        entries = gw.setdefault("entries", [])
+        raw_entries = gw.get("entries", {})
+        # Normalize list to dict for backward compatibility
+        entries: dict[str, int] = {str(k): v for k, v in raw_entries.items()} if isinstance(raw_entries, dict) else {str(u): 1 for u in raw_entries}
 
-        if user_id in entries:
-            entries.remove(user_id)
-            msg = "👋 You left the giveaway."
-        else:
-            entries.append(user_id)
-            msg = "🎉 **You entered the giveaway!** Good luck!"
+        user_key = str(user_id)
+        guild_id = interaction.guild_id or 0
 
+        if user_key in entries:
+            del entries[user_key]
+            gw["entries"] = entries
+            save_giveaways(data)
+
+            total_tickets = sum(entries.values())
+            button.label = f"Enter Giveaway ({len(entries)} • {total_tickets} tickets)"
+            try:
+                await interaction.message.edit(view=self)
+            except Exception:
+                pass
+
+            await interaction.response.send_message("👋 You left the giveaway.", ephemeral=True)
+            return
+
+        # Calculate weighted tickets: 1 Base + 1 per valid invite
+        invites_count = get_user_valid_invites(guild_id, user_id)
+        user_tickets = 1 + invites_count
+        entries[user_key] = user_tickets
+        gw["entries"] = entries
         save_giveaways(data)
 
-        button.label = f"Enter Giveaway ({len(entries)})"
+        total_tickets = sum(entries.values())
+        odds = (user_tickets / total_tickets) * 100 if total_tickets > 0 else 100.0
+
+        button.label = f"Enter Giveaway ({len(entries)} • {total_tickets} tickets)"
         try:
             await interaction.message.edit(view=self)
         except Exception:
             pass
 
-        await interaction.response.send_message(msg, ephemeral=True)
+        embed_confirm = discord.Embed(
+            title="🎉  GIVEAWAY ENTRY CONFIRMED",
+            description=(
+                f"You have entered the giveaway with **{user_tickets} Ticket(s)**!\n\n"
+                f"▸ **Base Entry :** `1 Ticket`\n"
+                f"▸ **Bonus from Active Invites :** `+{invites_count} Ticket(s)`\n"
+                f"▸ **Total Pool Tickets :** `{total_tickets}`\n"
+                f"▸ **Estimated Winning Odds :** `~{odds:.1f}%`\n\n"
+                "🚀 *Want to boost your odds? Invite your friends to the server to earn +1 ticket per active member!*"
+            ),
+            color=discord.Color.green(),
+        )
+        embed_confirm.set_footer(text="CORE MARKET • Weighted Referral Giveaway")
+        await interaction.response.send_message(embed=embed_confirm, ephemeral=True)
 
 
 class GiveawayCog(commands.Cog):
@@ -217,7 +267,8 @@ class GiveawayCog(commands.Cog):
         except Exception:
             return
 
-        entries = gw.get("entries", [])
+        raw_entries = gw.get("entries", {})
+        entries: dict[str, int] = {str(k): v for k, v in raw_entries.items()} if isinstance(raw_entries, dict) else {str(u): 1 for u in raw_entries}
         winners_count = gw.get("winners_count", 1)
         prize = gw.get("prize", "Prize")
         secret_key = gw.get("secret_key", "")
@@ -230,8 +281,9 @@ class GiveawayCog(commands.Cog):
             await channel.send(f"⚠️ Giveaway for **{prize}** ended with 0 participants.")
             return
 
-        picked_ids = random.sample(entries, min(len(entries), winners_count))
+        picked_ids = pick_weighted_winners(entries, winners_count)
         winners_mentions = ", ".join(f"<@{uid}>" for uid in picked_ids)
+        total_tickets = sum(entries.values())
 
         embed = msg.embeds[0] if msg.embeds else discord.Embed(title="🎉 GIVEAWAY ENDED")
         embed.color = discord.Color.from_str("#FFD700")
@@ -242,7 +294,7 @@ class GiveawayCog(commands.Cog):
             "```\n"
             f"▸ **Prize :** **`{prize}`**\n"
             f"▸ **Winner(s) :** {winners_mentions}\n"
-            f"▸ **Total Participants :** **`{len(entries)} members`**\n\n"
+            f"▸ **Participants :** **`{len(entries)} members`** (`{total_tickets} weighted tickets`)\n\n"
             "🛡️ *Rewards have been sent via DM or can be claimed inside support tickets.*"
         )
         embed.set_footer(text="CORE MARKET • Giveaway Concluded")
@@ -301,10 +353,11 @@ class GiveawayCog(commands.Cog):
             await interaction.response.send_message("❌ Giveaway not found or no entries available.", ephemeral=True)
             return
 
-        entries = gw["entries"]
-        new_winner_id = random.choice(entries)
+        raw_entries = gw["entries"]
+        entries: dict[str, int] = {str(k): v for k, v in raw_entries.items()} if isinstance(raw_entries, dict) else {str(u): 1 for u in raw_entries}
+        new_winner_id = pick_weighted_winners(entries, 1)[0]
         await interaction.response.send_message(
-            f"🎉 **Reroll Winner :** <@{new_winner_id}> won **{gw.get('prize')}**!"
+            f"🎉 **Weighted Reroll Winner :** <@{new_winner_id}> won **{gw.get('prize')}**!"
         )
 
 
