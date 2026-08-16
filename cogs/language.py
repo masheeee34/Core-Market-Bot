@@ -276,26 +276,54 @@ class Language(commands.Cog):
             in_onboarding=True,
         )
 
-        # Default visible channels
-        default_channels = [ch for ch in guild.text_channels if ch.permissions_for(guild.default_role).read_messages][:5]
-        if not default_channels:
-            default_channels = guild.text_channels[:3]
+        # Select 5+ public text channels (excluding private staff/tickets/logs)
+        candidate_channels = [
+            ch for ch in guild.text_channels
+            if not any(w in ch.name.lower() for w in ("log", "staff", "admin", "ticket", "bot-", "private"))
+        ]
+
+        default_channels: list[discord.TextChannel] = []
+        for ch in candidate_channels:
+            try:
+                # Ensure @everyone can view the channel as required by Discord Onboarding
+                if not ch.permissions_for(guild.default_role).view_channel:
+                    await ch.set_permissions(guild.default_role, view_channel=True, reason="Discord Onboarding requirement")
+                default_channels.append(ch)
+            except Exception:
+                pass
+            if len(default_channels) >= 5:
+                break
+
+        # If less than 5 channels exist, create missing public channels
+        missing_names = ["📢・announcements", "🎁・giveaways", "⭐・vouches", "💬・general-chat", "📜・rules-info"]
+        idx = 0
+        while len(default_channels) < 5 and idx < len(missing_names):
+            name = missing_names[idx]
+            idx += 1
+            if not discord.utils.get(guild.text_channels, name=name):
+                try:
+                    new_ch = await guild.create_text_channel(name, reason="Discord Onboarding 5-channels requirement")
+                    default_channels.append(new_ch)
+                except Exception:
+                    pass
 
         try:
             await guild.edit_onboarding(
                 prompts=[prompt],
                 default_channels=default_channels,
                 enabled=True,
+                mode=discord.OnboardingMode.default,
                 reason="Auto multi-language onboarding setup",
             )
             await interaction.followup.send(
                 embed=discord.Embed(
-                    title="🎉  DISCORD ONBOARDING ACTIVÉ !",
+                    title="🎉  DISCORD ONBOARDING ACTIVÉ À 100% !",
                     description=(
-                        "L'écran d'accueil Discord Onboarding multilingue est désormais **100% opérationnel** !\n\n"
+                        "L'écran d'accueil Discord Onboarding multilingue est désormais **pleinement configuré et actif** !\n\n"
                         "▸ **7 Langues intégrées :** 🇬🇧 English, 🇫🇷 Français, 🇪🇸 Español, 🇩🇪 Deutsch, 🇰🇷 Korean, 🇸🇦 Arabic, 🇨🇳 Chinese\n"
-                        "▸ **Comportement :** Tout nouveau membre verra la page de sélection plein écran dès son arrivée.\n"
-                        "▸ **Rôles attribués :** Le rôle de langue est automatiquement donné dès qu'il clique sur sa réponse."
+                        "▸ **Salons par défaut :** " + ", ".join(ch.mention for ch in default_channels) + "\n"
+                        "▸ **Affichage :** Tout nouveau membre verra désormais la page de sélection plein écran dès son arrivée.\n"
+                        "▸ **Rôles :** Le rôle de langue est automatiquement distribué sans aucune intervention."
                     ),
                     color=discord.Color.green(),
                 ),
@@ -303,13 +331,13 @@ class Language(commands.Cog):
             )
         except discord.Forbidden:
             await interaction.followup.send(
-                "⚠️ **Permissions insuffisantes** : Placez le rôle du bot tout en haut de la liste des rôles dans Paramètres du serveur ➔ Rôles.",
+                "⚠️ **Permissions insuffisantes** : Veuillez placer le rôle du bot tout en haut de la liste des rôles dans *Paramètres du serveur ➔ Rôles*.",
                 ephemeral=True,
             )
         except Exception as e:
             await interaction.followup.send(
-                f"⚠️ Erreur lors de la configuration automatique Discord : `{e}`\n"
-                "Vous pouvez également finaliser les options directement dans **Paramètres du serveur ➔ Accueil**.",
+                f"⚠️ Notification Discord : `{e}`\n\n"
+                "💡 Les 7 rôles de langue sont déjà créés. Vous pouvez également cliquer sur **Activer l'accueil** dans *Paramètres du serveur ➔ Accueil*.",
                 ephemeral=True,
             )
 
