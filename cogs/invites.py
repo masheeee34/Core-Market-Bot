@@ -96,7 +96,8 @@ class InvitesCog(commands.Cog):
             # 1. Staff Logs Notification
             log_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(
                 guild.text_channels, name="📜・logs-tickets"
-            )
+            ) or next((ch for ch in guild.text_channels if "log" in ch.name.lower()), None)
+
             if log_ch:
                 embed_log = discord.Embed(
                     title="🔗  NEW REFERRAL JOINED",
@@ -126,8 +127,8 @@ class InvitesCog(commands.Cog):
                 )
                 embed_dm.set_footer(text="CORE MARKET • Invite Rewards")
                 await inviter.send(embed=embed_dm)
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Could not send DM to inviter %s: %s", inviter, e)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member) -> None:
@@ -188,6 +189,57 @@ class InvitesCog(commands.Cog):
         )
         embed.set_footer(text="CORE MARKET • Referral Leaderboard")
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @app_commands.command(name="test_invite_notif", description="Simulate a member join notification for testing")
+    @app_commands.default_permissions(administrator=True)
+    async def test_invite_cmd(self, interaction: discord.Interaction, inviter: discord.Member | None = None) -> None:
+        target = inviter or interaction.user
+        guild = interaction.guild
+        if not guild:
+            return
+
+        # 1. Staff Logs
+        log_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or discord.utils.get(
+            guild.text_channels, name="📜・logs-tickets"
+        ) or next((ch for ch in guild.text_channels if "log" in ch.name.lower()), interaction.channel)
+
+        if log_ch and isinstance(log_ch, discord.TextChannel):
+            embed_log = discord.Embed(
+                title="🔗  [TEST] NEW REFERRAL JOINED",
+                description=(
+                    f"▸ **New Member :** {interaction.user.mention}\n"
+                    f"▸ **Invited By :** {target.mention}\n"
+                    f"▸ **Invite Code :** `discord.gg/test-link`\n"
+                    f"▸ **Inviter Total Invites :** `5`\n"
+                    f"▸ **Giveaway Tickets :** `6 Tickets`"
+                ),
+                color=discord.Color.green(),
+            )
+            embed_log.set_footer(text="CORE MARKET • Referral Tracker (Test Simulation)")
+            await log_ch.send(embed=embed_log)
+
+        # 2. DM
+        try:
+            embed_dm = discord.Embed(
+                title="🎉  [TEST] NEW MEMBER JOINED WITH YOUR LINK!",
+                description=(
+                    f"Hey {target.mention}! A new member just joined Core Market using your invite link!\n\n"
+                    f"▸ **Your Valid Active Invites :** `5`\n"
+                    f"▸ **Your Giveaway Bonus :** `+5 Extra Tickets` on all active giveaways!\n\n"
+                    "🚀 *Keep sharing your link to maximize your chances of winning!*"
+                ),
+                color=discord.Color.from_str("#0070FF"),
+            )
+            embed_dm.set_footer(text="CORE MARKET • Invite Rewards (Test Simulation)")
+            await target.send(embed=embed_dm)
+            dm_status = "✅ DM envoyé avec succès !"
+        except Exception as e:
+            dm_status = f"⚠️ Impossible d'envoyer le DM (DMs fermés par l'utilisateur) : {e}"
+
+        await interaction.response.send_message(
+            f"✅ Test exécuté ! Log envoyé dans {getattr(log_ch, 'mention', '#logs')} • {dm_status}",
+            ephemeral=True,
+        )
 
 
 async def setup(bot: commands.Bot) -> None:
