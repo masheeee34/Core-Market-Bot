@@ -219,6 +219,100 @@ class Language(commands.Cog):
             ephemeral=True,
         )
 
+    @app_commands.command(
+        name="setup_onboarding",
+        description="Configurer automatiquement l'écran d'accueil Discord Onboarding multilingue",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_onboarding(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
+        guild = interaction.guild
+
+        if "COMMUNITY" not in guild.features:
+            await interaction.followup.send(
+                "⚠️ **La fonctionnalité Communauté n'est pas activée sur ce serveur.**\n\n"
+                "1. Allez dans **Paramètres du serveur** ➔ **Activer la communauté** (1 clic).\n"
+                "2. Relancez ensuite **/setup_onboarding**.",
+                ephemeral=True,
+            )
+            return
+
+        lang_configs = [
+            ("English", "🇬🇧", "English community & announcements"),
+            ("Français", "🇫🇷", "Communauté et annonces en français"),
+            ("Español", "🇪🇸", "Comunidad y anuncios en español"),
+            ("Deutsch", "🇩🇪", "Deutsche Community & Ankündigungen"),
+            ("Korean", "🇰🇷", "한국어 커뮤니티 및 공지사항"),
+            ("Arabic", "🇸🇦", "المجتمع والإعلانات باللغة العربية"),
+            ("Chinese", "🇨🇳", "中文社区与公告"),
+        ]
+
+        created_roles: dict[str, discord.Role] = {}
+        for name, emoji, _ in lang_configs:
+            role = discord.utils.get(guild.roles, name=name)
+            if not role:
+                role = await guild.create_role(name=name, reason="Onboarding Multi-Language Setup")
+            created_roles[name] = role
+
+        options = []
+        for name, emoji, desc in lang_configs:
+            role = created_roles[name]
+            options.append(
+                discord.OnboardingPromptOption(
+                    title=name,
+                    emoji=emoji,
+                    description=desc,
+                    roles=[role],
+                )
+            )
+
+        prompt = discord.OnboardingPrompt(
+            type=discord.OnboardingPromptType.multiple_choice,
+            title="What is your primary language? / Choisissez votre langue",
+            options=options,
+            single_select=True,
+            required=True,
+            in_onboarding=True,
+        )
+
+        # Default visible channels
+        default_channels = [ch for ch in guild.text_channels if ch.permissions_for(guild.default_role).read_messages][:5]
+        if not default_channels:
+            default_channels = guild.text_channels[:3]
+
+        try:
+            await guild.edit_onboarding(
+                prompts=[prompt],
+                default_channels=default_channels,
+                enabled=True,
+                reason="Auto multi-language onboarding setup",
+            )
+            await interaction.followup.send(
+                embed=discord.Embed(
+                    title="🎉  DISCORD ONBOARDING ACTIVÉ !",
+                    description=(
+                        "L'écran d'accueil Discord Onboarding multilingue est désormais **100% opérationnel** !\n\n"
+                        "▸ **7 Langues intégrées :** 🇬🇧 English, 🇫🇷 Français, 🇪🇸 Español, 🇩🇪 Deutsch, 🇰🇷 Korean, 🇸🇦 Arabic, 🇨🇳 Chinese\n"
+                        "▸ **Comportement :** Tout nouveau membre verra la page de sélection plein écran dès son arrivée.\n"
+                        "▸ **Rôles attribués :** Le rôle de langue est automatiquement donné dès qu'il clique sur sa réponse."
+                    ),
+                    color=discord.Color.green(),
+                ),
+                ephemeral=True,
+            )
+        except discord.Forbidden:
+            await interaction.followup.send(
+                "⚠️ **Permissions insuffisantes** : Placez le rôle du bot tout en haut de la liste des rôles dans Paramètres du serveur ➔ Rôles.",
+                ephemeral=True,
+            )
+        except Exception as e:
+            await interaction.followup.send(
+                f"⚠️ Erreur lors de la configuration automatique Discord : `{e}`\n"
+                "Vous pouvez également finaliser les options directement dans **Paramètres du serveur ➔ Accueil**.",
+                ephemeral=True,
+            )
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Language(bot))
