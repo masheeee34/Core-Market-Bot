@@ -42,6 +42,10 @@ async def translate_text(text: str, target_lang: str) -> str:
 
 
 def extract_message_text(message: discord.Message) -> str:
+    # If the message is an auto-reply or button bar, look at the referenced announcement
+    if message.reference and message.reference.resolved and isinstance(message.reference.resolved, discord.Message):
+        message = message.reference.resolved
+
     source_text = message.content or ""
     embed_title = ""
     embed_desc = ""
@@ -130,6 +134,42 @@ class TranslateButtonView(discord.ui.View):
         await interaction.followup.send(embed=embed, ephemeral=True)
 
 
+class AnnounceModal(discord.ui.Modal, title="📢 Create Official Announcement"):
+    title_input = discord.ui.TextInput(
+        label="Announcement Title",
+        placeholder="e.g. SPECIAL VOUCH GIVEAWAY & BO7 UPDATE",
+        required=True,
+        max_length=100,
+    )
+    content_input = discord.ui.TextInput(
+        label="Content / Announcement Text",
+        placeholder="Write your announcement details here...",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        max_length=2000,
+    )
+    ping_input = discord.ui.TextInput(
+        label="Mention (Optional: @everyone / @here)",
+        placeholder="e.g. @everyone",
+        required=False,
+        max_length=20,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        embed = discord.Embed(
+            title=f"📢  {str(self.title_input).upper()}",
+            description=str(self.content_input),
+            color=discord.Color.from_str("#0070FF"),
+        )
+        embed.set_footer(text="CORE MARKET • Official Announcement • 1-Click Translation available below")
+
+        ping_text = str(self.ping_input).strip()
+        mention_content = f"{ping_text}\n" if ping_text in ("@everyone", "@here") else None
+
+        await interaction.channel.send(content=mention_content, embed=embed, view=TranslateButtonView())
+        await interaction.response.send_message("✅ Announcement published with 1-click translation buttons!", ephemeral=True)
+
+
 class TranslatorCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -141,6 +181,23 @@ class TranslatorCog(commands.Cog):
 
     def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """Automatically adds translation buttons whenever staff posts in an announcement channel."""
+        if message.author.bot or not message.guild:
+            return
+
+        channel_name = message.channel.name.lower()
+        if any(w in channel_name for w in ("announc", "annonc", "news", "update")):
+            try:
+                await message.reply(
+                    content="🌐 **Translate this announcement / Traduire cette annonce :**",
+                    view=TranslateButtonView(),
+                    mention_author=False,
+                )
+            except Exception as e:
+                log.debug("Auto translate reply error: %s", e)
 
     async def translate_context_menu(self, interaction: discord.Interaction, message: discord.Message) -> None:
         await interaction.response.defer(ephemeral=True)
@@ -161,17 +218,10 @@ class TranslatorCog(commands.Cog):
         embed.set_footer(text=f"CORE MARKET • Auto-translated to your Discord language ({user_locale})")
         await interaction.followup.send(embed=embed, ephemeral=True)
 
-    @app_commands.command(name="announce", description="Post an official announcement with 1-click translation buttons")
+    @app_commands.command(name="announce", description="Open announcement creator with 1-click translation buttons")
     @app_commands.default_permissions(administrator=True)
-    async def announce_cmd(self, interaction: discord.Interaction, title: str, content: str) -> None:
-        embed = discord.Embed(
-            title=f"📢  {title.upper()}",
-            description=content.replace("\\n", "\n"),
-            color=discord.Color.from_str("#0070FF"),
-        )
-        embed.set_footer(text="CORE MARKET • Official Announcement • Use button below to translate")
-        await interaction.channel.send(embed=embed, view=TranslateButtonView())
-        await interaction.response.send_message("✅ Announcement posted with 1-click translation buttons!", ephemeral=True)
+    async def announce_cmd(self, interaction: discord.Interaction) -> None:
+        await interaction.response.send_modal(AnnounceModal())
 
     @app_commands.command(name="add_translate_button", description="Add translation buttons under an existing message")
     @app_commands.default_permissions(administrator=True)
