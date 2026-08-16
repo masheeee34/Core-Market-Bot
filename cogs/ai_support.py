@@ -42,12 +42,45 @@ def find_best_topic(query: str, topics: list[dict[str, Any]]) -> dict[str, Any] 
     return best_topic if best_score > 0 else None
 
 
+ACTIVITIES: list[tuple[discord.ActivityType, str]] = [
+    (discord.ActivityType.playing, "🎮 BO7 & Warzone External (Ring-0)"),
+    (discord.ActivityType.listening, "🎧 24/7 Voice Support • DM me for help!"),
+    (discord.ActivityType.watching, "🛡️ Ricochet Bypass | 100% Streamproof"),
+    (discord.ActivityType.competing, "🎁 /giveaway • Weighted Odds"),
+    (discord.ActivityType.playing, "🌐 1-Click Multi-Language Translation"),
+    (discord.ActivityType.watching, "🎫 Core Market • Free Trial (1H)"),
+]
+
+
 class AISupportCog(commands.Cog):
     """24/7 Voice Support Desk & Intelligent AI DM Knowledge Assistant with Staff Live Feed."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self._presence_index = 0
         self.voice_watchdog.start()
+        self.rotating_presence.start()
+
+    def cog_unload(self) -> None:
+        self.voice_watchdog.cancel()
+        self.rotating_presence.cancel()
+
+    @tasks.loop(seconds=15)
+    async def rotating_presence(self) -> None:
+        """Dynamically rotates the bot's rich presence activity and custom status."""
+        try:
+            act_type, act_name = ACTIVITIES[self._presence_index % len(ACTIVITIES)]
+            self._presence_index += 1
+            await self.bot.change_presence(
+                activity=discord.Activity(type=act_type, name=act_name),
+                status=discord.Status.online,
+            )
+        except Exception as e:
+            log.debug("Presence update error: %s", e)
+
+    @rotating_presence.before_loop
+    async def before_rotating_presence(self) -> None:
+        await self.bot.wait_until_ready()
 
     @tasks.loop(seconds=45)
     async def voice_watchdog(self) -> None:
@@ -78,38 +111,57 @@ class AISupportCog(commands.Cog):
             if member.guild:
                 await self._ensure_voice_presence(member.guild)
 
-    async def _ensure_voice_presence(self, guild: discord.Guild) -> None:
+    async def _ensure_voice_presence(self, guild: discord.Guild) -> tuple[bool, str]:
         # 1. Find or create voice channel
         vchannel = discord.utils.get(guild.voice_channels, name=VOICE_CHANNEL_NAME)
         if not vchannel:
-            overwrites = {
-                guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
-                guild.me: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True),
-            }
-            if guild.owner:
-                overwrites[guild.owner] = discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)
-            vchannel = await guild.create_voice_channel(
-                VOICE_CHANNEL_NAME,
-                overwrites=overwrites,
-                reason="24/7 Support Voice Desk",
-            )
-            log.info("Created 24/7 Support Voice Channel: %s", vchannel.name)
+            try:
+                overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(view_channel=True, connect=False),
+                    guild.me: discord.PermissionOverwrite(view_channel=True, connect=True, speak=True),
+                }
+                if guild.owner:
+                    overwrites[guild.owner] = discord.PermissionOverwrite(view_channel=True, connect=True, speak=True)
+                vchannel = await guild.create_voice_channel(
+                    VOICE_CHANNEL_NAME,
+                    overwrites=overwrites,
+                    reason="24/7 Support Voice Desk",
+                )
+                log.info("Created 24/7 Support Voice Channel: %s", vchannel.name)
+            except Exception as e:
+                return False, f"Impossible de créer le salon vocal : {e}"
+
+        # Ensure explicit permissions for bot
+        try:
+            perms = vchannel.permissions_for(guild.me)
+            if not perms.connect or not perms.view_channel:
+                await vchannel.set_permissions(guild.me, connect=True, speak=True, view_channel=True)
+        except Exception:
+            pass
 
         # 2. Check and maintain active voice connection
         voice_client = guild.voice_client
         if not voice_client or not voice_client.is_connected():
             try:
                 if voice_client:
-                    await voice_client.disconnect(force=True)
-                await vchannel.connect(reconnect=True, timeout=15.0, self_deaf=True)
+                    try:
+                        await voice_client.disconnect(force=True)
+                    except Exception:
+                        pass
+                await vchannel.connect(reconnect=True, timeout=20.0, self_deaf=True)
                 log.info("Connected to 24/7 Voice Desk in %s", guild.name)
+                return True, f"Connecté avec succès à {vchannel.name} !"
             except Exception as e:
                 log.warning("Could not connect to voice desk in %s: %s", guild.name, e)
-        elif voice_client.channel != vchannel:
+                return False, f"Erreur de connexion vocale : {e}"
+        elif voice_client.channel.id != vchannel.id:
             try:
                 await voice_client.move_to(vchannel)
-            except Exception:
-                pass
+                return True, f"Déplacé vers {vchannel.name} !"
+            except Exception as e:
+                return False, f"Erreur de déplacement : {e}"
+
+        return True, f"Déjà connecté dans {vchannel.name}"
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -246,8 +298,8 @@ class AISupportCog(commands.Cog):
         if not interaction.guild:
             return
         await interaction.response.defer(ephemeral=True)
-        await self._ensure_voice_presence(interaction.guild)
-        await interaction.followup.send("✅ Bot reconnected to 24/7 Voice Support Desk `🎧・if you need help`!", ephemeral=True)
+        ok, msg = await self._ensure_voice_presence(interaction.guild)
+        await interaction.followup.send(f"{'✅' if ok else '⚠️'} {msg}", ephemeral=True)
 
 
 async def setup(bot: commands.Bot) -> None:
