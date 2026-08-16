@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends libffi-dev build-essential && rm -rf /var/lib/apt/lists/*
+# Utilisateur non-root (recommandé par Hugging Face / Render)
 RUN useradd -m -u 1000 user
 
 COPY requirements.txt .
