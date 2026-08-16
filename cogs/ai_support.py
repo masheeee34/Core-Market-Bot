@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import re
@@ -61,6 +62,22 @@ class AISupportCog(commands.Cog):
     async def before_voice_watchdog(self) -> None:
         await self.bot.wait_until_ready()
 
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        for guild in self.bot.guilds:
+            try:
+                await self._ensure_voice_presence(guild)
+            except Exception as e:
+                log.debug("Initial voice connect error on %s: %s", guild.name, e)
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
+        """Instantly reconnect if the bot gets disconnected from the support voice channel."""
+        if member == self.bot.user and after.channel is None:
+            await asyncio.sleep(2)
+            if member.guild:
+                await self._ensure_voice_presence(member.guild)
+
     async def _ensure_voice_presence(self, guild: discord.Guild) -> None:
         # 1. Find or create voice channel
         vchannel = discord.utils.get(guild.voice_channels, name=VOICE_CHANNEL_NAME)
@@ -78,14 +95,21 @@ class AISupportCog(commands.Cog):
             )
             log.info("Created 24/7 Support Voice Channel: %s", vchannel.name)
 
-        # 2. Check if bot is connected
+        # 2. Check and maintain active voice connection
         voice_client = guild.voice_client
         if not voice_client or not voice_client.is_connected():
             try:
-                await vchannel.connect(reconnect=True, timeout=10.0)
+                if voice_client:
+                    await voice_client.disconnect(force=True)
+                await vchannel.connect(reconnect=True, timeout=15.0, self_deaf=True)
                 log.info("Connected to 24/7 Voice Desk in %s", guild.name)
             except Exception as e:
-                log.warning("Could not connect to voice desk in %s (PyNaCl check): %s", guild.name, e)
+                log.warning("Could not connect to voice desk in %s: %s", guild.name, e)
+        elif voice_client.channel != vchannel:
+            try:
+                await voice_client.move_to(vchannel)
+            except Exception:
+                pass
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
