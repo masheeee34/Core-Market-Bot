@@ -1,0 +1,52 @@
+{
+  "topics": [
+    {
+      "id": "free_trial",
+      "keywords": ["trial", "free", "essai", "gratuit", "cle", "key", "test", "demo", "1h", "claim", "obtenir"],
+      "response_fr": "🎁 **Clé d'Essai 1H Gratuite (BO7 / Warzone)** :\nVous pouvez réclamer votre clé d'essai 1H gratuite directement sur le serveur Discord dans le salon **#🎁・free-trial** en cliquant sur le bouton vert **`Claim Free Trial (1H)`** !\n\n▸ **Guide d'installation :** https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation\n▸ **Téléchargement Loader :** https://mega.nz/folder/w7VjQS6I#wav1HBID04Hj9w-N_2CVaQ\n\n*Si vous avez besoin d'aide pour injecter la clé, ouvrez un ticket dans <#🎫・creer-un-ticket>.*",
+      "response_en": "🎁 **1-Hour Free Trial Key (BO7 / Warzone)** :\nYou can claim your free 1-Hour trial key directly on our Discord in the **#🎁・free-trial** channel by clicking the green **`Claim Free Trial (1H)`** button!\n\n▸ **Setup Guide :** https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation\n▸ **Download Loader :** https://mega.nz/folder/w7VjQS6I#wav1HBID04Hj9w-N_2CVaQ\n\n*If you need help, please open a support ticket in <#🎫・creer-un-ticket>.*"
+    },
+    {
+      "id": "virtualization",
+      "keywords": ["virtualisation", "virtualization", "bios", "svm", "vt-x", "vtx", "hyper-v", "hyperv", "activer"],
+      "response_fr": "⚙️ **Virtualisation BIOS (Obligatoire)** :\nNos logiciels externes nécessitent que la virtualisation matérielle soit activée dans votre BIOS :\n\n▸ **Processeurs AMD :** Activez l'option **SVM Mode** dans le BIOS (menu CPU Configuration / Advanced).\n▸ **Processeurs Intel :** Activez l'option **Intel Virtualization Technology (VT-x)**.\n▸ **Tutoriel détaillé :** https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation",
+      "response_en": "⚙️ **BIOS Virtualization (Required)** :\nOur external software requires hardware virtualization to be enabled in your BIOS:\n\n▸ **AMD CPUs :** Enable **SVM Mode** in BIOS (CPU Configuration / Advanced menu).\n▸ **Intel CPUs :** Enable **Intel Virtualization Technology (VT-x)**.\n▸ **Detailed Tutorial :** https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation"
+    },
+    {
+      "id": "loader_download",
+      "keywords": ["loader", "download", "telecharger", "telechargement", "mega", "fichier", "zip", "rar", "archive", "lien", "link"],
+      "response_fr": "📥 **Téléchargement & Injection du Loader** :\n1. Téléchargez le package officiel : https://mega.nz/folder/w7VjQS6I#wav1HBID04Hj9w-N_2CVaQ\n2. Extrayez le dossier ZIP sur votre Bureau (mot de passe si demandé : `123` ou fourni dans l'archive).\n3. Faites un clic-droit ➔ **Exécuter en tant qu'administrateur** sur le Loader.\n4. Collez votre clé de licence et lancez le jeu !",
+      "response_en": "📥 **Loader Download & Injection** :\n1. Download the official package: https://mega.nz/folder/w7VjQS6I#wav1HBID04Hj9w-N_2CVaQ\n2. Extract the ZIP archive to your Desktop (password if prompted: `123`).\n3. Right-click ➔ **Run as Administrator** on the Loader.\n4. Paste your license key and launch the game!"
+    },
+    {
+      "id": "antivirus_defender",
+      "keywords": ["antivirus", "defender", "bloque", "supprime", "smartscreen", "virus", "threat", "menace", "exclusion", "securite"],
+      "response_fr": "🛡️ **Antivirus & Windows Defender** :\nParce que les loaders injectent du code en mémoire, Windows Defender peut faussement bloquer le fichier :\n1. Ouvrez Sécurité Windows ➔ Protection contre les virus et menaces ➔ Paramètres de protection.\n2. Désactivez temporairement la *Protection en temps réel*.\n3. Ajoutez une exclusion de dossier sur votre dossier Loader.\n4. Guide complet : https://trinityshop.gitbook.io/untitled/etapes-obligatoire/3.-securite-windows",
+      "response_en": "🛡️ **Antivirus & Windows Defender** :\nBecause loaders inject code in memory, Windows Defender might show a false positive:\n1. Open Windows Security ➔ Virus & threat protection ➔ Manage settings.\n2. Temporarily turn off *Real-time protection*.\n3. Add a folder exclusion for your Loader directory.\n4. Full Guide: https://trinityshop.gitbook.io/untitled/etapes-obligatoire/3.-securite-windows"
+    },
+    {
+      "id": "pricing_payment",
+      "keywords": ["prix", "tarif", "price", "acheter", "buy", "payer", "pay", "paypal", "crypto", "cb", "carte", "card", "combien", "cost"],
+      "response_fr": "💳 **Tarifs & Moyens de Paiement** :\n▸ **M-CORE External :** 24H: `5.99€` | 7J: `15.99€` | 30J: `35.99€`\n▸ **TRINITY SPECTRE :** 24H: `7.99€` | 7J: `21.99€` | 30J: `44.99€` | Lifetime: `119.99€`\n\n▸ **Paiements acceptés :** Carte bancaire, Crypto (BTC, LTC, USDT, ETH), PayPal, CashApp, Paysafecard.\n▸ **Pour commander :** Ouvrez un ticket dans <#🎫・creer-un-ticket> !",
+      "response_en": "💳 **Pricing & Payment Methods** :\n▸ **M-CORE External :** 24H: `5.99€` | 7D: `15.99€` | 30D: `35.99€`\n▸ **TRINITY SPECTRE :** 24H: `7.99€` | 7D: `21.99€` | 30D: `44.99€` | Lifetime: `119.99€`\n\n▸ **Accepted Payments :** Credit/Debit Card, Crypto (BTC, LTC, USDT, ETH), PayPal, CashApp, Paysafecard.\n▸ **To purchase :** Open a ticket in <#🎫・creer-un-ticket>!"
+    },
+    {
+      "id": "streamproof_undetected",
+      "keywords": ["streamproof", "obs", "stream", "detecte", "ban", "ricochet", "safe", "shadowban", "invisible", "capture"],
+      "response_fr": "🛡️ **Sécurité & Streamproof** :\n▸ Nos logiciels sont **100% externes (Ring-0 hypervisor)** et indétectables par Ricochet.\n▸ **Streamproof complet :** Les visuels ESP ne s'affichent jamais sur OBS, Discord Stream ou les enregistrements vidéo.\n▸ Aucun ban matériel (HWID) : Jouez en toute sécurité.",
+      "response_en": "🛡️ **Security & Streamproof** :\n▸ Our software is **100% external (Ring-0 hypervisor)** and undetected by Ricochet.\n▸ **Full Streamproof :** ESP visuals are completely hidden on OBS, Discord Screen Share, and video recordings.\n▸ 100% Safe from hardware bans."
+    },
+    {
+      "id": "giveaway_referral",
+      "keywords": ["giveaway", "concours", "invitation", "invite", "ticket", "gagner", "inviter", "participer", "chance"],
+      "response_fr": "🎉 **Giveaways & Système d'Invitations** :\n▸ Participez aux giveaways actifs dans le salon **#🎁・ɢɪᴠᴇᴀᴡᴀYꜱ** en cliquant sur **`Enter Giveaway`** !\n▸ **Boostez vos chances :** Chaque ami que vous invitez sur le serveur vous donne **+1 Ticket supplémentaire** !\n▸ Tapez **/invites** pour voir votre nombre d'invitations valides.",
+      "response_en": "🎉 **Giveaways & Referral System** :\n▸ Enter active giveaways in the **#🎁・ɢɪᴠᴇᴀᴡᴀYꜱ** channel by clicking **`Enter Giveaway`**!\n▸ **Multiply your odds :** Every friend you invite gives you **+1 Extra Ticket**!\n▸ Type **/invites** to check your total active referrals."
+    },
+    {
+      "id": "human_ticket",
+      "keywords": ["support", "aide", "humain", "staff", "admin", "ticket", "probleme", "bug", "marche pas", "help", "error", "erreur"],
+      "response_fr": "🎫 **Besoin d'aide personnalisée ?**\nPour toute assistance technique, question spécifique ou pour passer commande, notre équipe vous répond en direct dans les tickets !\n\n👉 Rendez-vous dans le salon **<#🎫・creer-un-ticket>** et cliquez sur **`Créer un ticket`**.",
+      "response_en": "🎫 **Need Personalized Assistance?**\nFor any technical issue, custom question, or order placement, our human staff is available 24/7 in tickets!\n\n👉 Head over to **<#🎫・creer-un-ticket>** and click **`Create a ticket`**."
+    }
+  ]
+}

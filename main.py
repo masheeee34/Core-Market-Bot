@@ -30,6 +30,7 @@ COGS = [
     "cogs.giveaway",
     "cogs.invites",
     "cogs.translator",
+    "cogs.ai_support",
 ]
 
 logging.basicConfig(
