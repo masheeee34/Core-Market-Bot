@@ -82,14 +82,14 @@ class AISupportCog(commands.Cog):
     async def before_rotating_presence(self) -> None:
         await self.bot.wait_until_ready()
 
-    @tasks.loop(seconds=120)
+    @tasks.loop(seconds=60)
     async def voice_watchdog(self) -> None:
         """Maintains 24/7 voice presence in '🎧・if you need help' across guilds."""
         for guild in self.bot.guilds:
             try:
-                # Only attempt reconnect if completely disconnected
-                voice_client = guild.voice_client
-                if not voice_client or not voice_client.is_connected():
+                vchannel = discord.utils.get(guild.voice_channels, name=VOICE_CHANNEL_NAME)
+                # Check if bot is missing from the voice desk
+                if not guild.me.voice or not guild.me.voice.channel or (vchannel and guild.me.voice.channel.id != vchannel.id):
                     await self._ensure_voice_presence(guild)
             except Exception as e:
                 log.debug("Voice watchdog check error on %s: %s", guild.name, e)
@@ -108,11 +108,12 @@ class AISupportCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
-        """Instantly reconnect if the bot gets disconnected from the support voice channel."""
-        if member == self.bot.user and after.channel is None:
-            log.info("Bot voice disconnected, scheduling auto-reconnect...")
-            await asyncio.sleep(5)
-            if member.guild:
+        """Instantly restore 24/7 presence if the bot is displaced or disconnected."""
+        if member == self.bot.user:
+            vchannel = discord.utils.get(member.guild.voice_channels, name=VOICE_CHANNEL_NAME)
+            if not after.channel or (vchannel and after.channel.id != vchannel.id):
+                log.info("Bot voice presence displaced, restoring to %s...", VOICE_CHANNEL_NAME)
+                await asyncio.sleep(2)
                 await self._ensure_voice_presence(member.guild)
 
     async def _ensure_voice_presence(self, guild: discord.Guild) -> tuple[bool, str]:
@@ -143,29 +144,20 @@ class AISupportCog(commands.Cog):
         except Exception:
             pass
 
-        # 2. Check and maintain active voice connection (micro mute only, no deafen)
-        voice_client = guild.voice_client
-        if not voice_client or not voice_client.is_connected():
-            try:
-                if voice_client:
-                    try:
-                        await voice_client.disconnect(force=True)
-                    except Exception:
-                        pass
-                await vchannel.connect(reconnect=True, timeout=30.0, self_deaf=False, self_mute=True)
-                log.info("Connected to 24/7 Voice Desk in %s", guild.name)
-                return True, f"Connecté avec succès à {vchannel.name} !"
-            except Exception as e:
-                log.warning("Could not connect to voice desk in %s: %s", guild.name, e)
-                return False, f"Erreur de connexion vocale : {e}"
-        elif voice_client.channel.id != vchannel.id:
-            try:
-                await voice_client.move_to(vchannel)
-                return True, f"Déplacé vers {vchannel.name} !"
-            except Exception as e:
-                return False, f"Erreur de déplacement : {e}"
+        # 2. Maintain permanent Gateway voice state (self_mute=True, self_deaf=False)
+        try:
+            if guild.voice_client:
+                try:
+                    await guild.voice_client.disconnect(force=True)
+                except Exception:
+                    pass
 
-        return True, f"Déjà connecté dans {vchannel.name}"
+            await guild.change_voice_state(channel=vchannel, self_mute=True, self_deaf=False)
+            log.info("Set permanent 24/7 voice presence in %s -> %s", guild.name, vchannel.name)
+            return True, f"Connecté en continu à {vchannel.name} !"
+        except Exception as e:
+            log.warning("Could not set voice state in %s: %s", guild.name, e)
+            return False, f"Erreur de connexion vocale : {e}"
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
