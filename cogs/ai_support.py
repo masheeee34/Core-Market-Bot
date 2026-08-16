@@ -52,6 +52,12 @@ ACTIVITIES: list[tuple[discord.ActivityType, str]] = [
 ]
 
 
+class SilenceAudioSource(discord.AudioSource):
+    """Generates continuous Opus silence frames to keep Discord RTC voice gateway connection alive 24/7."""
+    def read(self) -> bytes:
+        return b"\xf8\xff\xfe"
+
+
 class AISupportCog(commands.Cog):
     """24/7 Voice Support Desk & Intelligent AI DM Knowledge Assistant with Staff Live Feed."""
 
@@ -139,7 +145,7 @@ class AISupportCog(commands.Cog):
         except Exception:
             pass
 
-        # 2. Check and maintain active voice connection
+        # 2. Check and maintain active voice connection (micro mute only, no deafen)
         voice_client = guild.voice_client
         if not voice_client or not voice_client.is_connected():
             try:
@@ -148,7 +154,12 @@ class AISupportCog(commands.Cog):
                         await voice_client.disconnect(force=True)
                     except Exception:
                         pass
-                await vchannel.connect(reconnect=True, timeout=20.0, self_deaf=True)
+                vc = await vchannel.connect(reconnect=True, timeout=25.0, self_deaf=False, self_mute=True)
+                if not vc.is_playing():
+                    try:
+                        vc.play(SilenceAudioSource())
+                    except Exception:
+                        pass
                 log.info("Connected to 24/7 Voice Desk in %s", guild.name)
                 return True, f"Connecté avec succès à {vchannel.name} !"
             except Exception as e:
@@ -160,6 +171,13 @@ class AISupportCog(commands.Cog):
                 return True, f"Déplacé vers {vchannel.name} !"
             except Exception as e:
                 return False, f"Erreur de déplacement : {e}"
+
+        # Keep silence stream playing if stopped
+        if voice_client and not voice_client.is_playing():
+            try:
+                voice_client.play(SilenceAudioSource())
+            except Exception:
+                pass
 
         return True, f"Déjà connecté dans {vchannel.name}"
 
