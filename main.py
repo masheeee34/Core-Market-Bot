@@ -51,8 +51,11 @@ class TicketBot(commands.Bot):
             await self.load_extension(cog)
             log.info("Cog chargé : %s", cog)
 
-        await self.tree.sync()
-        log.info("Commandes slash synchronisées (global).")
+        try:
+            await self.tree.sync()
+            log.info("Commandes slash synchronisées (global).")
+        except Exception as e:
+            log.warning("Sync global reporté à on_ready : %s", e)
 
     async def on_ready(self) -> None:
         log.info("Connecté en tant que %s (id=%s)", self.user, self.user.id)
