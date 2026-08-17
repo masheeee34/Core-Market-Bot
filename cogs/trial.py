@@ -349,6 +349,44 @@ async def handle_trial_claim(interaction: discord.Interaction, user: discord.Use
                 log_embed.set_thumbnail(url=user.display_avatar.url)
             await logs_channel.send(embed=log_embed)
 
+    # 7. Schedule T+50min upsell DM
+    asyncio.create_task(_upsell_dm(user, key_given))
+
+
+async def _upsell_dm(user: discord.User | discord.Member, key: str) -> None:
+    """Fires at T+50min after trial claim — converts trial users to paid customers."""
+    await asyncio.sleep(50 * 60)  # 50 minutes
+
+    embed = discord.Embed(
+        title="⏰  VOTRE ESSAI CORE MARKET SE TERMINE DANS 10 MIN",
+        description=(
+            f"Hey {user.mention} 👋\n\n"
+            "Votre clé d'essai **1H gratuite** arrive à expiration.\n\n"
+            "**Vous avez aimé l'expérience ?**\n\n"
+            "```ansi\n"
+            "\u001b[1;33m[ ⚡ OFFRES DISPONIBLES MAINTENANT ]\u001b[0m\n"
+            "```\n"
+            "▸ **` 1 jour `** → Accès complet 24H\n"
+            "▸ **` 7 jours `** → La semaine complète\n"
+            "▸ **` 30 jours `** → Le mois entier\n"
+            "▸ **` Lifetime `** → Une fois, pour toujours ✅\n\n"
+            "```ansi\n"
+            "\u001b[1;32m[ 🛒 COMMANDER MAINTENANT ]\u001b[0m\n"
+            "```\n"
+            "▸ Ouvrez un ticket **#🛒・commande** sur le serveur\n"
+            "▸ Un staff vous répond en moins de **5 minutes**\n\n"
+            "──────────────────────────────────────\n"
+            "💬 *Des questions ? Rejoignez le support directement sur le serveur.*"
+        ),
+        color=discord.Color.from_str("#FFD700"),
+    )
+    embed.set_footer(text="CORE MARKET • Ne ratez pas votre fenêtre !")
+
+    try:
+        await user.send(embed=embed)
+    except Exception:
+        pass  # DMs disabled — not a blocker
+
 
 async def send_trial_panel(
     channel: discord.TextChannel,
