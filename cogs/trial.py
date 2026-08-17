@@ -28,9 +28,11 @@ MIN_ACCOUNT_AGE_DAYS = 3
 
 DEFAULT_KEYS = [
     "BO7-EXTERNAL-COREMARKET-TRIAL-Z8J76K4RE4QSQV-7CLDW8LR5BTWP9M",
+    "BO7-EXTERNAL-COREMARKET-TRIAL-MNWCXFWJRRK9KR-HJQXZDY3TGWW9PN",
     "BO7-EXTERNAL-COREMARKET-TRIAL-VLNQNWSTJPA4L9-ZMCN4YH8N788B1J",
     "BO7-EXTERNAL-COREMARKET-TRIAL-ZBCFYUJKX9UYBB-1SKLYV4U284APG2",
     "BO7-EXTERNAL-COREMARKET-TRIAL-6X36RFZU7PL95C-JR39P8E36FN63Y1",
+    "BO7-EXTERNAL-COREMARKET-TRIAL-R3KYXPJ9GMWDNR-6NZLA4L49W3412R",
     "BO7-EXTERNAL-COREMARKET-TRIAL-PMWGN8G5KANNL1-E3A8MAVGYXPGUSS",
     "BO7-EXTERNAL-COREMARKET-TRIAL-P8GKS11RNG6H38-NG7L77N756KD85X",
     "BO7-EXTERNAL-COREMARKET-TRIAL-WPMUCNWL8AFUPH-CZS3ST6USGUZEPX",
@@ -77,11 +79,6 @@ DEFAULT_KEYS = [
     "BO7-EXTERNAL-COREMARKET-TRIAL-MP692YDD1NQ34N-GSVXA773AH2QVAD",
 ]
 
-PURGED_KEYS = {
-    "BO7-EXTERNAL-COREMARKET-TRIAL-MNWCXFWJRRK9KR-HJQXZDY3TGWW9PN",
-    "BO7-EXTERNAL-COREMARKET-TRIAL-R3KYXPJ9GMWDNR-6NZLA4L49W3412R",
-}
-
 _CLAIM_LOCK = asyncio.Lock()
 
 
@@ -89,7 +86,7 @@ def load_keys_data() -> dict[str, Any]:
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(KEYS_FILE):
         data = {
-            "available_keys": [k for k in DEFAULT_KEYS if k not in PURGED_KEYS],
+            "available_keys": list(DEFAULT_KEYS),
             "claimed_keys": {},
         }
         save_keys_data(data)
@@ -98,23 +95,14 @@ def load_keys_data() -> dict[str, Any]:
     try:
         with open(KEYS_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if "available_keys" not in data:
+            if "available_keys" not in data or not data["available_keys"]:
                 data["available_keys"] = list(DEFAULT_KEYS)
             if "claimed_keys" not in data:
                 data["claimed_keys"] = {}
-
-            # Auto-purge invalidated keys from available and claimed history
-            data["available_keys"] = [k for k in data["available_keys"] if k not in PURGED_KEYS]
-            for uid, c_info in list(data["claimed_keys"].items()):
-                c_key = c_info.get("key") if isinstance(c_info, dict) else str(c_info)
-                if c_key in PURGED_KEYS:
-                    del data["claimed_keys"][uid]
-
-            save_keys_data(data)
             return data
     except Exception as e:
         log.error("Error reading trial keys file: %s", e)
-        return {"available_keys": [k for k in DEFAULT_KEYS if k not in PURGED_KEYS], "claimed_keys": {}}
+        return {"available_keys": list(DEFAULT_KEYS), "claimed_keys": {}}
 
 
 def save_keys_data(data: dict[str, Any]) -> None:
