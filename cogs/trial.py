@@ -77,6 +77,11 @@ DEFAULT_KEYS = [
     "BO7-EXTERNAL-COREMARKET-TRIAL-MP692YDD1NQ34N-GSVXA773AH2QVAD",
 ]
 
+PURGED_KEYS = {
+    "BO7-EXTERNAL-COREMARKET-TRIAL-MNWCXFWJRRK9KR-HJQXZDY3TGWW9PN",
+    "BO7-EXTERNAL-COREMARKET-TRIAL-R3KYXPJ9GMWDNR-6NZLA4L49W3412R",
+}
+
 _CLAIM_LOCK = asyncio.Lock()
 
 
@@ -84,7 +89,7 @@ def load_keys_data() -> dict[str, Any]:
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(KEYS_FILE):
         data = {
-            "available_keys": list(DEFAULT_KEYS),
+            "available_keys": [k for k in DEFAULT_KEYS if k not in PURGED_KEYS],
             "claimed_keys": {},
         }
         save_keys_data(data)
@@ -97,10 +102,19 @@ def load_keys_data() -> dict[str, Any]:
                 data["available_keys"] = list(DEFAULT_KEYS)
             if "claimed_keys" not in data:
                 data["claimed_keys"] = {}
+
+            # Auto-purge invalidated keys from available and claimed history
+            data["available_keys"] = [k for k in data["available_keys"] if k not in PURGED_KEYS]
+            for uid, c_info in list(data["claimed_keys"].items()):
+                c_key = c_info.get("key") if isinstance(c_info, dict) else str(c_info)
+                if c_key in PURGED_KEYS:
+                    del data["claimed_keys"][uid]
+
+            save_keys_data(data)
             return data
     except Exception as e:
         log.error("Error reading trial keys file: %s", e)
-        return {"available_keys": list(DEFAULT_KEYS), "claimed_keys": {}}
+        return {"available_keys": [k for k in DEFAULT_KEYS if k not in PURGED_KEYS], "claimed_keys": {}}
 
 
 def save_keys_data(data: dict[str, Any]) -> None:
