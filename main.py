@@ -38,6 +38,7 @@ COGS = [
     "cogs.downloads",
     "cogs.onboarding",
     "cogs.content",
+    "cogs.watchdog",
 ]
 
 logging.basicConfig(
