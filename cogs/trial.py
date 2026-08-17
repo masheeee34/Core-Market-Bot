@@ -190,52 +190,36 @@ class TrialClaimView(discord.ui.View):
         row=0,
     )
     async def claim_trial(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        trial_cog = interaction.client.get_cog("Trial")
+        if trial_cog and hasattr(trial_cog, "deliver_key_to_user"):
+            await trial_cog.deliver_key_to_user(interaction, interaction.user)
+        else:
+            await handle_trial_claim(interaction, interaction.user)
+
+async def handle_trial_claim(interaction: discord.Interaction, user: discord.User | discord.Member) -> None:
+    if not interaction.response.is_done():
         await interaction.response.defer(ephemeral=True)
-        user = interaction.user
-        guild = interaction.guild
-        user_id_str = str(user.id)
 
-        # ----------------- SECURITY CHECK 1: Account Age -----------------
-        now_dt = discord.utils.utcnow()
-        account_age = now_dt - user.created_at
-        if account_age < timedelta(days=MIN_ACCOUNT_AGE_DAYS):
-            embed_sec = discord.Embed(
-                title="⛔  ACCOUNT SECURITY VERIFICATION",
-                description=(
-                    f"Sorry {user.mention}, your Discord account is too new.\n\n"
-                    f"▸ **Required Account Age :** At least `{MIN_ACCOUNT_AGE_DAYS} days old`\n"
-                    f"▸ **Your Account Age :** `{account_age.days} day(s)`\n\n"
-                    "🛡️ *This security measure prevents automated bot accounts and key farming. If you are a legitimate user, please contact staff in support.*"
-                ),
-                color=discord.Color.red(),
-            )
-            embed_sec.set_footer(text="CORE MARKET • Anti-Abuse Protection")
-            await interaction.followup.send(embed=embed_sec, ephemeral=True)
-            return
+    guild = interaction.guild
+    user_id_str = str(user.id)
 
-        # ----------------- SECURITY CHECK 2: Rules Verification -----------------
-        if isinstance(user, discord.Member) and guild:
-            member_role = discord.utils.get(guild.roles, name="Member")
-            customer_role = discord.utils.get(guild.roles, name="Customer")
-            staff_role = discord.utils.get(guild.roles, name="Staff")
-            owner_role = discord.utils.get(guild.roles, name="Owner")
-
-            has_valid_role = any(r in user.roles for r in (member_role, customer_role, staff_role, owner_role) if r)
-            if not has_valid_role and member_role is not None:
-                rules_ch = discord.utils.get(guild.text_channels, name="🚨・ʀᴜʟᴇꜱ")
-                rules_mention = rules_ch.mention if rules_ch else "#rules"
-                embed_rules = discord.Embed(
-                    title="🛡️  RULES ACCEPTANCE REQUIRED",
-                    description=(
-                        f"Hey {user.mention}! Before claiming your free trial, you must accept the server rules.\n\n"
-                        f"▸ Please head over to {rules_mention} and click **Accept Rules & Unlock Server**.\n"
-                        f"▸ Once verified, come back here to claim your key!"
-                    ),
-                    color=discord.Color.orange(),
-                )
-                embed_rules.set_footer(text="CORE MARKET • Access Control")
-                await interaction.followup.send(embed=embed_rules, ephemeral=True)
-                return
+    # ----------------- SECURITY CHECK 1: Account Age -----------------
+    now_dt = discord.utils.utcnow()
+    account_age = now_dt - user.created_at
+    if account_age < timedelta(days=MIN_ACCOUNT_AGE_DAYS):
+        embed_sec = discord.Embed(
+            title="⛔  ACCOUNT SECURITY VERIFICATION",
+            description=(
+                f"Sorry {user.mention}, your Discord account is too new.\n\n"
+                f"▸ **Required Account Age :** At least `{MIN_ACCOUNT_AGE_DAYS} days old`\n"
+                f"▸ **Your Account Age :** `{account_age.days} day(s)`\n\n"
+                "🛡️ *This security measure prevents automated bot accounts and key farming. If you are a legitimate user, please contact staff in support.*"
+            ),
+            color=discord.Color.red(),
+        )
+        embed_sec.set_footer(text="CORE MARKET • Anti-Abuse Protection")
+        await interaction.followup.send(embed=embed_sec, ephemeral=True)
+        return
 
         # ----------------- CONCURRENCY LOCK -----------------
         async with _CLAIM_LOCK:
@@ -390,6 +374,9 @@ class Trial(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+
+    async def deliver_key_to_user(self, interaction: discord.Interaction, user: discord.User | discord.Member) -> None:
+        await handle_trial_claim(interaction, user)
 
     async def cog_load(self) -> None:
         # Register persistent view so buttons work across restarts
