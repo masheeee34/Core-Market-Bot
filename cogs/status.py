@@ -13,10 +13,9 @@ STATUS_FILE = Path("data/cheat_status.json")
 
 DEFAULT_STATUS: dict[str, dict[str, str]] = {
     "spectre": {"name": "TRINITY SPECTRE (BO7 / WZ)", "status": "UNDETECTED", "notes": "External Ring-0 • Streamproof • Safe"},
-    "mcore": {"name": "M-CORE EXTERNAL", "status": "UNDETECTED", "notes": "Kernel Overlay • ESP & Aim • Safe"},
+    "mcore": {"name": "M-CORE EXTERNAL (BO7 / WZ)", "status": "UNDETECTED", "notes": "Kernel Overlay • ESP & Aim • Safe"},
     "perm_spoofer": {"name": "PERMANENT HWID SPOOFER", "status": "UNDETECTED", "notes": "Motherboard / Disk / NIC Spoofed • Safe"},
-    "temp_spoofer": {"name": "TEMPORARY SPOOFER", "status": "UNDETECTED", "notes": "Instant Spoof Session • Safe"},
-    "ricochet": {"name": "RICOCHET ANTI-CHEAT BYPASS", "status": "OPERATIONAL", "notes": "Hypervisor / Ring-0 Guard Active"},
+    "valorant_pulse": {"name": "TRINITY PULSE (VALORANT)", "status": "UNDETECTED", "notes": "Internal No-Restart Emulator • Vanguard Bypass • Safe"},
 }
 
 STATUS_EMOJIS = {
@@ -31,15 +30,25 @@ STATUS_EMOJIS = {
 
 
 def load_status_data() -> dict[str, Any]:
-    if not STATUS_FILE.exists():
-        save_status_data(DEFAULT_STATUS)
-        return DEFAULT_STATUS.copy()
-    try:
-        with open(STATUS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        log.error("Error loading status data: %s", e)
-        return DEFAULT_STATUS.copy()
+    data: dict[str, Any] = {}
+    if STATUS_FILE.exists():
+        try:
+            with open(STATUS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            log.error("Error loading status data: %s", e)
+
+    # Purge removed software
+    data.pop("temp_spoofer", None)
+    data.pop("ricochet", None)
+
+    # Ensure required items exist
+    for k, v in DEFAULT_STATUS.items():
+        if k not in data:
+            data[k] = v.copy()
+
+    save_status_data(data)
+    return data
 
 
 def save_status_data(data: dict[str, Any]) -> None:
@@ -195,9 +204,9 @@ class StatusPanelControlView(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)
         data = load_status_data()
-        for key in ("spectre", "mcore", "perm_spoofer", "temp_spoofer"):
+        for key in ("spectre", "mcore", "perm_spoofer", "valorant_pulse"):
             if key in data:
-                self.add_item(StatusSelect(key, data[key]["name"].split()[0]))
+                self.add_item(StatusSelect(key, data[key]["name"]))
 
 
 class StatusCog(commands.Cog):
@@ -232,10 +241,9 @@ class StatusCog(commands.Cog):
     @app_commands.choices(
         product=[
             app_commands.Choice(name="🔮 Trinity Spectre (BO7 / WZ)", value="spectre"),
-            app_commands.Choice(name="🎯 M-Core External", value="mcore"),
-            app_commands.Choice(name="🛡️ Permanent Spoofer", value="perm_spoofer"),
-            app_commands.Choice(name="⚡ Temporary Spoofer", value="temp_spoofer"),
-            app_commands.Choice(name="🛡️ Ricochet Bypass", value="ricochet"),
+            app_commands.Choice(name="🎯 M-Core External (BO7 / WZ)", value="mcore"),
+            app_commands.Choice(name="🛡️ Permanent HWID Spoofer", value="perm_spoofer"),
+            app_commands.Choice(name="⚡ Trinity Pulse (Valorant)", value="valorant_pulse"),
         ],
         status=[
             app_commands.Choice(name="🟢 UNDETECTED (Operational)", value="UNDETECTED"),
