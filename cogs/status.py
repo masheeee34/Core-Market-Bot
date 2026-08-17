@@ -11,12 +11,12 @@ from discord.ext import commands
 log = logging.getLogger("cogs.status")
 STATUS_FILE = Path("data/cheat_status.json")
 
-DEFAULT_STATUS = {
-    "spectre": {"name": "TRINITY SPECTRE (BO7 / WZ)", "status": "UNDETECTED", "color": "green", "notes": "External Ring-0 • Streamproof • Safe"},
-    "mcore": {"name": "M-CORE EXTERNAL", "status": "UNDETECTED", "color": "green", "notes": "Kernel Overlay • ESP & Aim • Safe"},
-    "perm_spoofer": {"name": "PERMANENT HWID SPOOFER", "status": "UNDETECTED", "color": "green", "notes": "Motherboard / Disk / NIC Spoofed • Safe"},
-    "temp_spoofer": {"name": "TEMPORARY SPOOFER", "status": "UNDETECTED", "color": "green", "notes": "Instant Spoof Session • Safe"},
-    "ricochet": {"name": "RICOCHET ANTI-CHEAT BYPASS", "status": "OPERATIONAL", "color": "green", "notes": "Hypervisor / Ring-0 Guard Active"},
+DEFAULT_STATUS: dict[str, dict[str, str]] = {
+    "spectre": {"name": "TRINITY SPECTRE (BO7 / WZ)", "status": "UNDETECTED", "notes": "External Ring-0 • Streamproof • Safe"},
+    "mcore": {"name": "M-CORE EXTERNAL", "status": "UNDETECTED", "notes": "Kernel Overlay • ESP & Aim • Safe"},
+    "perm_spoofer": {"name": "PERMANENT HWID SPOOFER", "status": "UNDETECTED", "notes": "Motherboard / Disk / NIC Spoofed • Safe"},
+    "temp_spoofer": {"name": "TEMPORARY SPOOFER", "status": "UNDETECTED", "notes": "Instant Spoof Session • Safe"},
+    "ricochet": {"name": "RICOCHET ANTI-CHEAT BYPASS", "status": "OPERATIONAL", "notes": "Hypervisor / Ring-0 Guard Active"},
 }
 
 STATUS_EMOJIS = {
@@ -29,27 +29,17 @@ STATUS_EMOJIS = {
     "OFFLINE": "🔴",
 }
 
-STATUS_COLORS = {
-    "UNDETECTED": "#00FF66",
-    "OPERATIONAL": "#00FF66",
-    "UPDATING": "#FFCC00",
-    "TESTING": "#FFCC00",
-    "MAINTENANCE": "#FF3333",
-    "DETECTED": "#FF0000",
-    "OFFLINE": "#FF0000",
-}
-
 
 def load_status_data() -> dict[str, Any]:
     if not STATUS_FILE.exists():
         save_status_data(DEFAULT_STATUS)
-        return DEFAULT_STATUS
+        return DEFAULT_STATUS.copy()
     try:
         with open(STATUS_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         log.error("Error loading status data: %s", e)
-        return DEFAULT_STATUS
+        return DEFAULT_STATUS.copy()
 
 
 def save_status_data(data: dict[str, Any]) -> None:
@@ -59,88 +49,183 @@ def save_status_data(data: dict[str, Any]) -> None:
 
 
 def build_status_embed(data: dict[str, Any]) -> discord.Embed:
-    all_green = all(item.get("status") in ("UNDETECTED", "OPERATIONAL") for item in data.values())
-    embed_color = discord.Color.green() if all_green else discord.Color.gold()
+    clean_items = {k: v for k, v in data.items() if not k.startswith("_") and isinstance(v, dict)}
+
+    has_offline = any(item.get("status") in ("OFFLINE", "MAINTENANCE", "DETECTED") for item in clean_items.values())
+    has_updating = any(item.get("status") in ("UPDATING", "TESTING") for item in clean_items.values())
+
+    if has_offline:
+        overall_title = "🔴  CORE MARKET — CHEAT STATUS (MAINTENANCE)"
+        embed_color = discord.Color.from_str("#FF3333")
+        ansi_header = "\u001b[1;31m[ ⚠️ ATTENTION • MAINTENANCE IN PROGRESS ]\u001b[0m"
+    elif has_updating:
+        overall_title = "🟡  CORE MARKET — CHEAT STATUS (UPDATING)"
+        embed_color = discord.Color.from_str("#FFCC00")
+        ansi_header = "\u001b[1;33m[ ⏳ GAME UPDATE • TESTING IN PROGRESS ]\u001b[0m"
+    else:
+        overall_title = "🟢  CORE MARKET — ALL CHEATS OPERATIONAL & UNDETECTED"
+        embed_color = discord.Color.from_str("#00FF66")
+        ansi_header = "\u001b[1;32m[ 🛡️ 100% OPERATIONAL & UNDETECTED ]\u001b[0m"
 
     lines = [
-        "> **Official real-time operational status for all Core Market software.**\n"
-        "> *Updates automatically when anti-cheat patches or maintenance occurs.*\n\n"
-        "```ansi\n"
-        "\u001b[1;32m[ 🛡️ LIVE SOFTWARE & SPOOFER STATUS ]\u001b[0m\n"
-        "```"
+        "> **Real-time status monitor for all Call of Duty & Spoofer software.**\n"
+        "> *Instant automated alerts when anti-cheat updates or patches drop.*\n\n"
+        f"```ansi\n{ansi_header}\n```"
     ]
 
-    for key, info in data.items():
-        st = info.get("status", "UNDETECTED")
+    for key, info in clean_items.items():
+        st = info.get("status", "UNDETECTED").upper()
         emoji = STATUS_EMOJIS.get(st, "🟢")
         name = info.get("name", key.upper())
         notes = info.get("notes", "")
 
-        status_badge = f"` {st} `" if st in ("UNDETECTED", "OPERATIONAL") else f"**` {st} `**"
-        lines.append(f"{emoji} **{name}** ➔ {status_badge}")
+        if st in ("UNDETECTED", "OPERATIONAL"):
+            status_box = f"```diff\n+ {name} ➔ [ {st} ]\n```"
+        elif st in ("UPDATING", "TESTING"):
+            status_box = f"```fix\n! {name} ➔ [ {st} ]\n```"
+        else:
+            status_box = f"```diff\n- {name} ➔ [ {st} ] (DO NOT USE)\n```"
+
+        lines.append(f"{emoji} **{name}**")
+        lines.append(status_box)
         if notes:
-            lines.append(f"   └─ *{notes}*")
+            lines.append(f"   └─ *{notes}*\n")
 
     lines.append(
-        "\n```ansi\n"
-        "\u001b[1;36m[ ⚡ REFRESH & SUPPORT ]\u001b[0m\n"
+        "```ansi\n"
+        "\u001b[1;36m[ ⚡ QUICK ACCESS & ASSISTANCE ]\u001b[0m\n"
         "```\n"
-        "▸ **Need a Free Trial (1H)?** Claim in <#🎁・free-trial>\n"
-        "▸ **Questions or Orders?** Open a ticket in <#🎫・creer-un-ticket>\n"
-        f"▸ **Last Verified :** <t:{int(datetime.now(timezone.utc).timestamp())}:R>"
+        "▸ **🎁 Claim 1-Hour Free Trial :** <#🎁・free-trial>\n"
+        "▸ **🎫 Technical Support & Orders :** <#🎫・creer-un-ticket>\n"
+        f"▸ **Last Status Verification :** <t:{int(datetime.now(timezone.utc).timestamp())}:R>"
     )
 
     embed = discord.Embed(
-        title="🟢  CORE MARKET — LIVE CHEAT & SPOOFER STATUS",
+        title=overall_title,
         description="\n".join(lines),
         color=embed_color,
         timestamp=datetime.now(timezone.utc),
     )
-    embed.set_footer(text="CORE MARKET • 100% Streamproof & Ring-0 Hypervisor • Real-time Protection")
+    embed.set_footer(text="CORE MARKET • Real-Time Protection • 100% Streamproof Hypervisor")
     return embed
 
 
-class StatusCog(commands.Cog):
-    """Live Cheat & Spoofer status board with automatic updates and interactive management."""
+async def update_status_message_and_channel(guild: discord.Guild, bot_user: discord.ClientUser, data: dict[str, Any]) -> tuple[bool, str]:
+    """Finds or creates status channel, updates the live embed, and adjusts channel emoji."""
+    clean_items = {k: v for k, v in data.items() if not k.startswith("_") and isinstance(v, dict)}
+    has_offline = any(item.get("status") in ("OFFLINE", "MAINTENANCE", "DETECTED") for item in clean_items.values())
+    has_updating = any(item.get("status") in ("UPDATING", "TESTING") for item in clean_items.values())
 
+    target_prefix = "🔴" if has_offline else ("🟡" if has_updating else "🟢")
+    target_channel_name = f"{target_prefix}・ꜱᴛᴀᴛᴜꜱ-ᴄʜᴇᴀᴛꜱ"
+
+    # Find status channel
+    ch = (
+        discord.utils.get(guild.text_channels, name="🟢・ꜱᴛᴀᴛᴜꜱ-ᴄʜᴇᴀᴛꜱ")
+        or discord.utils.get(guild.text_channels, name="🟡・ꜱᴛᴀᴛᴜꜱ-ᴄʜᴇᴀᴛꜱ")
+        or discord.utils.get(guild.text_channels, name="🔴・ꜱᴛᴀᴛᴜꜱ-ᴄʜᴇᴀᴛꜱ")
+        or discord.utils.get(guild.text_channels, name="status-cheats")
+        or next((c for c in guild.text_channels if "status" in c.name.lower()), None)
+    )
+
+    if not ch:
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=False, view_channel=True),
+            guild.me: discord.PermissionOverwrite(send_messages=True, embed_links=True, view_channel=True),
+        }
+        ch = await guild.create_text_channel(target_channel_name, overwrites=overwrites, reason="Status Board")
+
+    # Rename channel if prefix changed
+    if ch.name != target_channel_name:
+        try:
+            await ch.edit(name=target_channel_name)
+        except Exception:
+            pass
+
+    embed = build_status_embed(data)
+    edited = False
+
+    # Search existing status message sent by bot
+    async for msg in ch.history(limit=15):
+        if msg.author.id == bot_user.id and msg.embeds:
+            await msg.edit(embed=embed)
+            edited = True
+            break
+
+    if not edited:
+        await ch.send(embed=embed)
+
+    return True, f"Tableau de bord mis à jour dans {ch.mention} ({target_prefix}) !"
+
+
+class StatusSelect(discord.ui.Select):
+    def __init__(self, product_key: str, product_name: str) -> None:
+        self.product_key = product_key
+        options = [
+            discord.SelectOption(label="UNDETECTED (Operational)", value="UNDETECTED", emoji="🟢", description="100% Safe to play"),
+            discord.SelectOption(label="UPDATING (Testing / Patching)", value="UPDATING", emoji="🟡", description="Wait for update"),
+            discord.SelectOption(label="OFFLINE (Maintenance)", value="OFFLINE", emoji="🔴", description="Do NOT use"),
+        ]
+        super().__init__(
+            placeholder=f"Changer le statut de {product_name}...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
+        new_status = self.values[0]
+        data = load_status_data()
+
+        if self.product_key in data:
+            data[self.product_key]["status"] = new_status
+            save_status_data(data)
+
+        if interaction.guild and interaction.client.user:
+            await update_status_message_and_channel(interaction.guild, interaction.client.user, data)
+
+        await interaction.followup.send(
+            f"✅ **{data.get(self.product_key, {}).get('name', self.product_key)}** est désormais en **`{new_status}`** !",
+            ephemeral=True,
+        )
+
+
+class StatusPanelControlView(discord.ui.View):
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
+        data = load_status_data()
+        for key in ("spectre", "mcore", "perm_spoofer", "temp_spoofer"):
+            if key in data:
+                self.add_item(StatusSelect(key, data[key]["name"].split()[0]))
+
+
+class StatusCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="setup_status_channel", description="Create or setup the official live #status-cheats channel")
+    @app_commands.command(name="setup_status_channel", description="Create or setup the official live status channel")
     @app_commands.default_permissions(administrator=True)
     async def setup_status_cmd(self, interaction: discord.Interaction) -> None:
-        guild = interaction.guild
-        if not guild:
+        if not interaction.guild or not self.bot.user:
             return
-
         await interaction.response.defer(ephemeral=True)
-        channel_name = "🟢・ꜱᴛᴀᴛᴜꜱ-ᴄʜᴇᴀᴛꜱ"
-
-        # Check existing or create channel
-        ch = discord.utils.get(guild.text_channels, name=channel_name) or discord.utils.get(
-            guild.text_channels, name="status-cheats"
-        )
-        if not ch:
-            overwrites = {
-                guild.default_role: discord.PermissionOverwrite(send_messages=False, add_reactions=False, view_channel=True),
-                guild.me: discord.PermissionOverwrite(send_messages=True, embed_links=True, view_channel=True),
-            }
-            ch = await guild.create_text_channel(
-                channel_name,
-                overwrites=overwrites,
-                reason="Official Core Market Status Board",
-            )
-
         data = load_status_data()
-        embed = build_status_embed(data)
+        ok, msg = await update_status_message_and_channel(interaction.guild, self.bot.user, data)
+        await interaction.followup.send(f"{'✅' if ok else '⚠️'} {msg}", ephemeral=True)
 
-        # Post or edit message
-        msg = await ch.send(embed=embed)
-        data["_status_channel_id"] = ch.id
-        data["_status_message_id"] = msg.id
-        save_status_data(data)
-
-        await interaction.followup.send(f"✅ Status Board created and published in {ch.mention}!", ephemeral=True)
+    @app_commands.command(name="status_panel", description="Open interactive 1-click status management panel")
+    @app_commands.default_permissions(administrator=True)
+    async def status_panel_cmd(self, interaction: discord.Interaction) -> None:
+        embed = discord.Embed(
+            title="⚙️  PANNEAU D'ADMINISTRATION DU STATUT DES CHEATS",
+            description=(
+                "> **Sélectionnez un logiciel dans les menus déroulants ci-dessous pour changer son statut en direct.**\n"
+                "> Le tableau de bord et le salon **`#status-cheats`** seront mis à jour instantanément."
+            ),
+            color=discord.Color.from_str("#0070FF"),
+        )
+        await interaction.response.send_message(embed=embed, view=StatusPanelControlView(), ephemeral=True)
 
     @app_commands.command(name="set_cheat_status", description="Update the live operational status of a cheat or spoofer")
     @app_commands.default_permissions(administrator=True)
@@ -165,6 +250,8 @@ class StatusCog(commands.Cog):
         status: str,
         custom_notes: str | None = None,
     ) -> None:
+        if not interaction.guild or not self.bot.user:
+            return
         await interaction.response.defer(ephemeral=True)
         data = load_status_data()
 
@@ -176,20 +263,10 @@ class StatusCog(commands.Cog):
             data[product]["notes"] = custom_notes
         save_status_data(data)
 
-        # Update the live message in Discord
-        ch_id = data.get("_status_channel_id")
-        msg_id = data.get("_status_message_id")
-        if ch_id and msg_id:
-            try:
-                ch = self.bot.get_channel(int(ch_id))
-                if isinstance(ch, discord.TextChannel):
-                    msg = await ch.fetch_message(int(msg_id))
-                    await msg.edit(embed=build_status_embed(data))
-            except Exception as e:
-                log.warning("Could not edit status message: %s", e)
-
+        # Update Discord live embed & channel name
+        ok, msg = await update_status_message_and_channel(interaction.guild, self.bot.user, data)
         await interaction.followup.send(
-            f"✅ Statut mis à jour pour **{data[product]['name']}** ➔ **`{status}`** !",
+            f"✅ Statut mis à jour : **{data[product]['name']}** ➔ **`{status}`** !\n{msg}",
             ephemeral=True,
         )
 
