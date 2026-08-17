@@ -31,6 +31,8 @@ COGS = [
     "cogs.invites",
     "cogs.translator",
     "cogs.ai_support",
+    "cogs.status",
+    "cogs.ai_builder",
 ]
 
 logging.basicConfig(
