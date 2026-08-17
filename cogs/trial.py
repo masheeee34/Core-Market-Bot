@@ -530,6 +530,23 @@ class Trial(commands.Cog):
                 ephemeral=True,
             )
 
+    @app_commands.command(
+        name="trial_reset_all",
+        description="Reset ALL trial claim history for everyone so new keys can be claimed",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def trial_reset_all(self, interaction: discord.Interaction) -> None:
+        data = load_keys_data()
+        claimed_count = len(data.get("claimed_keys", {}))
+        data["claimed_keys"] = {}
+        save_keys_data(data)
+
+        await interaction.response.send_message(
+            f"🧹 **Historique réinitialisé !** `{claimed_count}` réclamation(s) effacée(s). Tous les membres peuvent maintenant réclamer une nouvelle clé fraîche !",
+            ephemeral=True,
+        )
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Trial(bot))
