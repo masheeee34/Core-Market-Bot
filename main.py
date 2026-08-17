@@ -33,6 +33,10 @@ COGS = [
     "cogs.ai_support",
     "cogs.status",
     "cogs.ai_builder",
+    "cogs.radar",
+    "cogs.configs",
+    "cogs.downloads",
+    "cogs.onboarding",
 ]
 
 logging.basicConfig(
