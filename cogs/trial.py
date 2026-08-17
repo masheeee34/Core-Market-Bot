@@ -233,133 +233,133 @@ async def handle_trial_claim(interaction: discord.Interaction, user: discord.Use
         await interaction.followup.send(embed=embed_sec, ephemeral=True)
         return
 
-        # ----------------- CONCURRENCY LOCK -----------------
-        async with _CLAIM_LOCK:
-            data = load_keys_data()
-            claimed_keys = data.get("claimed_keys", {})
-            available_keys = data.get("available_keys", [])
+    # ----------------- CONCURRENCY LOCK & KEY CLAIM -----------------
+    async with _CLAIM_LOCK:
+        data = load_keys_data()
+        claimed_keys = data.get("claimed_keys", {})
+        available_keys = data.get("available_keys", [])
 
-            # 1. Check if member already claimed a key
-            if user_id_str in claimed_keys:
-                claimed_info = claimed_keys[user_id_str]
-                key = claimed_info["key"] if isinstance(claimed_info, dict) else str(claimed_info)
+        # 1. Check if member already claimed a key
+        if user_id_str in claimed_keys:
+            claimed_info = claimed_keys[user_id_str]
+            key = claimed_info["key"] if isinstance(claimed_info, dict) else str(claimed_info)
 
-                embed_already = discord.Embed(
-                    title="ℹ️  YOU HAVE ALREADY CLAIMED YOUR TRIAL KEY",
-                    description=(
-                        f"Hello {user.mention}, you have already received your free 1-hour trial key.\n\n"
-                        f"🔑 **Your BO7 Trial Key :**\n"
-                        f"```{key}```\n"
-                        f"📥 **Download Loader :** [Download Loader via Mega]({LOADER_MEGA_URL})\n"
-                        f"📖 **Setup Guide :** [View Official Setup Guide (GitBook)]({GUIDE_GITBOOK_URL})\n\n"
-                        f"💎 *Need help or want to purchase the full version? Open a ticket in support!*"
-                    ),
-                    color=discord.Color.from_str("#0070FF"),
-                )
-                embed_already.set_footer(text="CORE MARKET • 1-Hour Free Trial")
-                await interaction.followup.send(embed=embed_already, ephemeral=True)
-                return
-
-            # 2. Check if stock is available
-            if not available_keys:
-                embed_empty = discord.Embed(
-                    title="⚠️  FREE TRIAL STOCK DEPLETED",
-                    description=(
-                        "Sorry, all free trial keys have been claimed for now!\n\n"
-                        "▸ Our staff will restock additional keys very soon.\n"
-                        "▸ You can also open a ticket to purchase a full license (Day / Week / Month / Lifetime)."
-                    ),
-                    color=discord.Color.orange(),
-                )
-                embed_empty.set_footer(text="CORE MARKET • Support & Orders")
-                await interaction.followup.send(embed=embed_empty, ephemeral=True)
-                return
-
-            # 3. Pop an available key and record claim atomically
-            key_given = available_keys.pop(0)
-            now_str = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M UTC")
-            claimed_keys[user_id_str] = {
-                "key": key_given,
-                "user_name": str(user),
-                "claimed_at": now_str,
-            }
-            data["available_keys"] = available_keys
-            data["claimed_keys"] = claimed_keys
-            save_keys_data(data)
-
-        # 4. Deliver key in ephemeral response (in English)
-        embed_success = discord.Embed(
-            title="🎉  YOUR BO7 FREE TRIAL KEY IS READY!",
-            description=(
-                f"Congratulations {user.mention}! Here is your **BO7 External (1-Hour Trial)** license key.\n\n"
-                "```ansi\n"
-                "\u001b[1;32m[ 🔑 YOUR PERSONAL TRIAL LICENSE KEY ]\u001b[0m\n"
-                "```\n"
-                f"```{key_given}```\n"
-                "```ansi\n"
-                "\u001b[1;36m[ 📥 DOWNLOAD & QUICK INSTRUCTIONS ]\u001b[0m\n"
-                "```\n"
-                f"▸ **` 1 ` Download Loader :** [Click here to download via Mega]({LOADER_MEGA_URL})\n"
-                f"▸ **` 2 ` Step-by-Step Guide :** [View Official Setup Guide (GitBook)]({GUIDE_GITBOOK_URL})\n"
-                f"▸ **` 3 ` Activation :** Extract the archive, run the Loader as Administrator, and paste your key.\n\n"
-                "──────────────────────────────────────────\n"
-                "⚠️ **Important :** Make sure Virtualization (SVM / Intel VT-x) is enabled in your BIOS before launching."
-            ),
-            color=discord.Color.green(),
-        )
-        embed_success.set_footer(text="CORE MARKET • Enjoy your session! (1-Hour Trial)")
-        await interaction.followup.send(embed=embed_success, ephemeral=True)
-
-        # 5. Backup DM delivery
-        try:
-            embed_dm = discord.Embed(
-                title="🎁  CORE MARKET — YOUR TRIAL LICENSE KEY",
+            embed_already = discord.Embed(
+                title="ℹ️  YOU HAVE ALREADY CLAIMED YOUR TRIAL KEY",
                 description=(
-                    "> **Thank you for trying Core Market BO7 / Warzone software!**\n"
-                    "> Here is your official trial license key and complete setup instructions.\n\n"
-                    "```ansi\n"
-                    "\u001b[1;32m[ 🔑 YOUR PERSONAL 1-HOUR LICENSE KEY ]\u001b[0m\n"
-                    "```\n"
-                    f"```{key_given}```\n"
-                    "```ansi\n"
-                    "\u001b[1;36m[ 📥 DOWNLOAD & QUICK START GUIDE ]\u001b[0m\n"
-                    "```\n"
-                    f"**` 1 ` Download Loader :** [Click to Download via Mega]({LOADER_MEGA_URL})\n"
-                    f"**` 2 ` Setup Guide :** [View Step-by-Step GitBook Guide]({GUIDE_GITBOOK_URL})\n"
-                    f"**` 3 ` Activation :** Run loader as Admin ➔ Paste your key ➔ Launch Game\n\n"
-                    "🛡️ *Ensure Virtualization (SVM / Intel VT-x) is enabled in BIOS before launching.*"
+                    f"Hello {user.mention}, you have already received your free 1-hour trial key.\n\n"
+                    f"🔑 **Your BO7 Trial Key :**\n"
+                    f"```{key}```\n"
+                    f"📥 **Download Loader :** [Download Loader via Mega]({LOADER_MEGA_URL})\n"
+                    f"📖 **Setup Guide :** [View Official Setup Guide (GitBook)]({GUIDE_GITBOOK_URL})\n\n"
+                    f"💎 *Need help or want to purchase the full version? Open a ticket in support!*"
                 ),
                 color=discord.Color.from_str("#0070FF"),
             )
-            embed_dm.set_footer(text="CORE MARKET • 1-Hour Free Trial • Need help? Open a ticket!")
-            await user.send(embed=embed_dm)
-        except Exception:
-            pass
+            embed_already.set_footer(text="CORE MARKET • 1-Hour Free Trial")
+            await interaction.followup.send(embed=embed_already, ephemeral=True)
+            return
 
-        # 6. Log claim to staff logs channel
-        if guild:
-            logs_channel = (
-                discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
-                or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
-                or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘")
-                or discord.utils.get(guild.text_channels, name="logs")
+        # 2. Check if stock is available
+        if not available_keys:
+            embed_empty = discord.Embed(
+                title="⚠️  FREE TRIAL STOCK DEPLETED",
+                description=(
+                    "Sorry, all free trial keys have been claimed for now!\n\n"
+                    "▸ Our staff will restock additional keys very soon.\n"
+                    "▸ You can also open a ticket to purchase a full license (Day / Week / Month / Lifetime)."
+                ),
+                color=discord.Color.orange(),
             )
-            if logs_channel:
-                log_embed = discord.Embed(
-                    title="🎁  Free Trial Claimed",
-                    description=(
-                        f"**Member :** {user.mention} (`{user.id}`)\n"
-                        f"**Assigned Key :** `{key_given}`\n"
-                        f"**Remaining Stock :** `{len(available_keys)} keys available`\n"
-                        f"**Account Age :** `{account_age.days} days`\n"
-                        f"**Date :** `{now_str}`"
-                    ),
-                    color=discord.Color.from_str("#0070FF"),
-                    timestamp=discord.utils.utcnow(),
-                )
-                if user.display_avatar:
-                    log_embed.set_thumbnail(url=user.display_avatar.url)
-                await logs_channel.send(embed=log_embed)
+            embed_empty.set_footer(text="CORE MARKET • Support & Orders")
+            await interaction.followup.send(embed=embed_empty, ephemeral=True)
+            return
+
+        # 3. Pop an available key and record claim atomically
+        key_given = available_keys.pop(0)
+        now_str = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M UTC")
+        claimed_keys[user_id_str] = {
+            "key": key_given,
+            "user_name": str(user),
+            "claimed_at": now_str,
+        }
+        data["available_keys"] = available_keys
+        data["claimed_keys"] = claimed_keys
+        save_keys_data(data)
+
+    # 4. Deliver key in ephemeral response (in English)
+    embed_success = discord.Embed(
+        title="🎉  YOUR BO7 FREE TRIAL KEY IS READY!",
+        description=(
+            f"Congratulations {user.mention}! Here is your **BO7 External (1-Hour Trial)** license key.\n\n"
+            "```ansi\n"
+            "\u001b[1;32m[ 🔑 YOUR PERSONAL TRIAL LICENSE KEY ]\u001b[0m\n"
+            "```\n"
+            f"```{key_given}```\n"
+            "```ansi\n"
+            "\u001b[1;36m[ 📥 DOWNLOAD & QUICK INSTRUCTIONS ]\u001b[0m\n"
+            "```\n"
+            f"▸ **` 1 ` Download Loader :** [Click here to download via Mega]({LOADER_MEGA_URL})\n"
+            f"▸ **` 2 ` Step-by-Step Guide :** [View Official Setup Guide (GitBook)]({GUIDE_GITBOOK_URL})\n"
+            f"▸ **` 3 ` Activation :** Extract the archive, run the Loader as Administrator, and paste your key.\n\n"
+            "──────────────────────────────────────────\n"
+            "⚠️ **Important :** Make sure Virtualization (SVM / Intel VT-x) is enabled in your BIOS before launching."
+        ),
+        color=discord.Color.green(),
+    )
+    embed_success.set_footer(text="CORE MARKET • Enjoy your session! (1-Hour Trial)")
+    await interaction.followup.send(embed=embed_success, ephemeral=True)
+
+    # 5. Backup DM delivery
+    try:
+        embed_dm = discord.Embed(
+            title="🎁  CORE MARKET — YOUR TRIAL LICENSE KEY",
+            description=(
+                "> **Thank you for trying Core Market BO7 / Warzone software!**\n"
+                "> Here is your official trial license key and complete setup instructions.\n\n"
+                "```ansi\n"
+                "\u001b[1;32m[ 🔑 YOUR PERSONAL 1-HOUR LICENSE KEY ]\u001b[0m\n"
+                "```\n"
+                f"```{key_given}```\n"
+                "```ansi\n"
+                "\u001b[1;36m[ 📥 DOWNLOAD & QUICK START GUIDE ]\u001b[0m\n"
+                "```\n"
+                f"**` 1 ` Download Loader :** [Click to Download via Mega]({LOADER_MEGA_URL})\n"
+                f"**` 2 ` Setup Guide :** [View Step-by-Step GitBook Guide]({GUIDE_GITBOOK_URL})\n"
+                f"**` 3 ` Activation :** Run loader as Admin ➔ Paste your key ➔ Launch Game\n\n"
+                "🛡️ *Ensure Virtualization (SVM / Intel VT-x) is enabled in BIOS before launching.*"
+            ),
+            color=discord.Color.from_str("#0070FF"),
+        )
+        embed_dm.set_footer(text="CORE MARKET • 1-Hour Free Trial • Need help? Open a ticket!")
+        await user.send(embed=embed_dm)
+    except Exception:
+        pass
+
+    # 6. Log claim to staff logs channel
+    if guild:
+        logs_channel = (
+            discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
+            or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
+            or discord.utils.get(guild.text_channels, name="📜 ┃ 𝖑𝖔𝖌𝖘-𝖙𝖎𝖈𝖐𝖊𝖙𝖘")
+            or discord.utils.get(guild.text_channels, name="logs")
+        )
+        if logs_channel:
+            log_embed = discord.Embed(
+                title="🎁  Free Trial Claimed",
+                description=(
+                    f"**Member :** {user.mention} (`{user.id}`)\n"
+                    f"**Assigned Key :** `{key_given}`\n"
+                    f"**Remaining Stock :** `{len(available_keys)} keys available`\n"
+                    f"**Account Age :** `{account_age.days} days`\n"
+                    f"**Date :** `{now_str}`"
+                ),
+                color=discord.Color.from_str("#0070FF"),
+                timestamp=discord.utils.utcnow(),
+            )
+            if user.display_avatar:
+                log_embed.set_thumbnail(url=user.display_avatar.url)
+            await logs_channel.send(embed=log_embed)
 
 
 async def send_trial_panel(
