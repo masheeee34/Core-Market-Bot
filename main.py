@@ -96,34 +96,39 @@ async def keep_alive() -> None:
             await asyncio.sleep(600)
 
 
-async def run_webserver(bot: TicketBot) -> None:
+CURRENT_BOT: TicketBot | None = None
+
+
+async def run_webserver() -> None:
     """Mini HTTP server : provides health check and instant zero-downtime hot-reload endpoint."""
     async def health(_: web.Request) -> web.Response:
         return web.Response(text="Bot is alive & operational")
 
     async def reload_handler(_: web.Request) -> web.Response:
         """Instantly hot-reloads all cogs in memory with 0 second disconnect from Discord."""
+        if not CURRENT_BOT:
+            return web.json_response({"success": False, "error": "Bot instance not ready yet"}, status=503)
+
         reloaded = []
         errors = []
         for cog in COGS:
             try:
-                await bot.reload_extension(cog)
+                await CURRENT_BOT.reload_extension(cog)
                 reloaded.append(cog)
                 log.info("Hot-reloaded: %s", cog)
             except Exception as e:
-                # If cog wasn't loaded yet, try load
                 try:
-                    await bot.load_extension(cog)
+                    await CURRENT_BOT.load_extension(cog)
                     reloaded.append(cog)
                 except Exception as ex:
                     errors.append(f"{cog}: {ex}")
                     log.error("Failed to hot-reload %s: %s", cog, ex)
 
         try:
-            for guild in bot.guilds:
-                bot.tree.copy_global_to(guild=guild)
-                await bot.tree.sync(guild=guild)
-            log.info("Slash command tree synced on %d guild(s).", len(bot.guilds))
+            for guild in CURRENT_BOT.guilds:
+                CURRENT_BOT.tree.copy_global_to(guild=guild)
+                await CURRENT_BOT.tree.sync(guild=guild)
+            log.info("Slash command tree synced on %d guild(s).", len(CURRENT_BOT.guilds))
         except Exception as e:
             log.warning("Slash sync warning on reload: %s", e)
 
@@ -148,6 +153,8 @@ async def run_webserver(bot: TicketBot) -> None:
 
 
 async def main() -> None:
+    global CURRENT_BOT
+    await run_webserver()
     asyncio.create_task(keep_alive())
 
     try_privileged = True
@@ -155,7 +162,7 @@ async def main() -> None:
         try:
             log.info("Connexion à Discord (privileged_intents=%s)...", try_privileged)
             bot = TicketBot(with_privileged_intents=try_privileged)
-            await run_webserver(bot)
+            CURRENT_BOT = bot
             await bot.start(DISCORD_TOKEN)
         except discord.errors.PrivilegedIntentsRequired:
             log.warning("Privileged Intents non activés sur le Developer Portal. Démarrage en mode standard...")
