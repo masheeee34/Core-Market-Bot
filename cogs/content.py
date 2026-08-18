@@ -1,7 +1,7 @@
 """
 Content Engine Cog — /render_clip Discord command.
 Sends a gameplay video to the VPS FFmpeg pipeline and returns
-ready-to-post TikTok/Shorts clips directly in Discord.
+ready-to-post TikTok/Shorts clips directly in Discord (100% English).
 """
 
 import asyncio
@@ -23,16 +23,12 @@ log = logging.getLogger("ticketbot.content")
 STUDIO_URL = os.getenv("STUDIO_URL", "http://127.0.0.1:5050")
 
 # ─────────────────────────────────────────────────────────────
-#  EMBED DESIGN SYSTEM  —  Style unique, jamais vu sur Discord
+#  EMBED DESIGN SYSTEM  —  Premium Cyberpunk / Terminal Aesthetics
 # ─────────────────────────────────────────────────────────────
-
-BRAND = "\033[1;36m◈ CORE MARKET\033[0m"
 
 BLOCK_TOP    = "╔══════════════════════════════════════╗"
 BLOCK_MID    = "╠══════════════════════════════════════╣"
 BLOCK_BOT    = "╚══════════════════════════════════════╝"
-LINE         = "│  {:<38}│"
-EMPTY        = "│{:^40}│"
 
 ACCENT_GOLD  = 0xFFD700
 ACCENT_CYAN  = 0x00E5FF
@@ -52,7 +48,7 @@ def render_progress_bar(percent: int, width: int = 20) -> str:
 
 def embed_render_started(task_id: str, filename: str) -> discord.Embed:
     e = discord.Embed(color=ACCENT_CYAN)
-    e.set_author(name="⚡ CORE STUDIO  ·  Content Engine", icon_url=None)
+    e.set_author(name="⚡ CORE STUDIO  ·  Content Engine")
     e.description = (
         _ansi(
             f"\033[1;36m{BLOCK_TOP}\033[0m\n"
@@ -62,17 +58,17 @@ def embed_render_started(task_id: str, filename: str) -> discord.Embed:
             f"\033[1;36m│\033[0m  \033[0;37mTask :\033[0m  \033[1;35m{task_id}\033[0m\n"
             f"\033[1;36m│\033[0m  \033[0;37mMode :\033[0m  \033[1;32mAuto-Clip 9:16 Vertical\033[0m\n"
             f"\033[1;36m{BLOCK_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  {render_progress_bar(10)}\033[0m\n"
+            f"\033[1;36m│\033[0m  {render_progress_bar(15)}\033[0m\n"
             f"\033[1;36m{BLOCK_BOT}\033[0m"
         )
     )
-    e.set_footer(text="CORE STUDIO  •  FFmpeg NVENC Pipeline  •  En cours…")
+    e.set_footer(text="CORE STUDIO  •  VPS FFmpeg Pipeline  •  Processing in background…")
     return e
 
 
 def embed_render_done(clips: list[dict], task_id: str) -> discord.Embed:
     e = discord.Embed(color=ACCENT_GREEN)
-    e.set_author(name="✅ CORE STUDIO  ·  Clips Prêts à Poster")
+    e.set_author(name="✅ CORE STUDIO  ·  Clips Ready to Post")
 
     clips_block = ""
     for i, c in enumerate(clips[:5], 1):
@@ -83,13 +79,13 @@ def embed_render_done(clips: list[dict], task_id: str) -> discord.Embed:
         clips_block += (
             f"\033[1;33m  ◈ Clip #{i}\033[0m  \033[0;37m{title}\033[0m\n"
             f"\033[0;37m    Hook   :\033[0m  \033[1;37m{hook}\033[0m\n"
-            f"\033[0;37m    Poster :\033[0m  \033[1;32m{time_slot}\033[0m\n"
+            f"\033[0;37m    Post   :\033[0m  \033[1;32m{time_slot}\033[0m\n"
         )
 
     e.description = (
         _ansi(
             f"\033[1;32m{BLOCK_TOP}\033[0m\n"
-            f"\033[1;32m│\033[0m  \033[1;37m🎯  {len(clips)} CLIP(S) GÉNÉRÉS AVEC SUCCÈS\033[0m\n"
+            f"\033[1;32m│\033[0m  \033[1;37m🎯  {len(clips)} CLIP(S) SUCCESSFULLY GENERATED\033[0m\n"
             f"\033[1;32m{BLOCK_MID}\033[0m\n"
             f"{clips_block}"
             f"\033[1;32m{BLOCK_MID}\033[0m\n"
@@ -98,13 +94,13 @@ def embed_render_done(clips: list[dict], task_id: str) -> discord.Embed:
             f"\033[1;32m{BLOCK_BOT}\033[0m"
         )
     )
-    e.set_footer(text="CORE STUDIO  •  Clips téléchargeables ci-dessous  •  Postez entre 18h30 et 21h30")
+    e.set_footer(text="CORE STUDIO  •  Download your files below  •  Best upload window: 18:30 - 21:30")
     return e
 
 
 def embed_render_error(error: str) -> discord.Embed:
     e = discord.Embed(color=ACCENT_RED)
-    e.set_author(name="✗ CORE STUDIO  ·  Erreur de Rendu")
+    e.set_author(name="✗ CORE STUDIO  ·  Rendering Error")
     e.description = (
         _ansi(
             f"\033[1;31m{BLOCK_TOP}\033[0m\n"
@@ -114,19 +110,19 @@ def embed_render_error(error: str) -> discord.Embed:
             f"\033[1;31m{BLOCK_BOT}\033[0m"
         )
     )
-    e.set_footer(text="CORE STUDIO  •  Vérifiez le format du fichier (MP4, MKV, MOV)")
+    e.set_footer(text="CORE STUDIO  •  Check your video format (MP4, MKV, MOV)")
     return e
 
 
 def embed_metadata_card(meta: dict, clip_num: int) -> discord.Embed:
     e = discord.Embed(color=ACCENT_GOLD)
-    e.title = f"📋  Metadata Clip #{clip_num}"
+    e.title = f"📋  Clip #{clip_num} — Social Media Metadata"
     e.description = (
         _ansi(
             f"\033[1;33m  Title  :\033[0m  {meta.get('title','—')[:50]}\n"
             f"\033[1;33m  Tags   :\033[0m  {meta.get('hashtags_string','')[:60]}\n"
             f"\033[1;33m  Pinned :\033[0m  {meta.get('pinned_comment','')[:60]}\n"
-            f"\033[1;33m  Poster :\033[0m  \033[1;32m{meta.get('optimal_time','—')}\033[0m"
+            f"\033[1;33m  Post   :\033[0m  \033[1;32m{meta.get('optimal_time','—')}\033[0m"
         )
     )
     return e
@@ -143,7 +139,7 @@ async def _submit_render(video_bytes: bytes, filename: str, num_clips: int = 5) 
     form.add_field("num_clips", str(num_clips))
     form.add_field("clip_len", "30")
     form.add_field("top_banner", "⚡ CORE MARKET • 1H FREE TRIAL")
-    form.add_field("bottom_cta", "👉 LINK IN BIO • DISCORD.GG/NPXP9UK9JG")
+    form.add_field("bottom_cta", "👉 LINK IN BIO • DISCORD.GG/COREMARKET")
 
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{STUDIO_URL}/api/generate", data=form) as r:
@@ -159,7 +155,7 @@ async def _poll_task(task_id: str, timeout: int = 300) -> dict[str, Any]:
                 if data.get("status") in ("done", "error"):
                     return data
             await asyncio.sleep(4)
-    return {"status": "error", "error": "Timeout — le rendu a pris trop de temps."}
+    return {"status": "error", "error": "Timeout — rendering took too long."}
 
 
 async def _download_clip(filename: str) -> bytes | None:
@@ -176,18 +172,18 @@ async def _download_clip(filename: str) -> bytes | None:
 # ─────────────────────────────────────────────────────────────
 
 class ContentEngine(commands.Cog):
-    """Pilier 3 — Content Engine & Automatisation Vidéo TikTok/Shorts."""
+    """Pillar 3 — Content Engine & TikTok/Shorts Video Automation."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @app_commands.command(
         name="render_clip",
-        description="🎬 Upload un gameplay brut → le VPS génère des Shorts 9:16 prêts à poster sur TikTok/YT",
+        description="🎬 Upload raw gameplay → VPS generates vertical 9:16 Shorts ready for TikTok/YouTube",
     )
     @app_commands.describe(
-        video="Fichier vidéo gameplay brut (MP4, MKV, MOV — max 500 Mo)",
-        nb_clips="Nombre de clips à générer (1 à 10, défaut : 5)",
+        video="Raw gameplay video file (MP4, MKV, MOV — max 500 MB)",
+        nb_clips="Number of clips to generate (1 to 10, default: 3)",
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
@@ -195,7 +191,7 @@ class ContentEngine(commands.Cog):
         self,
         interaction: discord.Interaction,
         video: discord.Attachment,
-        nb_clips: int = 5,
+        nb_clips: int = 3,
     ) -> None:
         await interaction.response.defer(ephemeral=True)
 
@@ -205,7 +201,7 @@ class ContentEngine(commands.Cog):
         # Guard: file size (500 MB max)
         if video.size > 500 * 1024 * 1024:
             await interaction.followup.send(
-                embed=embed_render_error("Fichier trop lourd — maximum 500 Mo par upload."),
+                embed=embed_render_error("File too large — maximum 500 MB per upload."),
                 ephemeral=True,
             )
             return
@@ -230,7 +226,7 @@ class ContentEngine(commands.Cog):
             return
 
         if not result.get("success"):
-            await interaction.edit_original_response(embed=embed_render_error(result.get("error", "Erreur inconnue")))
+            await interaction.edit_original_response(embed=embed_render_error(result.get("error", "Unknown error")))
             return
 
         task_id = result["task_id"]
@@ -240,7 +236,7 @@ class ContentEngine(commands.Cog):
         task = await _poll_task(task_id)
 
         if task.get("status") == "error":
-            await interaction.edit_original_response(embed=embed_render_error(task.get("error", "Erreur inconnue")))
+            await interaction.edit_original_response(embed=embed_render_error(task.get("error", "Unknown error")))
             return
 
         clips = task.get("clips", [])
@@ -266,7 +262,7 @@ class ContentEngine(commands.Cog):
 
     @app_commands.command(
         name="studio_status",
-        description="🖥️ Vérifie l'état du pipeline vidéo CORE STUDIO sur le VPS",
+        description="🖥️ Check CORE STUDIO video pipeline status on VPS",
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
@@ -279,7 +275,7 @@ class ContentEngine(commands.Cog):
 
             nvenc = data.get("nvenc_gpu_active", False)
             gpu = data.get("gpu_name", "CPU")
-            status_line = "\033[1;32mONLINE ✓\033[0m" if nvenc else "\033[1;33mCPU Mode\033[0m"
+            status_line = "\033[1;32mONLINE ✓\033[0m" if nvenc else "\033[1;33mCPU Mode (Fast)\033[0m"
 
             e = discord.Embed(color=ACCENT_GREEN if nvenc else ACCENT_GOLD)
             e.set_author(name="🖥️  CORE STUDIO — Pipeline Status")
