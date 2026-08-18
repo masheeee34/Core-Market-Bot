@@ -1,15 +1,22 @@
 """
-HD Vector Overlay Generator (Pillow / PIL)
+HD Vector Overlay Generator (Pillow / PIL / Pilmoji)
 Generates high-resolution transparent PNG badges with:
 - Anti-aliased pill-shaped rounded rectangles (border-radius: 9999px)
 - Ultra-bold typography (Montserrat-Black / Bebas Neue)
 - Soft realistic drop-shadows (Gaussian blur)
-- Dual-color high-contrast text rendering
+- Full-Color Emoji Support (via Pilmoji)
+- Multi-style theme rendering ('dark-neon', 'solid-yellow', 'minimal')
 """
 
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+try:
+    from pilmoji import Pilmoji
+    HAS_PILMOJI = True
+except ImportError:
+    HAS_PILMOJI = False
 
 FONTS_DIR = Path(__file__).parent.parent / "assets" / "fonts"
 DEFAULT_FONT_PATH = str(FONTS_DIR / "Montserrat-Black.ttf")
@@ -33,6 +40,8 @@ def get_font(size: int, font_name: str = "montserrat_black") -> ImageFont.FreeTy
 
     # System Fallback
     for fallback in [
+        "/usr/share/fonts/truetype/montserrat/Montserrat-Black.ttf",
+        "/usr/share/fonts/truetype/montserrat/Montserrat-ExtraBold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
         "arialbd.ttf",
@@ -45,6 +54,18 @@ def get_font(size: int, font_name: str = "montserrat_black") -> ImageFont.FreeTy
                 pass
 
     return ImageFont.load_default()
+
+
+def draw_text_with_emojis(img: Image.Image, pos: tuple[int, int], text: str, font: ImageFont.FreeTypeFont, fill: tuple):
+    if HAS_PILMOJI:
+        try:
+            with Pilmoji(img) as pilmoji:
+                pilmoji.text(pos, text, font=font, fill=fill)
+                return
+        except Exception:
+            pass
+    draw = ImageDraw.Draw(img)
+    draw.text(pos, text, font=font, fill=fill)
 
 
 def create_hook_badge(
@@ -74,14 +95,14 @@ def create_hook_badge(
         text_w = bbox[2] - bbox[0]
         text_h = bbox[3] - bbox[1]
 
-    padding_x = 36
+    padding_x = 38
     padding_y = 18
     badge_w = text_w + (padding_x * 2)
-    badge_h = text_h + (padding_y * 2)
+    badge_h = max(text_h + (padding_y * 2), 64)
     radius = badge_h // 2
 
     # Canvas with shadow margin
-    shadow_blur = 12
+    shadow_blur = 14
     shadow_offset_y = 6
     margin = shadow_blur * 2
     canvas_w = badge_w + margin * 2
@@ -96,11 +117,11 @@ def create_hook_badge(
     s_y0 = margin + shadow_offset_y
     s_x1 = s_x0 + badge_w
     s_y1 = s_y0 + badge_h
-    s_draw.rounded_rectangle([s_x0, s_y0, s_x1, s_y1], radius=radius, fill=(0, 0, 0, 175))
+    s_draw.rounded_rectangle([s_x0, s_y0, s_x1, s_y1], radius=radius, fill=(0, 0, 0, 185))
     shadow_blurred = shadow_mask.filter(ImageFilter.GaussianBlur(shadow_blur))
     canvas.alpha_composite(shadow_blurred)
 
-    # 2. Draw Pill Body (85% Dark) & Subtle White Border (12%)
+    # 2. Draw Pill Body (85% Dark) & Subtle White Border (14%)
     body_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
     b_draw = ImageDraw.Draw(body_img)
     b_x0 = margin
@@ -113,10 +134,10 @@ def create_hook_badge(
     # Border
     b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, outline=(255, 255, 255, 38), width=2)
 
-    # 3. Draw Ultra-Bold White Text
+    # 3. Draw Ultra-Bold White Text with Emoji Support
     t_x = b_x0 + padding_x - bbox[0]
     t_y = b_y0 + padding_y - bbox[1]
-    b_draw.text((t_x, t_y), text, font=font, fill=(255, 255, 255, 255))
+    draw_text_with_emojis(body_img, (t_x, t_y), text, font, (255, 255, 255, 255))
 
     canvas.alpha_composite(body_img)
     canvas.save(output_path, "PNG")
@@ -172,7 +193,7 @@ def create_cta_badge(
     padding_x = 42
     padding_y = 20
     badge_w = total_text_w + (padding_x * 2)
-    badge_h = max_h + (padding_y * 2)
+    badge_h = max(max_h + (padding_y * 2), 66)
     radius = badge_h // 2
 
     # Canvas size with shadow margin
@@ -216,37 +237,37 @@ def create_cta_badge(
         b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, fill=(10, 10, 14, 230))
         b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, outline=(255, 230, 0, 245), width=3)
 
-    # 3. Draw Hierarchical Text
+    # 3. Draw Hierarchical Text with Emoji Support
     cur_x = b_x0 + padding_x
     text_y = b_y0 + padding_y - bbox1[1]
 
     if badge_style == "solid-yellow":
         # Black Text
-        b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(0, 0, 0, 255))
+        draw_text_with_emojis(body_img, (cur_x, text_y), part1, font_bold, (0, 0, 0, 255))
         cur_x += w1
         if sep:
-            b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(60, 60, 60, 230))
+            draw_text_with_emojis(body_img, (cur_x, text_y), sep, font_bold, (60, 60, 60, 230))
             cur_x += w_sep
         if part2:
-            b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(0, 0, 0, 255))
+            draw_text_with_emojis(body_img, (cur_x, text_y), part2, font_bold, (0, 0, 0, 255))
     elif badge_style == "minimal":
         # White Text
-        b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(255, 255, 255, 255))
+        draw_text_with_emojis(body_img, (cur_x, text_y), part1, font_bold, (255, 255, 255, 255))
         cur_x += w1
         if sep:
-            b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(148, 163, 184, 230))
+            draw_text_with_emojis(body_img, (cur_x, text_y), sep, font_bold, (148, 163, 184, 230))
             cur_x += w_sep
         if part2:
-            b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(255, 255, 255, 255))
+            draw_text_with_emojis(body_img, (cur_x, text_y), part2, font_bold, (255, 255, 255, 255))
     else:
         # dark-neon: Yellow Part 1 + White Part 2
-        b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(255, 230, 0, 255))
+        draw_text_with_emojis(body_img, (cur_x, text_y), part1, font_bold, (255, 230, 0, 255))
         cur_x += w1
         if sep:
-            b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(148, 163, 184, 230))
+            draw_text_with_emojis(body_img, (cur_x, text_y), sep, font_bold, (148, 163, 184, 230))
             cur_x += w_sep
         if part2:
-            b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(255, 255, 255, 255))
+            draw_text_with_emojis(body_img, (cur_x, text_y), part2, font_bold, (255, 255, 255, 255))
 
     canvas.alpha_composite(body_img)
     canvas.save(output_path, "PNG")
