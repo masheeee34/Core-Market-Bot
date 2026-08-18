@@ -13,6 +13,7 @@ from aiohttp import web
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from core.channels import get_channel_profiles, generate_multichannel_pack
 from core.downloader import download_youtube_video
 from core.engine import (
     NVENC_ACTIVE,
