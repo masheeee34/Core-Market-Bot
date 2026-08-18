@@ -67,7 +67,7 @@ async def index_handler(_: web.Request) -> web.FileResponse:
 async def status_handler(_: web.Request) -> web.Response:
     return web.json_response({
         "nvenc_gpu_active": NVENC_ACTIVE,
-        "gpu_name": "NVIDIA GeForce RTX 3050" if NVENC_ACTIVE else "CPU Fallback",
+        "gpu_name": "NVIDIA NVENC GPU" if NVENC_ACTIVE else "VPS Multi-Core CPU (4 vCPUs)",
     })
 
 
@@ -179,7 +179,7 @@ async def run_generation_background(
 
                 start_min = int(start_t // 60)
                 start_sec = int(start_t % 60)
-                task["message"] = f"Rendering Action Short #{idx+1}/{total_cuts} at {start_min:02d}:{start_sec:02d} (RTX 3050 NVENC)..."
+                task["message"] = f"Rendering Action Short #{idx+1}/{total_cuts} at {start_min:02d}:{start_sec:02d}..."
                 task["percent"] = 50 + int((idx / total_cuts) * 45)
 
                 success = await asyncio.to_thread(
@@ -210,7 +210,7 @@ async def run_generation_background(
             out_filepath = str(OUTPUT_DIR / out_filename)
             render_len = min(duration, 60.0) if duration > 0 else 30.0
 
-            task["message"] = "Rendering Full Video with RTX 3050 NVENC..."
+            task["message"] = "Rendering Full Video in 9:16 Vertical..."
             task["percent"] = 75
 
             start_t = custom_start if (custom_start is not None and custom_start >= 0) else 0.0
@@ -369,5 +369,5 @@ if __name__ == "__main__":
     app = create_app()
     port = int(os.environ.get("STUDIO_PORT", 5050))
     print(f"🚀 CORE STUDIO AI is running on http://localhost:{port}")
-    print(f"⚡ Hardware Acceleration: {'NVIDIA NVENC (RTX 3050)' if NVENC_ACTIVE else 'CPU'}")
+    print(f"⚡ Hardware Acceleration: {'NVIDIA NVENC GPU' if NVENC_ACTIVE else 'VPS Multi-Core CPU (4 vCPUs)'}")
     web.run_app(app, host="127.0.0.1", port=port)
