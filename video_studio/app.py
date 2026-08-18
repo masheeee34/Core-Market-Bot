@@ -73,7 +73,7 @@ async def status_handler(_: web.Request) -> web.Response:
 
 async def clips_handler(_: web.Request) -> web.Response:
     clips = load_all_metadata()
-    return web.json_response(clips)
+    return web.json_response({"success": True, "clips": clips})
 
 
 async def task_status_handler(request: web.Request) -> web.Response:
