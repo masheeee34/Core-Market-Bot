@@ -103,12 +103,19 @@ def detect_action_highlights(
     video_path: str,
     max_highlights: int = 4,
     clip_duration: float = 30.0,
+    num_clips: int | None = None,
+    custom_start: float | None = None,
 ) -> list[float]:
     """
     Intelligently scans the entire video in ~0.5s to find gunfights, clutches,
     and high-intensity action peaks via audio energy profiling.
     Returns a list of optimal start timestamps (in seconds).
     """
+    if custom_start is not None and custom_start >= 0:
+        return [custom_start]
+
+    if num_clips is not None:
+        max_highlights = num_clips
     try:
         cmd = [
             FFMPEG_EXE,
