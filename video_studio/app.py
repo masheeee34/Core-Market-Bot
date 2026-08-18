@@ -98,6 +98,9 @@ async def run_generation_background(
     top_banner: str,
     bottom_cta: str,
     layout_style: str = "zoom",
+    hook_y: int = 180,
+    cta_y: int = 1360,
+    badge_style: str = "dark-neon",
 ) -> None:
     task = TASKS[task_id]
     try:
@@ -191,6 +194,9 @@ async def run_generation_background(
                     watermark_top=top_banner,
                     watermark_bottom=bottom_cta,
                     layout_style=layout_style,
+                    hook_y=hook_y,
+                    cta_y=cta_y,
+                    badge_style=badge_style,
                 )
 
                 if success and os.path.exists(out_filepath):
@@ -225,6 +231,9 @@ async def run_generation_background(
                 watermark_top=top_banner,
                 watermark_bottom=bottom_cta,
                 layout_style=layout_style,
+                hook_y=hook_y,
+                cta_y=cta_y,
+                badge_style=badge_style,
             )
 
             if success and os.path.exists(out_filepath):
@@ -270,6 +279,9 @@ async def generate_handler(request: web.Request) -> web.Response:
     sub_style = "hormozi_yellow"
     top_banner = "POV: You finally found the zero-recoil config 😳"
     bottom_cta = "⚡ 1-Hour FREE Trial • Link in Bio →"
+    hook_y = 180
+    cta_y = 1360
+    badge_style = "dark-neon"
 
     while True:
         part = await reader.next()
@@ -325,6 +337,18 @@ async def generate_handler(request: web.Request) -> web.Response:
                 top_banner = value
             elif name == "bottom_cta":
                 bottom_cta = value
+            elif name == "hook_y":
+                try:
+                    hook_y = int(float(value))
+                except ValueError:
+                    hook_y = 180
+            elif name == "cta_y":
+                try:
+                    cta_y = int(float(value))
+                except ValueError:
+                    cta_y = 1360
+            elif name == "badge_style":
+                badge_style = value
 
     if not yt_url and not local_video_path:
         return web.json_response({"success": False, "error": "Please provide a video file or YouTube URL."}, status=400)
@@ -351,6 +375,10 @@ async def generate_handler(request: web.Request) -> web.Response:
             sub_style=sub_style,
             top_banner=top_banner,
             bottom_cta=bottom_cta,
+            layout_style=layout_style,
+            hook_y=hook_y,
+            cta_y=cta_y,
+            badge_style=badge_style,
         )
     )
 

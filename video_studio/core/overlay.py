@@ -127,13 +127,13 @@ def create_cta_badge(
     text: str = "⚡ 1-Hour FREE Trial • Link in Bio →",
     output_path: str = "",
     font_size: int = 34,
+    badge_style: str = "dark-neon",
 ) -> str:
     """
     Generates the High-Conversion CTA Badge:
-    - 90% dark pill body (rgba(10, 10, 14, 230))
-    - #FFE600 Neon Yellow 3px border
-    - Hierarchical text: '⚡ 1-Hour FREE Trial' in Neon Yellow + '• Link in Bio →' in crisp White
-    - Anti-aliased with drop shadow
+    - badge_style="dark-neon" (Default): 90% dark body + #FFE600 Neon Yellow 3px border + Yellow/White text
+    - badge_style="solid-yellow": Solid #FFE600 Yellow pill + Ultra-bold Black text
+    - badge_style="minimal": 85% dark body + subtle white border + White text
     """
     font_bold = get_font(font_size, "montserrat_black")
 
@@ -195,7 +195,7 @@ def create_cta_badge(
     shadow_blurred = shadow_mask.filter(ImageFilter.GaussianBlur(shadow_blur))
     canvas.alpha_composite(shadow_blurred)
 
-    # 2. Draw Pill Body (90% Dark) with #FFE600 Neon Yellow Border
+    # 2. Draw Pill Body & Border based on badge_style
     body_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
     b_draw = ImageDraw.Draw(body_img)
     b_x0 = margin
@@ -203,27 +203,50 @@ def create_cta_badge(
     b_x1 = b_x0 + badge_w
     b_y1 = b_y0 + badge_h
 
-    # Dark Body Fill
-    b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, fill=(10, 10, 14, 230))
-    # #FFE600 Neon Yellow Border (3px)
-    b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, outline=(255, 230, 0, 245), width=3)
+    if badge_style == "solid-yellow":
+        # Solid Yellow Body
+        b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, fill=(255, 230, 0, 255))
+        b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, outline=(0, 0, 0, 60), width=2)
+    elif badge_style == "minimal":
+        # Dark Minimal Body
+        b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, fill=(12, 14, 20, 220))
+        b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, outline=(255, 255, 255, 45), width=2)
+    else:
+        # dark-neon (Default)
+        b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, fill=(10, 10, 14, 230))
+        b_draw.rounded_rectangle([b_x0, b_y0, b_x1, b_y1], radius=radius, outline=(255, 230, 0, 245), width=3)
 
     # 3. Draw Hierarchical Text
     cur_x = b_x0 + padding_x
     text_y = b_y0 + padding_y - bbox1[1]
 
-    # Part 1 (Yellow)
-    b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(255, 230, 0, 255))
-    cur_x += w1
-
-    # Separator (Muted Dot)
-    if sep:
-        b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(148, 163, 184, 230))
-        cur_x += w_sep
-
-    # Part 2 (White with Action Arrow)
-    if part2:
-        b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(255, 255, 255, 255))
+    if badge_style == "solid-yellow":
+        # Black Text
+        b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(0, 0, 0, 255))
+        cur_x += w1
+        if sep:
+            b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(60, 60, 60, 230))
+            cur_x += w_sep
+        if part2:
+            b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(0, 0, 0, 255))
+    elif badge_style == "minimal":
+        # White Text
+        b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(255, 255, 255, 255))
+        cur_x += w1
+        if sep:
+            b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(148, 163, 184, 230))
+            cur_x += w_sep
+        if part2:
+            b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(255, 255, 255, 255))
+    else:
+        # dark-neon: Yellow Part 1 + White Part 2
+        b_draw.text((cur_x, text_y), part1, font=font_bold, fill=(255, 230, 0, 255))
+        cur_x += w1
+        if sep:
+            b_draw.text((cur_x, text_y), sep, font=font_bold, fill=(148, 163, 184, 230))
+            cur_x += w_sep
+        if part2:
+            b_draw.text((cur_x, text_y), part2, font=font_bold, fill=(255, 255, 255, 255))
 
     canvas.alpha_composite(body_img)
     canvas.save(output_path, "PNG")

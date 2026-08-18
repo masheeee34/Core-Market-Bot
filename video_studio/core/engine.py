@@ -198,12 +198,15 @@ def build_9_16_vertical_short(
     watermark_top: str = "POV: You finally found the zero-recoil config 😳",
     watermark_bottom: str = "⚡ 1-Hour FREE Trial • Link in Bio →",
     layout_style: str = "zoom",
+    hook_y: int = 180,
+    cta_y: int = 1360,
+    badge_style: str = "dark-neon",
 ) -> bool:
     """
     Renders a High-Definition 9:16 vertical Short (1080x1920) with:
     - Full-Screen 9:16 Crosshair Crop: crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920
-    - Vector Top Hook Badge (y=180): Montserrat-Black, 85% Dark Pill, Drop Shadow
-    - Vector Bottom CTA Badge (y=1360): Fixed Safe-Zone between crosshair & HUD weapon alerts, #FFE600 Neon Yellow Border
+    - Vector Top Hook Badge: Montserrat-Black, 85% Dark Pill, Drop Shadow (customizable Y)
+    - Vector Bottom CTA Badge: Safe-Zone Y (default 1360), Customizable style ('dark-neon', 'solid-yellow', 'minimal')
     - Crisp 60FPS High-Definition Encoding Profile (CRF 19, No pixel mush)
     """
     import uuid
@@ -220,7 +223,7 @@ def build_9_16_vertical_short(
     if watermark_top:
         create_hook_badge(watermark_top, hook_png, font_size=36)
     if watermark_bottom:
-        create_cta_badge(watermark_bottom, cta_png, font_size=34)
+        create_cta_badge(watermark_bottom, cta_png, font_size=34, badge_style=badge_style)
 
     cmd = [
         FFMPEG_EXE,
@@ -265,14 +268,14 @@ def build_9_16_vertical_short(
         filter_parts.append(f"[{cur_v}]ass='{escaped_ass}'[with_subs]")
         cur_v = "with_subs"
 
-    # Overlay Top Hook Badge at y=180
+    # Overlay Top Hook Badge at hook_y
     if hook_idx > 0:
-        filter_parts.append(f"[{cur_v}][{hook_idx}:v]overlay=(W-w)/2:180[with_hook]")
+        filter_parts.append(f"[{cur_v}][{hook_idx}:v]overlay=(W-w)/2:{hook_y}[with_hook]")
         cur_v = "with_hook"
 
-    # Overlay Bottom CTA Badge at Safe-Zone y=1360
+    # Overlay Bottom CTA Badge at cta_y
     if cta_idx > 0:
-        filter_parts.append(f"[{cur_v}][{cta_idx}:v]overlay=(W-w)/2:1360[final_v]")
+        filter_parts.append(f"[{cur_v}][{cta_idx}:v]overlay=(W-w)/2:{cta_y}[final_v]")
         cur_v = "final_v"
     else:
         filter_parts.append(f"[{cur_v}]null[final_v]")
