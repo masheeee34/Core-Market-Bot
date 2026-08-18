@@ -14,3 +14,5 @@ video_studio/temp/
 video_studio/output/*.mp4
 video_studio/output/*.mkv
 video_studio/output/*.mov
+data/watchdog_state.json
+data/*.json

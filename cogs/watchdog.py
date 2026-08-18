@@ -293,13 +293,11 @@ class Watchdog(commands.Cog):
     def _start_loops(self) -> None:
         self.loop_steam.start()
         self.loop_server_status.start()
-        self.loop_epic_free.start()
         self.loop_daily_shop.start()
 
     def cog_unload(self) -> None:
         self.loop_steam.cancel()
         self.loop_server_status.cancel()
-        self.loop_epic_free.cancel()
         self.loop_daily_shop.cancel()
 
     def _save(self) -> None:
@@ -311,7 +309,8 @@ class Watchdog(commands.Cog):
             ch = None
             if ch_id:
                 ch = guild.get_channel(ch_id)
-            if not ch:
+            # Only fall back to alert channel for security patches & status alerts
+            if not ch and key in ("channel_patches", "channel_status"):
                 ch = _resolve_alert_channel(guild)
             if ch:
                 try:
@@ -338,13 +337,27 @@ class Watchdog(commands.Cog):
         seen_gids = set(self.state.get("seen_steam_gids", []))
         seen_titles = set(self.state.get("seen_steam_titles", []))
 
+        # Quiet Initial Seeding: If state was fresh or uninitialized, seed current news silently without firing alerts
+        if not seen_gids and not seen_titles:
+            for appid, _ in [(APP_BO7, "BO7"), (APP_WARZONE, "Warzone")]:
+                res = await fetch_steam_news(appid)
+                if res:
+                    t, _, gid = res
+                    seen_gids.add(gid)
+                    seen_titles.add(t)
+            self.state["seen_steam_gids"] = list(seen_gids)
+            self.state["seen_steam_titles"] = list(seen_titles)
+            self._save()
+            log.info("Watchdog Steam news seeded quietly with %d items (0 false alerts sent).", len(seen_gids))
+            return
+
         for appid, name in [(APP_BO7, "BO7"), (APP_WARZONE, "Warzone")]:
             result = await fetch_steam_news(appid)
             if not result:
                 continue
             title, url, build_id = result
 
-            # Deduplication: check both GID and exact Title to prevent cross-posted duplicate alerts
+            # Airtight Deduplication: check both GID and Title to prevent duplicates
             if build_id in seen_gids or title in seen_titles:
                 continue
 
