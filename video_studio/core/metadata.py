@@ -160,6 +160,7 @@ POSTING_SCHEDULE_TIPS = [
 
 def generate_clip_social_metadata(
     clip_title: str | None = None,
+    hook_text: str | None = None,
     game_tag: str = "call_of_duty",
     include_trial_cta: bool = True,
 ) -> dict[str, Any]:
@@ -171,8 +172,13 @@ def generate_clip_social_metadata(
     - Description
     - Best posting schedule recommendation
     """
-    hook = random.choice(VIRAL_HOOKS)
-    title = clip_title or f"{hook} (100% Undetected Setup)"
+    if hook_text and hook_text.strip():
+        title = hook_text.strip()
+    elif clip_title and not clip_title.startswith("upload_") and not any(ext in clip_title.lower() for ext in [".mp4", ".mkv", ".mov", ".avi"]):
+        title = clip_title.strip()
+    else:
+        hook = random.choice(VIRAL_HOOKS)
+        title = f"{hook}"
 
     tags = HASHTAG_PACKS.get(game_tag, HASHTAG_PACKS["call_of_duty"])
     hashtags_str = " ".join(tags[:8])

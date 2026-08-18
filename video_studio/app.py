@@ -46,7 +46,19 @@ def load_all_metadata() -> list[dict[str, Any]]:
         return []
     try:
         with open(META_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        for item in data:
+            if isinstance(item, dict):
+                meta = item.get("meta") or {}
+                t = meta.get("title", "")
+                if t.startswith("upload_") or " - Clutch Highlight" in t or t.endswith(".mp4"):
+                    clean_title = "POV: You finally found the zero-recoil config 😳"
+                    meta["title"] = clean_title
+                    if "description" in meta:
+                        lines = meta["description"].split("\n\n")
+                        meta["description"] = f"{clean_title}\n\nTesting the cleanest setup on latest patch. Smooth tracking & zero recoil.\n\n" + (lines[-1] if len(lines) > 1 else "#warzone #cod #gaming #fyp")
+                    item["title"] = clean_title
+        return data
     except Exception:
         return []
 
@@ -220,10 +232,13 @@ async def run_generation_background(
                 )
 
                 if success and os.path.exists(out_filepath):
-                    meta = generate_clip_social_metadata(clip_title=f"{source_title} - Clutch Highlight #{idx+1}")
+                    meta = generate_clip_social_metadata(
+                        clip_title=top_banner if top_banner else None,
+                        hook_text=top_banner,
+                    )
                     clip_entry = {
                         "filename": out_filename,
-                        "title": f"Action Highlight #{idx+1} ({start_min:02d}:{start_sec:02d})",
+                        "title": top_banner or f"Action Highlight #{idx+1} ({start_min:02d}:{start_sec:02d})",
                         "meta": meta,
                     }
                     save_clip_metadata(clip_entry)
@@ -254,13 +269,19 @@ async def run_generation_background(
                 hook_y=hook_y,
                 cta_y=cta_y,
                 badge_style=badge_style,
+                music_track=music_track,
+                music_volume=music_volume,
+                custom_music_url=custom_music_url,
             )
 
             if success and os.path.exists(out_filepath):
-                meta = generate_clip_social_metadata(clip_title=source_title)
+                meta = generate_clip_social_metadata(
+                    clip_title=top_banner if top_banner else None,
+                    hook_text=top_banner,
+                )
                 clip_entry = {
                     "filename": out_filename,
-                    "title": source_title,
+                    "title": top_banner or "Viral Gameplay Short",
                     "meta": meta,
                 }
                 save_clip_metadata(clip_entry)
