@@ -1,7 +1,7 @@
 """
 Content Engine Cog — /render_clip Discord command.
 Sends a gameplay video to the VPS FFmpeg pipeline and returns
-ready-to-post TikTok/Shorts clips directly in Discord with sleek modern embeds.
+ready-to-post TikTok/Shorts clips directly in Discord with live real-time progress bar.
 """
 
 import asyncio
@@ -11,7 +11,7 @@ import logging
 import os
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import aiohttp
 import discord
@@ -33,22 +33,29 @@ COLOR_WARNING = 0xF59E0B  # Amber Gold
 
 
 def render_progress_bar(percent: int, width: int = 16) -> str:
+    percent = max(0, min(100, percent))
     filled = int(width * percent / 100)
     bar = "█" * filled + "░" * (width - filled)
     return f"`[{bar}]` **{percent}%**"
 
 
-def embed_render_started(task_id: str, filename: str) -> discord.Embed:
+def embed_render_started(
+    task_id: str,
+    filename: str,
+    percent: int = 15,
+    message: str = "Intelligent action detection & multi-clip rendering in progress…",
+) -> discord.Embed:
     e = discord.Embed(
-        title="🎬  Rendering Pipeline Started",
+        title="🎬  Rendering Pipeline Active",
         description=(
-            f"> Your gameplay video is being processed by the VPS video studio engine.\n\n"
+            f"> Your gameplay video is being processed in background on the VPS.\n\n"
             f"▸ **Source File :** `{filename}`\n"
             f"▸ **Task Identifier :** `{task_id}`\n"
             f"▸ **Output Format :** `9:16 Vertical (1080x1920) for TikTok/Shorts`\n"
-            f"▸ **Current Progress :** {render_progress_bar(15)}\n\n"
+            f"▸ **Live Progress :** {render_progress_bar(percent)}\n"
+            f"▸ **Status :** `{message}`\n\n"
             f"──────────────────────────────────────────\n"
-            f"⚙️ *Intelligent action detection & multi-clip rendering in progress on VPS…*"
+            f"⚙️ *Rendering on VPS with multi-threaded FFmpeg engine…*"
         ),
         color=COLOR_PRIMARY,
         timestamp=discord.utils.utcnow(),
@@ -85,7 +92,7 @@ def embed_render_error(error: str) -> discord.Embed:
         title="⛔  Pipeline Rendering Error",
         description=(
             f"> An unexpected error occurred while processing the video.\n\n"
-            f"▸ **Error Detail :** `{error[:120]}`\n\n"
+            f"▸ **Error Detail :** `{error[:140]}`\n\n"
             f"──────────────────────────────────────────\n"
             f"ℹ️ *Please ensure the file is a valid video format (MP4, MKV, MOV) under 500 MB.*"
         ),
@@ -128,26 +135,54 @@ async def _submit_render(video_bytes: bytes, filename: str, num_clips: int = 3) 
     form.add_field("top_banner", "⚡ CORE MARKET • 1H FREE TRIAL")
     form.add_field("bottom_cta", "👉 LINK IN BIO • DISCORD.GG/COREMARKET")
 
-    async with aiohttp.ClientSession() as session:
+    timeout = aiohttp.ClientTimeout(total=180)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.post(f"{STUDIO_URL}/api/generate", data=form) as r:
             return await r.json()
 
 
-async def _poll_task(task_id: str, timeout: int = 300) -> dict[str, Any]:
+async def _poll_task_live(
+    task_id: str,
+    interaction: discord.Interaction,
+    filename: str,
+    timeout: int = 300,
+) -> dict[str, Any]:
     deadline = asyncio.get_event_loop().time() + timeout
+    last_percent = -1
+
     async with aiohttp.ClientSession() as session:
         while asyncio.get_event_loop().time() < deadline:
-            async with session.get(f"{STUDIO_URL}/api/task_status/{task_id}") as r:
-                data = await r.json()
-                if data.get("status") in ("done", "error"):
-                    return data
-            await asyncio.sleep(4)
+            try:
+                async with session.get(f"{STUDIO_URL}/api/task_status/{task_id}") as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        status = data.get("status")
+                        percent = data.get("percent", 20)
+                        message = data.get("message", "Processing...")
+
+                        if percent != last_percent and status != "done":
+                            last_percent = percent
+                            try:
+                                await interaction.edit_original_response(
+                                    embed=embed_render_started(task_id, filename, percent, message)
+                                )
+                            except Exception:
+                                pass
+
+                        if status in ("done", "error"):
+                            return data
+            except Exception as e:
+                log.debug("Polling error for task %s: %s", task_id, e)
+
+            await asyncio.sleep(2.5)
+
     return {"status": "error", "error": "Timeout — rendering took too long."}
 
 
 async def _download_clip(filename: str) -> bytes | None:
     url = f"{STUDIO_URL}/output/{filename}"
-    async with aiohttp.ClientSession() as session:
+    timeout = aiohttp.ClientTimeout(total=60)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(url) as r:
             if r.status == 200:
                 return await r.read()
@@ -180,7 +215,11 @@ class ContentEngine(commands.Cog):
         video: discord.Attachment,
         nb_clips: int = 3,
     ) -> None:
-        await interaction.response.defer(ephemeral=True)
+        # Immediate defer to avoid Discord 3s timeout
+        try:
+            await interaction.response.defer(ephemeral=True)
+        except Exception:
+            pass
 
         nb_clips = max(1, min(10, nb_clips))
         filename = video.filename
@@ -193,17 +232,20 @@ class ContentEngine(commands.Cog):
             return
 
         await interaction.followup.send(
-            embed=embed_render_started("initialization…", filename),
+            embed=embed_render_started("uploading…", filename, percent=10, message="Reading video file from Discord…"),
             ephemeral=True,
         )
 
         try:
             video_bytes = await video.read()
         except Exception as exc:
-            await interaction.edit_original_response(embed=embed_render_error(str(exc)))
+            await interaction.edit_original_response(embed=embed_render_error(f"Failed to read file: {exc}"))
             return
 
         try:
+            await interaction.edit_original_response(
+                embed=embed_render_started("initializing…", filename, percent=20, message="Transferring video to VPS Studio engine…")
+            )
             result = await _submit_render(video_bytes, filename, nb_clips)
         except Exception as exc:
             await interaction.edit_original_response(embed=embed_render_error(f"Studio API unreachable: {exc}"))
@@ -214,9 +256,7 @@ class ContentEngine(commands.Cog):
             return
 
         task_id = result["task_id"]
-        await interaction.edit_original_response(embed=embed_render_started(task_id, filename))
-
-        task = await _poll_task(task_id)
+        task = await _poll_task_live(task_id, interaction, filename)
 
         if task.get("status") == "error":
             await interaction.edit_original_response(embed=embed_render_error(task.get("error", "Unknown error")))

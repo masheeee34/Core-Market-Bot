@@ -41,17 +41,37 @@ def get_video_duration(video_path: str) -> float:
 
 
 def convert_to_mp4(input_path: str, output_path: str) -> bool:
-    """Converts any video format (MKV, MOV, WEBM, AVI) to MP4 using NVENC fast stream copy or re-encode."""
+    """Converts any video format (MKV, MOV, WEBM, AVI) to MP4 fast."""
+    # First attempt: ultra-fast container remux (0.1s)
+    cmd_remux = [
+        FFMPEG_EXE,
+        "-y",
+        "-i",
+        input_path,
+        "-c",
+        "copy",
+        output_path,
+    ]
+    try:
+        subprocess.run(cmd_remux, capture_output=True, check=True)
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+            return True
+    except Exception:
+        pass
+
+    # Fallback: re-encode with all CPU threads at ultrafast speed
     video_codec = "h264_nvenc" if NVENC_ACTIVE else "libx264"
     cmd = [
         FFMPEG_EXE,
         "-y",
+        "-threads",
+        "0",
         "-i",
         input_path,
         "-c:v",
         video_codec,
         "-preset",
-        "p4" if NVENC_ACTIVE else "veryfast",
+        "p4" if NVENC_ACTIVE else "ultrafast",
         "-c:a",
         "aac",
         "-b:a",
@@ -232,12 +252,14 @@ def build_9_16_vertical_short(
         ])
 
     cmd.extend([
+        "-threads",
+        "0",
         "-c:v",
         video_codec,
         "-preset",
-        "p4" if NVENC_ACTIVE else "veryfast",
+        "p4" if NVENC_ACTIVE else "ultrafast",
         "-b:v",
-        "8M",
+        "6M",
         "-pix_fmt",
         "yuv420p",
         "-c:a",

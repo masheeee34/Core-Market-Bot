@@ -893,6 +893,48 @@ class Admin(commands.Cog):
                 except Exception:
                     pass
 
+    @app_commands.command(
+        name="hot_reload",
+        description="⚡ Zero-downtime hot-reload of all bot cogs & command trees",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def hot_reload_cmd(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
+        import main
+        reloaded = []
+        errors = []
+        for cog in main.COGS:
+            try:
+                await self.bot.reload_extension(cog)
+                reloaded.append(cog)
+            except Exception as e:
+                try:
+                    await self.bot.load_extension(cog)
+                    reloaded.append(cog)
+                except Exception as ex:
+                    errors.append(f"{cog}: {ex}")
+
+        try:
+            for guild in self.bot.guilds:
+                self.bot.tree.copy_global_to(guild=guild)
+                await self.bot.tree.sync(guild=guild)
+        except Exception:
+            pass
+
+        status_color = discord.Color.green() if not errors else discord.Color.orange()
+        e = discord.Embed(
+            title="⚡  Hot-Reload Completed (0s Disconnect)",
+            description=(
+                f"> **Successfully reloaded `{len(reloaded)}` cogs in memory.**\n\n"
+                + (f"⚠️ **Errors (`{len(errors)}`):**\n" + "\n".join(f"▸ `{err}`" for err in errors) if errors else "✅ All modules reloaded cleanly with zero disconnects.")
+            ),
+            color=status_color,
+            timestamp=discord.utils.utcnow(),
+        )
+        e.set_footer(text="CORE MARKET • Zero-Downtime Engine")
+        await interaction.followup.send(embed=e, ephemeral=True)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Admin(bot))

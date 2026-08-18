@@ -96,23 +96,58 @@ async def keep_alive() -> None:
             await asyncio.sleep(600)
 
 
-async def run_webserver() -> None:
-    """Mini serveur HTTP : répond aux pings d'UptimeRobot pour garder le service éveillé."""
+async def run_webserver(bot: TicketBot) -> None:
+    """Mini HTTP server : provides health check and instant zero-downtime hot-reload endpoint."""
     async def health(_: web.Request) -> web.Response:
-        return web.Response(text="Bot is alive")
+        return web.Response(text="Bot is alive & operational")
+
+    async def reload_handler(_: web.Request) -> web.Response:
+        """Instantly hot-reloads all cogs in memory with 0 second disconnect from Discord."""
+        reloaded = []
+        errors = []
+        for cog in COGS:
+            try:
+                await bot.reload_extension(cog)
+                reloaded.append(cog)
+                log.info("Hot-reloaded: %s", cog)
+            except Exception as e:
+                # If cog wasn't loaded yet, try load
+                try:
+                    await bot.load_extension(cog)
+                    reloaded.append(cog)
+                except Exception as ex:
+                    errors.append(f"{cog}: {ex}")
+                    log.error("Failed to hot-reload %s: %s", cog, ex)
+
+        try:
+            for guild in bot.guilds:
+                bot.tree.copy_global_to(guild=guild)
+                await bot.tree.sync(guild=guild)
+            log.info("Slash command tree synced on %d guild(s).", len(bot.guilds))
+        except Exception as e:
+            log.warning("Slash sync warning on reload: %s", e)
+
+        return web.json_response({
+            "success": len(errors) == 0,
+            "reloaded_count": len(reloaded),
+            "reloaded": reloaded,
+            "errors": errors,
+        })
 
     app = web.Application()
     app.router.add_get("/", health)
+    app.router.add_get("/api/health", health)
+    app.router.add_post("/api/reload", reload_handler)
+    app.router.add_get("/api/reload", reload_handler)
 
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=WEB_PORT)
     await site.start()
-    log.info("Serveur web démarré sur le port %s", WEB_PORT)
+    log.info("Serveur web démarré sur le port %s (Hot-Reload API prêt)", WEB_PORT)
 
 
 async def main() -> None:
-    await run_webserver()
     asyncio.create_task(keep_alive())
 
     try_privileged = True
@@ -120,6 +155,7 @@ async def main() -> None:
         try:
             log.info("Connexion à Discord (privileged_intents=%s)...", try_privileged)
             bot = TicketBot(with_privileged_intents=try_privileged)
+            await run_webserver(bot)
             await bot.start(DISCORD_TOKEN)
         except discord.errors.PrivilegedIntentsRequired:
             log.warning("Privileged Intents non activés sur le Developer Portal. Démarrage en mode standard...")
