@@ -211,7 +211,10 @@ def build_9_16_vertical_short(
     - Crisp 60FPS High-Definition Encoding Profile (CRF 19, No pixel mush)
     """
     import uuid
-    from video_studio.core.overlay import create_hook_badge, create_cta_badge
+    try:
+        from video_studio.core.overlay import create_hook_badge, create_cta_badge
+    except ImportError:
+        from core.overlay import create_hook_badge, create_cta_badge
 
     temp_dir = Path(output_path).parent.parent / "temp"
     temp_dir.mkdir(parents=True, exist_ok=True)

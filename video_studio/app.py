@@ -11,6 +11,7 @@ from typing import Any
 from aiohttp import web
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from core.downloader import download_youtube_video
 from core.engine import (
