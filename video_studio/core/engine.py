@@ -15,8 +15,9 @@ FFMPEG_EXE = shutil.which("ffmpeg") or imageio_ffmpeg.get_ffmpeg_exe()
 def is_nvenc_available() -> bool:
     """Checks if NVIDIA NVENC hardware encoder is supported by FFmpeg and GPU."""
     try:
-        res = subprocess.run([FFMPEG_EXE, "-encoders"], capture_output=True, text=True, check=True)
-        return "h264_nvenc" in res.stdout
+        test_cmd = [FFMPEG_EXE, "-f", "lavfi", "-i", "nullsrc=s=64x64:d=0.05", "-c:v", "h264_nvenc", "-f", "null", "-"]
+        res = subprocess.run(test_cmd, capture_output=True, text=True)
+        return res.returncode == 0
     except Exception:
         return False
 
