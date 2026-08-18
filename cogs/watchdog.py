@@ -335,18 +335,27 @@ class Watchdog(commands.Cog):
     @tasks.loop(seconds=POLL_STEAM)
     async def loop_steam(self) -> None:
         await self.bot.wait_until_ready()
+        seen_gids = set(self.state.get("seen_steam_gids", []))
+        seen_titles = set(self.state.get("seen_steam_titles", []))
+
         for appid, name in [(APP_BO7, "BO7"), (APP_WARZONE, "Warzone")]:
             result = await fetch_steam_news(appid)
             if not result:
                 continue
             title, url, build_id = result
-            key = f"steam_{appid}_last_build"
-            if self.state.get(key) == build_id:
+
+            # Deduplication: check both GID and exact Title to prevent cross-posted duplicate alerts
+            if build_id in seen_gids or title in seen_titles:
                 continue
 
-            log.info("New Steam update detected for %s: %s", name, title)
-            self.state[key] = build_id
+            log.info("New Steam update detected for %s: %s (GID: %s)", name, title, build_id)
+            seen_gids.add(build_id)
+            seen_titles.add(title)
+            self.state["seen_steam_gids"] = list(seen_gids)
+            self.state["seen_steam_titles"] = list(seen_titles)
+            self.state[f"steam_{appid}_last_build"] = build_id
             self._save()
+
             await self._broadcast(embed_game_update(name, title, url, build_id), "alert")
 
     @loop_steam.before_loop
