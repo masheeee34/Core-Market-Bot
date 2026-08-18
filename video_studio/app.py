@@ -118,13 +118,7 @@ async def run_generation_background(
             source_title = yt_res.get("title", "YouTube Video")
         elif local_video_path and os.path.exists(local_video_path):
             source_title = Path(local_video_path).stem
-            if not local_video_path.lower().endswith(".mp4"):
-                task["message"] = "Converting MKV/Source to MP4 with GPU..."
-                conv_out = str(TEMP_DIR / f"converted_{uuid.uuid4().hex[:8]}.mp4")
-                conv_ok = await asyncio.to_thread(convert_to_mp4, local_video_path, conv_out)
-                source_mp4 = conv_out if conv_ok else local_video_path
-            else:
-                source_mp4 = local_video_path
+            source_mp4 = local_video_path
         else:
             task["status"] = "error"
             task["error"] = "No valid video file or YouTube URL provided."
@@ -171,7 +165,10 @@ async def run_generation_background(
                     clip_duration=clip_len,
                 )
 
-            total_cuts = len(start_timestamps)
+            total_cuts = len(start_timestamps) if start_timestamps else 1
+            if not start_timestamps:
+                start_timestamps = [0.0]
+
             for idx, start_t in enumerate(start_timestamps):
                 clip_id = uuid.uuid4().hex[:6]
                 out_filename = f"short_{idx+1}_{clip_id}.mp4"
@@ -246,6 +243,13 @@ async def run_generation_background(
         log.error("Fatal error in generation task %s: %s", task_id, e, exc_info=True)
         task["status"] = "error"
         task["error"] = str(e)
+    finally:
+        # Clean up temporary upload and intermediate conversion files
+        if local_video_path and os.path.exists(local_video_path) and "temp" in local_video_path.lower():
+            try:
+                os.remove(local_video_path)
+            except Exception:
+                pass
 
 
 async def generate_handler(request: web.Request) -> web.Response:

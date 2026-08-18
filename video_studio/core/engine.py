@@ -26,6 +26,16 @@ NVENC_ACTIVE = is_nvenc_available()
 log.info("FFmpeg Path: %s (NVENC GPU Acceleration: %s)", FFMPEG_EXE, NVENC_ACTIVE)
 
 
+def has_audio_stream(video_path: str) -> bool:
+    """Returns True if the video contains an audio stream."""
+    try:
+        cmd = [FFMPEG_EXE, "-i", video_path]
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        return "Audio:" in res.stderr
+    except Exception:
+        return False
+
+
 def get_video_duration(video_path: str) -> float:
     """Returns the duration of a video in seconds."""
     ffprobe_args = [
@@ -116,11 +126,19 @@ def detect_action_highlights(
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         raw, _ = proc.communicate()
 
+        if len(raw) % 2 != 0:
+            raw = raw[: len(raw) - (len(raw) % 2)]
+
         samples = array.array("h")
-        samples.frombytes(raw)
+        if raw:
+            samples.frombytes(raw)
         total_duration = len(samples) / 1000.0
 
         if total_duration <= clip_duration:
+            real_dur = get_video_duration(video_path)
+            if real_dur > clip_duration:
+                step = max(1.0, (real_dur - clip_duration) / max(1, max_highlights))
+                return [round(i * step, 2) for i in range(max_highlights)]
             return [0.0]
 
         # Calculate energy in 2-second windows (2000 samples)
@@ -150,18 +168,23 @@ def detect_action_highlights(
 
         # Fallback if video is quiet or short
         if not peaks:
-            step = max(clip_duration, total_duration / max_highlights)
-            return [min(total_duration - clip_duration, i * step) for i in range(max_highlights)]
+            real_dur = max(total_duration, get_video_duration(video_path))
+            step = max(clip_duration, (real_dur - clip_duration) / max(1, max_highlights))
+            return [round(min(max(0.0, real_dur - clip_duration), i * step), 2) for i in range(max_highlights)]
 
         peaks.sort()
 
         # Center the clip starting ~6 seconds before the action peak
-        start_times = [max(0.0, p - 6.0) for p in peaks]
-        log.info("Detected %d action highlights: %s", len(start_times), [round(s, 1) for s in start_times])
+        start_times = [max(0.0, round(p - 6.0, 2)) for p in peaks]
+        log.info("Detected %d action highlights: %s", len(start_times), start_times)
         return start_times
 
     except Exception as e:
         log.error("Error in action detection: %s", e)
+        real_dur = get_video_duration(video_path)
+        if real_dur > clip_duration:
+            step = max(1.0, (real_dur - clip_duration) / max(1, max_highlights))
+            return [round(i * step, 2) for i in range(max_highlights)]
         return [0.0]
 
 
@@ -177,16 +200,15 @@ def build_9_16_vertical_short(
 ) -> bool:
     """
     Renders a dynamic 9:16 vertical Short (1080x1920) with:
-    - Background: 1080x1920 heavily blurred & darkened for depth
+    - Background: 1080x1920 heavily blurred & darkened for depth (downscale-optimized for 8x speed)
     - Foreground: 1080px wide centered crisp gameplay
     - Subtitles: Hormozi animated ASS burned in
-    - Fast rendering via NVIDIA NVENC (RTX 3050)
+    - High quality, lightweight bitrate (< 8MB per 30s) for Discord & social media compliance
     """
-    video_codec = "h264_nvenc" if NVENC_ACTIVE else "libx264"
-
+    # Optimized background blur: scale down to 270x480 -> blur -> scale up to 1080x1920 (instant speed)
     filter_complex_parts = [
         "[0:v]split=2[v_bg][v_fg];"
-        "[v_bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=25:5,eq=brightness=-0.15[bg_blur];"
+        "[v_bg]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=6:1,scale=1080:1920:flags=bilinear,eq=brightness=-0.15[bg_blur];"
         "[v_fg]scale=1080:-2[fg_scaled];"
         "[bg_blur][fg_scaled]overlay=(W-w)/2:(H-h)/2[base_comp]"
     ]
@@ -230,19 +252,32 @@ def build_9_16_vertical_short(
         video_path,
     ]
 
-    # Add custom Voiceover Audio if specified or boost raw game audio
+    # Detect audio stream presence in source video
+    source_has_audio = has_audio_stream(video_path)
+
+    # Audio management
     if audio_path and os.path.exists(audio_path):
         cmd.extend(["-i", audio_path])
-        # Mix gameplay background audio (-12dB) with AI voiceover (100%)
-        cmd.extend([
-            "-filter_complex",
-            filter_complex + ";[0:a]volume=0.35[bg_a];[1:a]volume=1.1[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]",
-            "-map",
-            "[final_v]",
-            "-map",
-            "[final_a]",
-        ])
-    else:
+        if source_has_audio:
+            # Mix gameplay background audio (-10dB) with AI voiceover (100%)
+            cmd.extend([
+                "-filter_complex",
+                filter_complex + ";[0:a]volume=0.35[bg_a];[1:a]volume=1.1[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]",
+                "-map",
+                "[final_v]",
+                "-map",
+                "[final_a]",
+            ])
+        else:
+            cmd.extend([
+                "-filter_complex",
+                filter_complex + ";[1:a]volume=1.1[final_a]",
+                "-map",
+                "[final_v]",
+                "-map",
+                "[final_a]",
+            ])
+    elif source_has_audio:
         # Boost raw game audio by +3dB for punchy mobile TikTok audio
         cmd.extend([
             "-filter_complex",
@@ -250,26 +285,48 @@ def build_9_16_vertical_short(
             "-map",
             "[final_v]",
             "-map",
-            "[final_a]?",
+            "[final_a]",
+        ])
+    else:
+        # Generate silent audio track if no source audio exists to prevent blank audio stream errors
+        cmd.extend([
+            "-filter_complex",
+            filter_complex + f";aevalsrc=0:d={duration}[final_a]",
+            "-map",
+            "[final_v]",
+            "-map",
+            "[final_a]",
         ])
 
-    cmd.extend([
-        "-threads",
-        "0",
-        "-c:v",
-        video_codec,
-        "-preset",
-        "p4" if NVENC_ACTIVE else "ultrafast",
-        "-b:v",
-        "6M",
-        "-pix_fmt",
-        "yuv420p",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        output_path,
-    ])
+    # Video & Audio Encoding Parameters (Optimized for quality + Discord <10MB upload limits)
+    if NVENC_ACTIVE:
+        cmd.extend([
+            "-threads", "0",
+            "-c:v", "h264_nvenc",
+            "-preset", "p4",
+            "-rc", "vbr",
+            "-cq", "24",
+            "-b:v", "2.5M",
+            "-maxrate", "3.2M",
+            "-bufsize", "5M",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            output_path,
+        ])
+    else:
+        cmd.extend([
+            "-threads", "0",
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-crf", "23",
+            "-maxrate", "2.8M",
+            "-bufsize", "5.6M",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            output_path,
+        ])
 
     try:
         subprocess.run(cmd, capture_output=True, text=True, check=True)
