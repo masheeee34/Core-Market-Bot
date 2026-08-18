@@ -92,6 +92,19 @@ async def channels_handler(_: web.Request) -> web.Response:
     })
 
 
+async def logos_handler(_: web.Request) -> web.Response:
+    logos = [
+        {"id": "gold", "name": "Gold Neon (#FFE600)", "desc": "Signature Core Market", "hex": "#FFE600"},
+        {"id": "cyan", "name": "Cyber Cyan", "desc": "High-Tech Electric", "hex": "#00F0FF"},
+        {"id": "crimson", "name": "Crimson Wine", "desc": "Original Cavaliers", "hex": "#860038"},
+        {"id": "purple", "name": "Purple Vortex", "desc": "Gamer Neon Pink", "hex": "#A855F7"},
+        {"id": "emerald", "name": "Emerald Green", "desc": "Acid Mint Precision", "hex": "#10B981"},
+        {"id": "platinum", "name": "Pure Platinum", "desc": "Clean Minimalist White", "hex": "#FFFFFF"},
+        {"id": "stealth", "name": "Dark Stealth", "desc": "Tactical Shadow Obsidian", "hex": "#64748B"},
+    ]
+    return web.json_response({"success": True, "logos": logos})
+
+
 async def clips_handler(_: web.Request) -> web.Response:
     clips = load_all_metadata()
     return web.json_response({"success": True, "clips": clips})
@@ -125,6 +138,11 @@ async def run_generation_background(
     music_track: str = "none",
     music_volume: float = 0.35,
     custom_music_url: str = "",
+    logo_variant: str = "gold",
+    logo_position: str = "top_right",
+    logo_size: int = 120,
+    logo_opacity: float = 0.85,
+    template_style: str = "cyber_hud",
 ) -> None:
     task = TASKS.get(task_id)
     if not task:
@@ -207,7 +225,6 @@ async def run_generation_background(
                 clip_id = uuid.uuid4().hex[:6]
                 out_filename = f"farm_{item['channel_id']}_{clip_id}.mp4"
                 out_filepath = str(OUTPUT_DIR / out_filename)
-
                 task["message"] = f"Rendering Channel Short #{idx+1}/{len(chan_pack)} ({item['channel_name']})..."
                 task["percent"] = 50 + int((idx / len(chan_pack)) * 45)
 
@@ -231,6 +248,11 @@ async def run_generation_background(
                     music_track=assigned_music,
                     music_volume=music_volume,
                     custom_music_url=custom_music_url,
+                    logo_variant=logo_variant,
+                    logo_position=logo_position,
+                    logo_size=logo_size,
+                    logo_opacity=logo_opacity,
+                    template_style=template_style,
                 )
 
                 if success and os.path.exists(out_filepath):
@@ -245,7 +267,6 @@ async def run_generation_background(
                         "optimal_time": "18:30 - 21:30 (Prime Engagement)",
                         "strategy_tip": f"Assignée à {item['channel_name']} avec musique {assigned_music}",
                     }
-
                     clip_entry = {
                         "filename": out_filename,
                         "title": f"[{item['channel_name']}] {item['title']}",
@@ -256,9 +277,6 @@ async def run_generation_background(
                     save_clip_metadata(clip_entry)
                     generated_clips.append(clip_entry)
 
-        # ──────────────────────────────────────────────────────────────
-        # MODE B: Multi-Shorts Highlights
-        # ──────────────────────────────────────────────────────────────
         elif mode == "multi_shorts":
             task["message"] = "Detecting high-action moments..."
             task["percent"] = 40
@@ -275,10 +293,7 @@ async def run_generation_background(
                 clip_id = uuid.uuid4().hex[:6]
                 out_filename = f"short_{idx+1}_{clip_id}.mp4"
                 out_filepath = str(OUTPUT_DIR / out_filename)
-
-                start_min = int(start_t // 60)
-                start_sec = int(start_t % 60)
-                task["message"] = f"Rendering Action Short #{idx+1}/{total_cuts} at {start_min:02d}:{start_sec:02d}..."
+                task["message"] = f"Rendering Action Short #{idx+1}/{total_cuts}..."
                 task["percent"] = 50 + int((idx / total_cuts) * 45)
 
                 success = await asyncio.to_thread(
@@ -298,6 +313,11 @@ async def run_generation_background(
                     music_track=music_track,
                     music_volume=music_volume,
                     custom_music_url=custom_music_url,
+                    logo_variant=logo_variant,
+                    logo_position=logo_position,
+                    logo_size=logo_size,
+                    logo_opacity=logo_opacity,
+                    template_style=template_style,
                 )
 
                 if success and os.path.exists(out_filepath):
@@ -307,13 +327,12 @@ async def run_generation_background(
                     )
                     clip_entry = {
                         "filename": out_filename,
-                        "title": top_banner or f"Action Highlight #{idx+1} ({start_min:02d}:{start_sec:02d})",
+                        "title": top_banner or f"Action Highlight #{idx+1}",
                         "meta": meta,
                     }
                     save_clip_metadata(clip_entry)
                     generated_clips.append(clip_entry)
         else:
-            # Single Full Video
             clip_id = uuid.uuid4().hex[:6]
             out_filename = f"full_video_{clip_id}.mp4"
             out_filepath = str(OUTPUT_DIR / out_filename)
@@ -341,6 +360,11 @@ async def run_generation_background(
                 music_track=music_track,
                 music_volume=music_volume,
                 custom_music_url=custom_music_url,
+                logo_variant=logo_variant,
+                logo_position=logo_position,
+                logo_size=logo_size,
+                logo_opacity=logo_opacity,
+                template_style=template_style,
             )
 
             if success and os.path.exists(out_filepath):
@@ -365,61 +389,59 @@ async def run_generation_background(
         log.error("Fatal error in generation task %s: %s", task_id, e, exc_info=True)
         task["status"] = "error"
         task["error"] = str(e)
-    finally:
-        # Clean up temporary upload and intermediate conversion files
-        if local_video_path and os.path.exists(local_video_path) and "temp" in local_video_path.lower():
-            try:
-                os.remove(local_video_path)
-            except Exception:
-                pass
 
 
 async def generate_handler(request: web.Request) -> web.Response:
     reader = await request.multipart()
 
-    uploaded_filename = None
-    local_video_path = None
     yt_url = None
+    local_video_path = None
     mode = "multi_shorts"
     clip_len = 30.0
     num_clips = 3
     custom_start = None
     script = ""
-    voice_key = "en_gamer_christopher"
-    sub_style = "hormozi_yellow"
+    voice_key = "adam"
+    sub_style = "beast"
     top_banner = "POV: You finally found the zero-recoil config 😳"
     bottom_cta = "⚡ 1-Hour FREE Trial • Link in Bio →"
+    layout_style = "zoom"
     hook_y = 180
     cta_y = 1360
     badge_style = "dark-neon"
-    layout_style = "zoom"
     music_track = "none"
     music_volume = 0.35
     custom_music_url = ""
+    logo_variant = "gold"
+    logo_position = "top_right"
+    logo_size = 120
+    logo_opacity = 0.85
+    template_style = "cyber_hud"
 
     while True:
         part = await reader.next()
         if part is None:
             break
 
-        name = part.name
-        if name == "file":
-            uploaded_filename = part.filename
-            if uploaded_filename:
-                temp_upload_path = TEMP_DIR / f"upload_{uuid.uuid4().hex[:8]}_{uploaded_filename}"
-                with open(temp_upload_path, "wb") as f:
-                    while True:
-                        chunk = await part.read_chunk()
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                local_video_path = str(temp_upload_path)
-        else:
-            value = await part.text()
+        if part.name == "file":
+            filename = part.filename or f"upload_{uuid.uuid4().hex[:8]}.mp4"
+            target_path = TEMP_DIR / f"upload_{uuid.uuid4().hex[:8]}_{filename}"
+            with open(target_path, "wb") as f:
+                while True:
+                    chunk = await part.read_chunk(1024 * 1024)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+            local_video_path = str(target_path)
+
+        elif part.form_name:
+            name = part.name
+            value = (await part.read()).decode("utf-8", errors="ignore").strip()
+
             if name == "youtube_url":
                 yt_url = value.strip()
             elif name == "mode":
-                mode = value
+                mode = value.strip()
             elif name == "clip_len":
                 try:
                     clip_len = float(value)
@@ -433,38 +455,33 @@ async def generate_handler(request: web.Request) -> web.Response:
             elif name == "custom_start":
                 if value.strip():
                     try:
-                        # Support both seconds (45) and MM:SS (01:25) format
                         if ":" in value:
-                            m, s = value.strip().split(":")
-                            custom_start = float(m) * 60 + float(s)
+                            parts = value.split(":")
+                            custom_start = float(parts[0]) * 60 + float(parts[1])
                         else:
-                            custom_start = float(value)
+                            custom_start = float(value.replace("s", ""))
                     except ValueError:
                         custom_start = None
             elif name == "script":
                 script = value.strip()
             elif name == "voice":
-                voice_key = value
+                voice_key = value.strip()
             elif name == "sub_style":
-                sub_style = value
+                sub_style = value.strip()
             elif name == "top_banner":
-                top_banner = value
+                top_banner = value.strip()
             elif name == "bottom_cta":
-                bottom_cta = value
+                bottom_cta = value.strip()
             elif name == "hook_y":
-                try:
-                    hook_y = int(float(value))
-                except ValueError:
-                    hook_y = 180
+                try: hook_y = int(float(value))
+                except ValueError: hook_y = 180
             elif name == "cta_y":
-                try:
-                    cta_y = int(float(value))
-                except ValueError:
-                    cta_y = 1360
+                try: cta_y = int(float(value))
+                except ValueError: cta_y = 1360
             elif name == "badge_style":
-                badge_style = value
+                badge_style = value.strip()
             elif name == "layout_style":
-                layout_style = value
+                layout_style = value.strip()
             elif name == "music_track":
                 music_track = value.strip()
             elif name == "music_volume":
@@ -474,6 +491,18 @@ async def generate_handler(request: web.Request) -> web.Response:
                     music_volume = 0.35
             elif name == "custom_music_url":
                 custom_music_url = value.strip()
+            elif name == "logo_variant":
+                logo_variant = value.strip()
+            elif name == "logo_position":
+                logo_position = value.strip()
+            elif name == "logo_size":
+                try: logo_size = int(value)
+                except ValueError: logo_size = 120
+            elif name == "logo_opacity":
+                try: logo_opacity = float(value)
+                except ValueError: logo_opacity = 0.85
+            elif name == "template_style":
+                template_style = value.strip()
 
     if not yt_url and not local_video_path:
         return web.json_response({"success": False, "error": "Please provide a video file or YouTube URL."}, status=400)
@@ -507,6 +536,11 @@ async def generate_handler(request: web.Request) -> web.Response:
             music_track=music_track,
             music_volume=music_volume,
             custom_music_url=custom_music_url,
+            logo_variant=logo_variant,
+            logo_position=logo_position,
+            logo_size=logo_size,
+            logo_opacity=logo_opacity,
+            template_style=template_style,
         )
     )
 
@@ -517,10 +551,11 @@ async def generate_handler(request: web.Request) -> web.Response:
 
 
 def create_app() -> web.Application:
-    app = web.Application(client_max_size=1024 * 1024 * 500)  # Support up to 500MB video uploads
+    app = web.Application(client_max_size=1024 * 1024 * 500)
     app.router.add_get("/", index_handler)
     app.router.add_get("/api/status", status_handler)
     app.router.add_get("/api/channels", channels_handler)
+    app.router.add_get("/api/logos", logos_handler)
     app.router.add_get("/api/clips", clips_handler)
     app.router.add_get("/api/task_status/{task_id}", task_status_handler)
     app.router.add_post("/api/generate", generate_handler)

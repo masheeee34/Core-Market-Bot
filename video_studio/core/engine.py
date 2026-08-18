@@ -205,10 +205,16 @@ def build_9_16_vertical_short(
     music_track: str = "none",
     music_volume: float = 0.35,
     custom_music_url: str = "",
+    logo_variant: str = "gold",
+    logo_position: str = "top_right",
+    logo_size: int = 120,
+    logo_opacity: float = 0.85,
+    template_style: str = "cyber_hud",
 ) -> bool:
     """
     Renders a High-Definition 9:16 vertical Short (1080x1920) with:
     - Full-Screen 9:16 Crosshair Crop: crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920
+    - Dynamic Transparent Logo Watermark 'C' (7 colorways, custom X/Y and opacity)
     - Vector Top Hook Badge: Montserrat-Black, 85% Dark Pill, Drop Shadow (customizable Y)
     - Vector Bottom CTA Badge: Safe-Zone Y (default 1360), Customizable style ('dark-neon', 'solid-yellow', 'minimal')
     - Viral Background Music: 10 curated tracks or custom YouTube audio mixed seamlessly
@@ -249,12 +255,20 @@ def build_9_16_vertical_short(
                 music_file_path = downloaded
         except Exception as e:
             log.warning("Failed to download custom music: %s", e)
-    elif music_track and music_track != "none":
+    elif music_track and music_track != "none" and music_track != "random_viral":
         for ext in [".mp3", ".m4a", ".wav", ".aac"]:
             candidate = music_dir / f"{music_track}{ext}"
             if candidate.exists():
                 music_file_path = str(candidate)
                 break
+
+    # Resolve Logo Watermark
+    logos_dir = Path(__file__).parent.parent / "assets" / "logos"
+    logo_file_path = None
+    if logo_variant and logo_variant != "none" and logo_position != "none":
+        candidate_logo = logos_dir / f"logo_{logo_variant}.png"
+        if candidate_logo.exists():
+            logo_file_path = str(candidate_logo)
 
     cmd = [
         FFMPEG_EXE,
@@ -270,6 +284,7 @@ def build_9_16_vertical_short(
     extra_inputs = 0
     hook_idx = -1
     cta_idx = -1
+    logo_idx = -1
 
     if watermark_top and os.path.exists(hook_png):
         cmd.extend(["-i", hook_png])
@@ -280,6 +295,11 @@ def build_9_16_vertical_short(
         cmd.extend(["-i", cta_png])
         extra_inputs += 1
         cta_idx = extra_inputs
+
+    if logo_file_path and os.path.exists(logo_file_path):
+        cmd.extend(["-i", logo_file_path])
+        extra_inputs += 1
+        logo_idx = extra_inputs
 
     audio_input_idx = -1
     if audio_path and os.path.exists(audio_path):
@@ -293,7 +313,7 @@ def build_9_16_vertical_short(
         extra_inputs += 1
         music_input_idx = extra_inputs
 
-    # 1. Full-Screen 9:16 Crosshair Crop (No letterboxing/blur)
+    # 1. Full-Screen 9:16 Crosshair Crop
     filter_parts = [
         "[0:v]crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920[base_v]"
     ]
@@ -304,6 +324,25 @@ def build_9_16_vertical_short(
         escaped_ass = subtitles_ass_path.replace("\\", "/").replace(":", "\\:")
         filter_parts.append(f"[{cur_v}]ass='{escaped_ass}'[with_subs]")
         cur_v = "with_subs"
+
+    # Overlay Logo Watermark
+    if logo_idx > 0:
+        l_size = max(50, min(240, int(logo_size)))
+        l_opac = max(0.1, min(1.0, float(logo_opacity)))
+
+        filter_parts.append(f"[{logo_idx}:v]scale={l_size}:-1,format=rgba,colorchannelmixer=aa={l_opac}[logo_scaled]")
+
+        if logo_position == "top_left":
+            pos_str = "x=40:y=45"
+        elif logo_position == "bottom_right":
+            pos_str = "x=W-w-40:y=H-h-240"
+        elif logo_position == "center_floating":
+            pos_str = "x=(W-w)/2:y=950"
+        else: # top_right default
+            pos_str = "x=W-w-40:y=45"
+
+        filter_parts.append(f"[{cur_v}][logo_scaled]overlay={pos_str}[with_logo]")
+        cur_v = "with_logo"
 
     # Overlay Top Hook Badge at hook_y
     if hook_idx > 0:
