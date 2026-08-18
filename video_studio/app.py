@@ -564,6 +564,12 @@ def create_app() -> web.Application:
     music_dir = BASE_DIR / "assets" / "music"
     music_dir.mkdir(parents=True, exist_ok=True)
     app.router.add_static("/music/", path=music_dir, name="music")
+    logos_dir = BASE_DIR / "assets" / "logos"
+    logos_dir.mkdir(parents=True, exist_ok=True)
+    app.router.add_static("/logos/", path=logos_dir, name="logos")
+    avatars_dir = BASE_DIR / "assets" / "avatars"
+    avatars_dir.mkdir(parents=True, exist_ok=True)
+    app.router.add_static("/avatars/", path=avatars_dir, name="avatars")
     return app
 
 
