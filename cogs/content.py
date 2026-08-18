@@ -141,7 +141,7 @@ async def _submit_render(
     form.add_field("num_clips", str(num_clips))
     form.add_field("clip_len", "30")
     form.add_field("top_banner", "POV: You finally found the zero-recoil config 😳")
-    form.add_field("bottom_cta", "⚡ 1-Hour FREE Trial : Link in Bio")
+    form.add_field("bottom_cta", "⚡ 1-Hour FREE Trial • Link in Bio →")
 
     timeout = aiohttp.ClientTimeout(total=180)
     async with aiohttp.ClientSession(timeout=timeout) as session:

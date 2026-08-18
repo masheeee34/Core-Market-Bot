@@ -196,48 +196,31 @@ def build_9_16_vertical_short(
     audio_path: str | None = None,
     subtitles_ass_path: str | None = None,
     watermark_top: str = "POV: You finally found the zero-recoil config 😳",
-    watermark_bottom: str = "⚡ 1-Hour FREE Trial : Link in Bio",
+    watermark_bottom: str = "⚡ 1-Hour FREE Trial • Link in Bio →",
     layout_style: str = "zoom",
 ) -> bool:
     """
-    Renders a dynamic 9:16 vertical Short (1080x1920) with:
-    - Full-Screen Crosshair Crop: crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920
-    - Top Hook Banner (y=180): High-engagement dark contrasting box
-    - Bottom CTA Badge (y=1450): Yellow high-contrast conversion badge outside TikTok dead zones
-    - Subtitles: Hormozi animated ASS burned in
+    Renders a High-Definition 9:16 vertical Short (1080x1920) with:
+    - Full-Screen 9:16 Crosshair Crop: crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920
+    - Vector Top Hook Badge (y=180): Montserrat-Black, 85% Dark Pill, Drop Shadow
+    - Vector Bottom CTA Badge (y=1360): Fixed Safe-Zone between crosshair & HUD weapon alerts, #FFE600 Neon Yellow Border
+    - Crisp 60FPS High-Definition Encoding Profile (CRF 19, No pixel mush)
     """
-    # 1. Full-Screen 9:16 Crosshair Crop (No letterboxing/blur)
-    filter_complex_parts = [
-        "[0:v]crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920[base_comp]"
-    ]
+    import uuid
+    from video_studio.core.overlay import create_hook_badge, create_cta_badge
 
-    current_tag = "base_comp"
+    temp_dir = Path(output_path).parent.parent / "temp"
+    temp_dir.mkdir(parents=True, exist_ok=True)
 
-    # Burn ASS subtitles if provided
-    if subtitles_ass_path and os.path.exists(subtitles_ass_path):
-        escaped_ass = subtitles_ass_path.replace("\\", "/").replace(":", "\\:")
-        filter_complex_parts.append(f"[{current_tag}]ass='{escaped_ass}'[with_subs]")
-        current_tag = "with_subs"
+    uid = uuid.uuid4().hex[:6]
+    hook_png = str(temp_dir / f"hook_{uid}.png")
+    cta_png = str(temp_dir / f"cta_{uid}.png")
 
-    # 2. Top Banner Hook (y=180)
+    # Generate Vector HD Badges
     if watermark_top:
-        escaped_top = watermark_top.replace(":", "\\:").replace("'", "")
-        filter_complex_parts.append(
-            f"[{current_tag}]drawtext=text='{escaped_top}':fontcolor=white:fontsize=36:x=(w-text_w)/2:y=180:box=1:boxcolor=black@0.75:boxborderw=16[with_top]"
-        )
-        current_tag = "with_top"
-
-    # 3. Bottom CTA Badge (y=1450 — above TikTok bottom bar)
+        create_hook_badge(watermark_top, hook_png, font_size=36)
     if watermark_bottom:
-        escaped_bottom = watermark_bottom.replace(":", "\\:").replace("'", "")
-        filter_complex_parts.append(
-            f"[{current_tag}]drawtext=text='{escaped_bottom}':fontcolor=black:fontsize=34:x=(w-text_w)/2:y=1450:box=1:boxcolor=yellow@0.92:boxborderw=14[final_v]"
-        )
-        current_tag = "final_v"
-
-    filter_complex = ";".join(filter_complex_parts)
-    if not filter_complex.endswith("[final_v]"):
-        filter_complex += f";[{current_tag}]null[final_v]"
+        create_cta_badge(watermark_bottom, cta_png, font_size=34)
 
     cmd = [
         FFMPEG_EXE,
@@ -250,81 +233,86 @@ def build_9_16_vertical_short(
         video_path,
     ]
 
-    # Detect audio stream presence in source video
-    source_has_audio = has_audio_stream(video_path)
+    extra_inputs = 0
+    hook_idx = -1
+    cta_idx = -1
 
-    # Audio management
+    if watermark_top and os.path.exists(hook_png):
+        cmd.extend(["-i", hook_png])
+        extra_inputs += 1
+        hook_idx = extra_inputs
+
+    if watermark_bottom and os.path.exists(cta_png):
+        cmd.extend(["-i", cta_png])
+        extra_inputs += 1
+        cta_idx = extra_inputs
+
+    audio_input_idx = -1
     if audio_path and os.path.exists(audio_path):
         cmd.extend(["-i", audio_path])
-        if source_has_audio:
-            # Mix gameplay background audio (-10dB) with AI voiceover (100%)
-            cmd.extend([
-                "-filter_complex",
-                filter_complex + ";[0:a]volume=0.35[bg_a];[1:a]volume=1.1[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]",
-                "-map",
-                "[final_v]",
-                "-map",
-                "[final_a]",
-            ])
-        else:
-            cmd.extend([
-                "-filter_complex",
-                filter_complex + ";[1:a]volume=1.1[final_a]",
-                "-map",
-                "[final_v]",
-                "-map",
-                "[final_a]",
-            ])
-    elif source_has_audio:
-        # Boost raw game audio by +3dB for punchy mobile TikTok audio
-        cmd.extend([
-            "-filter_complex",
-            filter_complex + ";[0:a]volume=1.4[final_a]",
-            "-map",
-            "[final_v]",
-            "-map",
-            "[final_a]",
-        ])
-    else:
-        # Generate silent audio track if no source audio exists to prevent blank audio stream errors
-        cmd.extend([
-            "-filter_complex",
-            filter_complex + f";aevalsrc=0:d={duration}[final_a]",
-            "-map",
-            "[final_v]",
-            "-map",
-            "[final_a]",
-        ])
+        extra_inputs += 1
+        audio_input_idx = extra_inputs
 
-    # Video & Audio Encoding Parameters (Optimized for quality + Discord <10MB upload limits)
-    if NVENC_ACTIVE:
-        cmd.extend([
-            "-threads", "0",
-            "-c:v", "h264_nvenc",
-            "-preset", "p4",
-            "-rc", "vbr",
-            "-cq", "24",
-            "-b:v", "2.5M",
-            "-maxrate", "3.2M",
-            "-bufsize", "5M",
-            "-pix_fmt", "yuv420p",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            output_path,
-        ])
+    # 1. Full-Screen 9:16 Crosshair Crop (No letterboxing/blur)
+    filter_parts = [
+        "[0:v]crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920[base_v]"
+    ]
+    cur_v = "base_v"
+
+    # Burn ASS subtitles if provided
+    if subtitles_ass_path and os.path.exists(subtitles_ass_path):
+        escaped_ass = subtitles_ass_path.replace("\\", "/").replace(":", "\\:")
+        filter_parts.append(f"[{cur_v}]ass='{escaped_ass}'[with_subs]")
+        cur_v = "with_subs"
+
+    # Overlay Top Hook Badge at y=180
+    if hook_idx > 0:
+        filter_parts.append(f"[{cur_v}][{hook_idx}:v]overlay=(W-w)/2:180[with_hook]")
+        cur_v = "with_hook"
+
+    # Overlay Bottom CTA Badge at Safe-Zone y=1360
+    if cta_idx > 0:
+        filter_parts.append(f"[{cur_v}][{cta_idx}:v]overlay=(W-w)/2:1360[final_v]")
+        cur_v = "final_v"
     else:
-        cmd.extend([
-            "-threads", "0",
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-crf", "23",
-            "-maxrate", "2.8M",
-            "-bufsize", "5.6M",
-            "-pix_fmt", "yuv420p",
-            "-c:a", "aac",
-            "-b:a", "192k",
-            output_path,
-        ])
+        filter_parts.append(f"[{cur_v}]null[final_v]")
+
+    source_has_audio = has_audio_stream(video_path)
+
+    # Audio Mixing
+    if audio_input_idx > 0:
+        if source_has_audio:
+            filter_parts.append(f"[0:a]volume=0.35[bg_a];[{audio_input_idx}:a]volume=1.1[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]")
+        else:
+            filter_parts.append(f"[{audio_input_idx}:a]volume=1.1[final_a]")
+    elif source_has_audio:
+        filter_parts.append("[0:a]volume=1.4[final_a]")
+    else:
+        filter_parts.append(f"aevalsrc=0:d={duration}[final_a]")
+
+    cmd.extend([
+        "-filter_complex",
+        ";".join(filter_parts),
+        "-map",
+        "[final_v]",
+        "-map",
+        "[final_a]",
+    ])
+
+    # HD Video Profile: Eliminates pixelation & compression mush during high-speed 60FPS motion
+    cmd.extend([
+        "-threads", "0",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "19",
+        "-b:v", "8M",
+        "-maxrate", "12M",
+        "-bufsize", "24M",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        output_path,
+    ])
 
     try:
         subprocess.run(cmd, capture_output=True, text=True, check=True)

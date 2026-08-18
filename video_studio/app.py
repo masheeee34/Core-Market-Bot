@@ -269,7 +269,7 @@ async def generate_handler(request: web.Request) -> web.Response:
     voice_key = "en_gamer_christopher"
     sub_style = "hormozi_yellow"
     top_banner = "POV: You finally found the zero-recoil config 😳"
-    bottom_cta = "⚡ 1-Hour FREE Trial : Link in Bio"
+    bottom_cta = "⚡ 1-Hour FREE Trial • Link in Bio →"
 
     while True:
         part = await reader.next()
