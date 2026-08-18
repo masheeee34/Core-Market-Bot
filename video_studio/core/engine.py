@@ -1,6 +1,7 @@
 import array
 import logging
 import os
+import shutil
 import subprocess
 from typing import Any
 
@@ -8,7 +9,7 @@ import imageio_ffmpeg
 
 log = logging.getLogger("studio.engine")
 
-FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
+FFMPEG_EXE = shutil.which("ffmpeg") or imageio_ffmpeg.get_ffmpeg_exe()
 
 
 def is_nvenc_available() -> bool:
