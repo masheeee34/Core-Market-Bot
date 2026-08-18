@@ -434,7 +434,7 @@ async def generate_handler(request: web.Request) -> web.Response:
                     f.write(chunk)
             local_video_path = str(target_path)
 
-        elif part.form_name:
+        else:
             name = part.name
             value = (await part.read()).decode("utf-8", errors="ignore").strip()
 
