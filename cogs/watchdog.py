@@ -44,102 +44,130 @@ POLL_SHOP     = 3600  # 1 hour
 POLL_STATUS   = 300   # 5 min
 
 # ─────────────────────────────────────────────────────────────
-#  DESIGN SYSTEM — Watchdog Embeds (100% English)
+#  DESIGN SYSTEM — Sleek, Minimal, Modern Tech Embeds
 # ─────────────────────────────────────────────────────────────
 
-ACCENT_RED    = 0xFF3B3B
-ACCENT_ORANGE = 0xFF8C00
-ACCENT_GOLD   = 0xFFD700
-ACCENT_GREEN  = 0x00FF88
-ACCENT_CYAN   = 0x00E5FF
-ACCENT_PURPLE = 0x9B59B6
+COLOR_ALERT   = 0xE11D48  # Crimson Red
+COLOR_ONLINE  = 0x10B981  # Emerald Green
+COLOR_WARNING = 0xF59E0B  # Amber Gold
+COLOR_PRIMARY = 0x0070FF  # Core Electric Blue
+COLOR_SPECIAL = 0x8B5CF6  # Violet / Purple
 
-BORDER_TOP = "╔══════════════════════════════════════╗"
-BORDER_MID = "╠══════════════════════════════════════╣"
-BORDER_BOT = "╚══════════════════════════════════════╝"
-
-def _box(color_code: str, icon: str, title: str, lines: list[str]) -> str:
-    body = "\n".join(
-        f"\033[{color_code}m│\033[0m  {l}"
-        for l in lines
-    )
-    return (
-        f"```ansi\n"
-        f"\033[{color_code}m{BORDER_TOP}\033[0m\n"
-        f"\033[{color_code}m│\033[0m  {icon}  \033[1;37m{title}\033[0m\n"
-        f"\033[{color_code}m{BORDER_MID}\033[0m\n"
-        f"{body}\n"
-        f"\033[{color_code}m{BORDER_BOT}\033[0m\n"
-        f"```"
-    )
 
 def embed_game_update(app_name: str, title: str, url: str, build_id: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_ORANGE)
-    e.set_author(name="🚨 CORE MARKET RADAR  ·  New Patch Detected")
-    e.description = _box("1;31", "⚠️", f"PATCH DETECTED — {app_name.upper()}", [
-        f"\033[0;37mTitle    :\033[0m  \033[1;33m{title[:45]}\033[0m",
-        f"\033[0;37mBuild ID :\033[0m  \033[1;35m{build_id[:20]}\033[0m",
-        f"\033[0;37mStatus   :\033[0m  \033[1;31mINJECTION PAUSED — VERIFICATION IN PROGRESS\033[0m",
-        f"\033[0;37mSource   :\033[0m  \033[1;36m{url[:45]}\033[0m",
-    ])
-    e.set_footer(text="CORE MARKET RADAR  •  Auto-Security active  •  Please wait for green light")
+    e = discord.Embed(
+        title=f"🚨  Game Patch Detected — {app_name.upper()}",
+        description=(
+            f"> A new game update was just detected on official Steam/Battle.net servers.\n"
+            f"> Automated safety protocols are currently engaged.\n\n"
+            f"▸ **Game :** `{app_name.upper()}`\n"
+            f"▸ **Patch Title :** `{title[:60]}`\n"
+            f"▸ **Build ID :** `{build_id[:24]}`\n"
+            f"▸ **Safety Status :** 🔴 `INJECTION PAUSED (VERIFYING)`\n"
+            f"▸ **Official Source :** [View Steam Notes]({url or 'https://store.steampowered.com'})\n\n"
+            f"──────────────────────────────────────────\n"
+            f"🛡️ *Our automated test suite is verifying compatibility. Status will switch to 🟢 `UNDETECTED` once cleared.*"
+        ),
+        color=COLOR_ALERT,
+        timestamp=discord.utils.utcnow(),
+    )
+    e.set_footer(text="CORE MARKET RADAR • 24/7 Security Watchdog")
     return e
+
 
 def embed_all_clear(app_name: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_GREEN)
-    e.set_author(name="✅ CORE MARKET RADAR  ·  Patch Verified & Secure")
-    e.description = _box("1;32", "🛡️", f"{app_name.upper()} — 100% OPERATIONAL", [
-        f"\033[1;32mINJECTION LIVE & UNDETECTED\033[0m",
-        f"\033[0;37mLast Check :\033[0m  \033[1;37m{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\033[0m",
-        f"\033[0;37m1H Trial   :\033[0m  \033[1;33mClaim now in #🎁・free-trial\033[0m",
-    ])
-    e.set_footer(text="CORE MARKET RADAR  •  Zero Detections  •  Safe to play")
+    e = discord.Embed(
+        title=f"🟢  Patch Cleared & Verified — {app_name.upper()}",
+        description=(
+            f"> Automated tests completed with zero detections. Software is 100% operational.\n\n"
+            f"▸ **Game :** `{app_name.upper()}`\n"
+            f"▸ **Status :** 🟢 `UNDETECTED & LIVE`\n"
+            f"▸ **Verification :** `All offsets updated & secure`\n"
+            f"▸ **Free Trial :** Available now in <#1345864197779361875>\n\n"
+            f"──────────────────────────────────────────\n"
+            f"⚡ *You can safely resume your gameplay sessions.*"
+        ),
+        color=COLOR_ONLINE,
+        timestamp=discord.utils.utcnow(),
+    )
+    e.set_footer(text="CORE MARKET RADAR • Security Cleared")
     return e
+
 
 def embed_server_down(service: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_RED)
-    e.set_author(name="🔴 CORE MARKET RADAR  ·  Official Servers Offline")
-    e.description = _box("1;31", "📡", f"OUTAGE DETECTED — {service.upper()}", [
-        f"\033[1;31mOfficial Game Servers Are Unreachable\033[0m",
-        f"\033[0;37mSource  :\033[0m  \033[1;37mActivision / Riot Status API\033[0m",
-        f"\033[0;37mAction  :\033[0m  \033[1;33mActive monitoring — auto-alert on recovery\033[0m",
-    ])
-    e.set_footer(text="CORE MARKET RADAR  •  Official server issue — not your local configuration")
+    e = discord.Embed(
+        title=f"🔴  Official Servers Outage — {service.upper()}",
+        description=(
+            f"> Official game multiplayer servers are currently reporting widespread connectivity issues.\n\n"
+            f"▸ **Affected Service :** `{service.upper()}`\n"
+            f"▸ **Status :** 🔴 `OFFICIAL SERVERS DOWN`\n"
+            f"▸ **Source :** `Activision / Riot Live Health API`\n\n"
+            f"──────────────────────────────────────────\n"
+            f"ℹ️ *This is an official server outage on Activision/Riot's end, not your local connection or PC.*"
+        ),
+        color=COLOR_ALERT,
+        timestamp=discord.utils.utcnow(),
+    )
+    e.set_footer(text="CORE MARKET RADAR • Live Server Monitor")
     return e
+
 
 def embed_server_back(service: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_GREEN)
-    e.set_author(name="🟢 CORE MARKET RADAR  ·  Official Servers Back Online")
-    e.description = _box("1;32", "📡", f"SERVERS RECOVERED — {service.upper()}", [
-        f"\033[1;32mAll official game servers are back online\033[0m",
-        f"\033[0;37mTime    :\033[0m  \033[1;37m{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\033[0m",
-    ])
-    e.set_footer(text="CORE MARKET RADAR  •  Enjoy your game session!")
+    e = discord.Embed(
+        title=f"🟢  Official Servers Restored — {service.upper()}",
+        description=(
+            f"> All official matchmaking and multiplayer servers are back online and operational.\n\n"
+            f"▸ **Service :** `{service.upper()}`\n"
+            f"▸ **Status :** 🟢 `100% OPERATIONAL`\n"
+            f"▸ **Matchmaking :** `Online & Accepting Players`\n\n"
+            f"──────────────────────────────────────────\n"
+            f"🎮 *Lobbies are active. Enjoy your gaming session!*"
+        ),
+        color=COLOR_ONLINE,
+        timestamp=discord.utils.utcnow(),
+    )
+    e.set_footer(text="CORE MARKET RADAR • Live Server Monitor")
     return e
+
 
 def embed_free_game(title: str, desc: str, url: str, img: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_PURPLE)
-    e.set_author(name="🎮 CORE MARKET  ·  Free Game Alert")
-    e.description = _box("1;35", "🎁", "FREE GAME — EPIC GAMES STORE", [
-        f"\033[1;37m{title[:40]}\033[0m",
-        f"\033[0;37m{desc[:60]}\033[0m",
-        f"\033[0;37mClaim Here :\033[0m  \033[1;36m{url[:50]}\033[0m",
-    ])
+    e = discord.Embed(
+        title=f"🎁  Free Game Alert — Epic Games Store",
+        description=(
+            f"> A premium game is currently **100% FREE** to claim and keep forever!\n\n"
+            f"▸ **Game :** **{title}**\n"
+            f"▸ **Description :** {desc}\n"
+            f"▸ **Original Price :** ~~$19.99 - $59.99~~ ➔ **`$0.00 FREE`**\n"
+            f"▸ **Direct Claim Link :** [Click here to claim on Epic Games]({url})\n\n"
+            f"──────────────────────────────────────────\n"
+            f"⏰ *Claim it to your account before the promotion expires!*"
+        ),
+        color=COLOR_SPECIAL,
+        timestamp=discord.utils.utcnow(),
+    )
     if img:
         e.set_image(url=img)
-    e.set_footer(text="CORE MARKET  •  Free Game Alerts  •  Claim before promo ends")
+    e.set_footer(text="CORE MARKET RADAR • Free Loot Alert")
     return e
 
-def embed_double_xp(game: str, ends: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_GOLD)
-    e.set_author(name="⚡ CORE MARKET RADAR  ·  Double XP Active!")
-    e.description = _box("1;33", "🚀", f"DOUBLE XP — {game.upper()}", [
-        f"\033[1;33mDOUBLE XP WEEKEND IS LIVE\033[0m",
-        f"\033[0;37mEnds At :\033[0m  \033[1;37m{ends}\033[0m",
-        f"\033[0;37mAction  :\033[0m  \033[1;32mActivate your key to rank up 2x faster 🎯\033[0m",
-    ])
-    e.set_footer(text="CORE MARKET RADAR  •  Double XP = 2x Weapon & Level Progression")
+
+def embed_double_xp(game: str, ends_at: str) -> discord.Embed:
+    e = discord.Embed(
+        title=f"⚡  Double XP Weekend Active — {game.upper()}",
+        description=(
+            f"> Double XP is now officially live across all playlists!\n\n"
+            f"▸ **Target Game :** `{game.upper()}`\n"
+            f"▸ **Multiplier :** `2X Player XP & Weapon Progression`\n"
+            f"▸ **Ends At :** `{ends_at}`\n\n"
+            f"──────────────────────────────────────────\n"
+            f"🎯 *Stack 2X XP with our precision tracking to max out all your weapon camos in record time.*"
+        ),
+        color=COLOR_WARNING,
+        timestamp=discord.utils.utcnow(),
+    )
+    e.set_footer(text="CORE MARKET RADAR • Double XP Tracker")
     return e
+
 
 # ─────────────────────────────────────────────────────────────
 #  STATE MANAGER
@@ -175,7 +203,6 @@ async def _get(url: str, timeout: int = 10) -> dict | list | None:
     return None
 
 async def fetch_steam_news(appid: int) -> tuple[str, str, str] | None:
-    """Returns (title, url, build_marker) of the latest Steam update news, or None."""
     data = await _get(
         f"https://api.steampowered.com/ISteamNews/GetNewsForApp/v0002/"
         f"?appid={appid}&count=3&maxlength=300&format=json"
@@ -194,10 +221,9 @@ async def fetch_steam_news(appid: int) -> tuple[str, str, str] | None:
     return None
 
 async def fetch_activision_status() -> bool:
-    """Returns True if Activision multiplayer servers are UP."""
     data = await _get("https://support.activision.com/api/v2/online-services/status")
     if not data:
-        return True  # Assume up if API unreachable
+        return True
     services = data if isinstance(data, list) else data.get("services", [])
     for svc in services:
         name = (svc.get("name") or "").lower()
@@ -208,7 +234,6 @@ async def fetch_activision_status() -> bool:
     return True
 
 async def fetch_epic_free_games() -> list[dict]:
-    """Returns list of current free games on Epic Games Store."""
     data = await _get(
         "https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions"
         "?locale=en-US&country=US&allowCountries=US"
@@ -229,7 +254,7 @@ async def fetch_epic_free_games() -> list[dict]:
                 discount = offer.get("discountSetting", {}).get("discountPercentage", 100)
                 if discount == 0:
                     title = game.get("title", "")
-                    desc  = (game.get("description") or "")[:80]
+                    desc  = (game.get("description") or "")[:90]
                     slug  = game.get("productSlug") or game.get("urlSlug") or ""
                     url   = f"https://store.epicgames.com/p/{slug}"
                     imgs  = game.get("keyImages", [])
@@ -246,16 +271,6 @@ def _resolve_alert_channel(guild: discord.Guild) -> discord.TextChannel | None:
         "🚨・patch-alerts", "📢・announcements", "announcements",
         "🚨・alertes", "🔔・alerts", "alerts",
         "🟢・cheat-status", "🟢・ꜱᴛᴀᴛᴜꜱ-ᴄʜᴇᴀᴛꜱ",
-    ]
-    for name in candidates:
-        ch = discord.utils.get(guild.text_channels, name=name)
-        if ch:
-            return ch
-    return None
-
-def _resolve_general_channel(guild: discord.Guild) -> discord.TextChannel | None:
-    candidates = [
-        "general", "chat", "💬・general-chat", "🎮・general", "💬・chat"
     ]
     for name in candidates:
         ch = discord.utils.get(guild.text_channels, name=name)
@@ -289,8 +304,6 @@ class Watchdog(commands.Cog):
 
     def _save(self) -> None:
         _save_state(self.state)
-
-    # ── Broadcast helper ──────────────────────────────────────
 
     async def _send_to_channel_key(self, key: str, embed: discord.Embed) -> None:
         ch_id = self.state.get(key)
@@ -405,22 +418,20 @@ class Watchdog(commands.Cog):
         if self.state.get(today_key):
             return
 
-        embed = discord.Embed(color=ACCENT_CYAN)
-        embed.set_author(name="🛍️ CORE MARKET  ·  Daily Shop Rotation")
-        embed.description = (
-            "```ansi\n"
-            f"\033[1;36m{BORDER_TOP}\033[0m\n"
-            f"\033[1;36m│\033[0m  🛍️  \033[1;37mCALL OF DUTY SHOP — {now.strftime('%Y-%m-%d')}\033[0m\n"
-            f"\033[1;36m{BORDER_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mCheck full shop rotation at :\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[1;33mcallofduty.com/store\033[0m\n"
-            f"\033[1;36m{BORDER_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mEnhance your movement & visuals with our tools\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[1;32m/configs  ·  #🎁・free-trial\033[0m\n"
-            f"\033[1;36m{BORDER_BOT}\033[0m\n"
-            "```"
+        embed = discord.Embed(
+            title=f"🛍️  Daily Call of Duty Store Rotation — {now.strftime('%B %d, %Y')}",
+            description=(
+                f"> Today's featured bundles and operator blueprints are now live in the store.\n\n"
+                f"▸ **Store Link :** [View Official CoD Store Catalog](https://callofduty.com/store)\n"
+                f"▸ **Optimized Setups :** Enhance any weapon build with our configs in `/configs`\n"
+                f"▸ **Free 1H Trial :** Claim instantly in <#1345864197779361875>\n\n"
+                f"──────────────────────────────────────────\n"
+                f"✨ *Store rotation refreshes daily at 19:00 UTC.*"
+            ),
+            color=COLOR_PRIMARY,
+            timestamp=discord.utils.utcnow(),
         )
-        embed.set_footer(text=f"CORE MARKET  •  Daily Shop Rotation  •  {now.strftime('%Y-%m-%d')}")
+        embed.set_footer(text="CORE MARKET • Daily Store Watchdog")
 
         await self._broadcast(embed, "shop")
         self.state[today_key] = True
@@ -445,52 +456,59 @@ class Watchdog(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         s = self.state
         activision_up = s.get("activision_up", True)
-        status_icon = "\033[1;32m● ONLINE\033[0m" if activision_up else "\033[1;31m● OFFLINE\033[0m"
+        status_badge = "🟢 `ONLINE`" if activision_up else "🔴 `OFFLINE`"
 
-        bo7_build = s.get(f"steam_{APP_BO7}_last_build", "—")[:15]
-        wz_build  = s.get(f"steam_{APP_WARZONE}_last_build", "—")[:15]
+        bo7_build = s.get(f"steam_{APP_BO7}_last_build", "—")[:18]
+        wz_build  = s.get(f"steam_{APP_WARZONE}_last_build", "—")[:18]
         epic_seen = len(s.get("epic_free_seen", []))
 
-        e = discord.Embed(color=ACCENT_CYAN)
-        e.set_author(name="📡 CORE MARKET RADAR  ·  Watchdogs Dashboard")
-        e.description = (
-            "```ansi\n"
-            f"\033[1;36m{BORDER_TOP}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[1;37m🔭 24/7 WATCHDOG MONITORS\033[0m\n"
-            f"\033[1;36m{BORDER_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mActivision  :\033[0m  {status_icon}\n"
-            f"\033[1;36m│\033[0m  \033[0;37mBO7 Build   :\033[0m  \033[1;35m{bo7_build}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mWZ Build    :\033[0m  \033[1;35m{wz_build}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mEpic Games  :\033[0m  \033[1;33m{epic_seen} games tracked\033[0m\n"
-            f"\033[1;36m{BORDER_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mSteam Poll  :\033[0m  \033[1;32mevery 10 min\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mStatus Poll :\033[0m  \033[1;32mevery 5 min\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mEpic Poll   :\033[0m  \033[1;32mevery 1 hour\033[0m\n"
-            f"\033[1;36m{BORDER_BOT}\033[0m\n"
-            "```"
+        e = discord.Embed(
+            title="📡  CORE MARKET RADAR — Watchdog Dashboard",
+            description=(
+                f"> Real-time health metrics of all automated monitoring daemons on the VPS.\n\n"
+                f"**Active Monitored Services**\n"
+                f"▸ **Activision Servers :** {status_badge}\n"
+                f"▸ **BO7 Steam Build :** `{bo7_build}`\n"
+                f"▸ **Warzone Steam Build :** `{wz_build}`\n"
+                f"▸ **Epic Free Games Tracked :** `{epic_seen} titles`\n\n"
+                f"**Polling Intervals**\n"
+                f"▸ **Steam Patches :** `Every 10 min`\n"
+                f"▸ **Server Health :** `Every 5 min`\n"
+                f"▸ **Free Loot Deals :** `Every 60 min`\n\n"
+                f"──────────────────────────────────────────\n"
+                f"🛡️ *All background watchdogs are currently active and running on VPS.*"
+            ),
+            color=COLOR_PRIMARY,
+            timestamp=discord.utils.utcnow(),
         )
-        e.set_footer(text="CORE MARKET RADAR  •  24/7 Automated VPS Monitoring")
+        e.set_footer(text="CORE MARKET RADAR • VPS Process Health")
         await interaction.followup.send(embed=e, ephemeral=True)
 
     @app_commands.command(
         name="radar_test",
-        description="🧪 Send a test alert across all radar channels to verify setup",
+        description="🧪 Send a clean test alert across all radar channels to verify setup",
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
     async def radar_test(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer(ephemeral=True)
-        test_embed = discord.Embed(color=ACCENT_GOLD)
-        test_embed.set_author(name="🧪 CORE MARKET RADAR  ·  System Test")
-        test_embed.description = _box("1;33", "✅", "RADAR TEST — ALL SYSTEMS OPERATIONAL", [
-            "\033[1;32mThis confirms automatic alert routing is working properly\033[0m",
-            f"\033[0;37mTime    :\033[0m  \033[1;37m{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\033[0m",
-            "\033[0;37mRadars  :\033[0m  \033[1;32mSteam • Activision • Epic • Shop\033[0m",
-        ])
-        test_embed.set_footer(text="CORE MARKET RADAR  •  System Test Successful")
+        test_embed = discord.Embed(
+            title="🧪  CORE MARKET RADAR — Systems Operational Test",
+            description=(
+                f"> This is an automated test broadcast confirming alert routing is configured properly.\n\n"
+                f"▸ **Execution Timestamp :** `{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}`\n"
+                f"▸ **Active Scanners :** `SteamDB • Activision API • Epic Games Store • Daily Shop`\n"
+                f"▸ **Router Status :** 🟢 `ALL CHANNELS LINKED & RESPONSIVE`\n\n"
+                f"──────────────────────────────────────────\n"
+                f"✅ *Test successfully verified. No further action needed.*"
+            ),
+            color=COLOR_ONLINE,
+            timestamp=discord.utils.utcnow(),
+        )
+        test_embed.set_footer(text="CORE MARKET RADAR • Test Signal Verified")
 
         await self._broadcast(test_embed, "alert")
-        await interaction.followup.send("✅ Test alert successfully broadcast to radar channels.", ephemeral=True)
+        await interaction.followup.send("✅ Test alert successfully sent to radar channels.", ephemeral=True)
 
     @app_commands.command(
         name="double_xp",
@@ -508,12 +526,12 @@ class Watchdog(commands.Cog):
         await interaction.followup.send(f"📢 Double XP alert for **{game}** broadcasted.", ephemeral=True)
 
     # ─────────────────────────────────────────────────────────
-    #  /radar_setup — Auto-creates dedicated channels with English embeds
+    #  /radar_setup — Auto-creates dedicated channels with sleek English cards
     # ─────────────────────────────────────────────────────────
 
     @app_commands.command(
         name="radar_setup",
-        description="🛠️ Auto-create dedicated CORE MARKET RADAR channels with explanation cards",
+        description="🛠️ Auto-create dedicated CORE MARKET RADAR channels with sleek explanation cards",
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
@@ -534,141 +552,89 @@ class Watchdog(commands.Cog):
                 "name": "🚨・patch-alerts",
                 "topic": "Automatic 24/7 patch and game update alerts for Black Ops 7 & Warzone.",
                 "embed": discord.Embed(
-                    color=ACCENT_ORANGE,
+                    title="🚨  Game Updates & Patch Radar",
                     description=(
-                        "```ansi\n"
-                        f"\033[1;31m{BORDER_TOP}\033[0m\n"
-                        f"\033[1;31m│\033[0m  🚨  \033[1;37mGAME PATCHES & UPDATE RADAR\033[0m\n"
-                        f"\033[1;31m{BORDER_MID}\033[0m\n"
-                        f"\033[1;31m│\033[0m  \033[0;37mThis channel is monitored\033[0m \033[1;32m24/7\033[0m \033[0;37mby our automated bot.\033[0m\n"
-                        f"\033[1;31m│\033[0m\n"
-                        f"\033[1;31m│\033[0m  \033[1;37mWhenever a game patch or hotfix is detected on\033[0m\n"
-                        f"\033[1;31m│\033[0m  \033[1;33mBlack Ops 7\033[0m \033[0;37mor\033[0m \033[1;33mWarzone\033[0m\033[0;37m, an alert is posted here.\033[0m\n"
-                        f"\033[1;31m│\033[0m\n"
-                        f"\033[1;31m{BORDER_MID}\033[0m\n"
-                        f"\033[1;31m│\033[0m  🔴  \033[1;37mPATCH DETECTED\033[0m  →  Injection paused for safety\n"
-                        f"\033[1;31m│\033[0m  🟢  \033[1;37mPATCH VERIFIED\033[0m  →  Back online & confirmed safe\n"
-                        f"\033[1;31m{BORDER_MID}\033[0m\n"
-                        f"\033[1;31m│\033[0m  \033[0;37mEnable notifications to never miss security updates.\033[0m\n"
-                        f"\033[1;31m{BORDER_BOT}\033[0m\n"
-                        "```"
+                        f"> This channel is automatically monitored 24/7 by our VPS watchdog engine.\n\n"
+                        f"**How it works:**\n"
+                        f"Whenever a patch, hotfix, or season update is deployed on **Black Ops 7** or **Warzone**, an instant security alert is posted here:\n\n"
+                        f"▸ 🔴 `PATCH DETECTED` ➔ Software injection paused immediately for safety\n"
+                        f"▸ 🟢 `PATCH VERIFIED` ➔ Offsets updated & confirmed 100% undetected\n\n"
+                        f"──────────────────────────────────────────\n"
+                        f"🔔 *Turn on channel notifications to stay informed on live security statuses.*"
                     ),
-                ).set_author(name="📡 CORE MARKET RADAR  ·  Game Updates").set_footer(
-                    text="CORE MARKET RADAR  •  Steam / Battle.net  •  Scan: every 10 min"
-                ),
+                    color=COLOR_ALERT,
+                ).set_footer(text="CORE MARKET RADAR • Steam / Battle.net Scanner • Scanned Every 10 Min"),
                 "key": "channel_patches",
             },
             {
                 "name": "📡・server-status",
                 "topic": "Live server uptime & outage monitoring for Activision and Riot Games.",
                 "embed": discord.Embed(
-                    color=ACCENT_GREEN,
+                    title="📡  Official Game Server Health",
                     description=(
-                        "```ansi\n"
-                        f"\033[1;32m{BORDER_TOP}\033[0m\n"
-                        f"\033[1;32m│\033[0m  📡  \033[1;37mOFFICIAL GAME SERVER STATUS\033[0m\n"
-                        f"\033[1;32m{BORDER_MID}\033[0m\n"
-                        f"\033[1;32m│\033[0m  \033[0;37mOur bot monitors\033[0m \033[1;33mActivision\033[0m\n"
-                        f"\033[1;32m│\033[0m  \033[0;37mand\033[0m \033[1;33mRiot Games\033[0m \033[0;37mservers every\033[0m \033[1;37m5 minutes.\033[0m\n"
-                        f"\033[1;32m│\033[0m\n"
-                        f"\033[1;32m{BORDER_MID}\033[0m\n"
-                        f"\033[1;32m│\033[0m  🔴  \033[1;37mSERVERS OFFLINE\033[0m →  Instant alert\n"
-                        f"\033[1;32m│\033[0m  🟢  \033[1;37mBACK ONLINE\033[0m     →  Auto recovery notification\n"
-                        f"\033[1;32m{BORDER_MID}\033[0m\n"
-                        f"\033[1;32m│\033[0m  \033[0;37mIf an outage occurs:\033[0m\n"
-                        f"\033[1;32m│\033[0m  \033[1;32mit is on Activision's side, not your PC.\033[0m\n"
-                        f"\033[1;32m{BORDER_BOT}\033[0m\n"
-                        "```"
+                        f"> Continuous 24/7 uptime surveillance for official **Activision** and **Riot Games** infrastructure.\n\n"
+                        f"**Monitoring Protocol:**\n"
+                        f"▸ 🔴 `SERVERS DOWN` ➔ Immediate notification when official matchmaking fails\n"
+                        f"▸ 🟢 `BACK ONLINE` ➔ Instant confirmation once servers recover\n\n"
+                        f"──────────────────────────────────────────\n"
+                        f"ℹ️ *If an outage is announced here, it is on the game publisher's side — not your PC.*"
                     ),
-                ).set_author(name="📡 CORE MARKET RADAR  ·  Server Watchdog").set_footer(
-                    text="CORE MARKET RADAR  •  Activision & Riot  •  Scan: every 5 min"
-                ),
+                    color=COLOR_ONLINE,
+                ).set_footer(text="CORE MARKET RADAR • Activision & Riot Live API • Scanned Every 5 Min"),
                 "key": "channel_status",
             },
             {
                 "name": "⚡・double-xp",
                 "topic": "Double XP weekends and special event alerts for Call of Duty & Valorant.",
                 "embed": discord.Embed(
-                    color=ACCENT_GOLD,
+                    title="⚡  Double XP & Limited-Time Events",
                     description=(
-                        "```ansi\n"
-                        f"\033[1;33m{BORDER_TOP}\033[0m\n"
-                        f"\033[1;33m│\033[0m  ⚡  \033[1;37mDOUBLE XP & SPECIAL EVENTS\033[0m\n"
-                        f"\033[1;33m{BORDER_MID}\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[0;37mEvery double XP weekend and limited-time event\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[0;37mfor Call of Duty or Valorant is broadcasted here\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[1;37mautomatically.\033[0m\n"
-                        f"\033[1;33m│\033[0m\n"
-                        f"\033[1;33m{BORDER_MID}\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[0;37mWhy this matters:\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[1;33m2x XP + our profiles\033[0m \033[0;37m= maximum rank & camo\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[1;37mprogression in minimum time.\033[0m\n"
-                        f"\033[1;33m{BORDER_MID}\033[0m\n"
-                        f"\033[1;33m│\033[0m  \033[0;37mClaim Free 1H Trial:\033[0m \033[1;32m#🎁・free-trial\033[0m\n"
-                        f"\033[1;33m{BORDER_BOT}\033[0m\n"
-                        "```"
+                        f"> Never miss a progression boost. All official Double XP events are announced here automatically.\n\n"
+                        f"**Why Stack Double XP with Core Market:**\n"
+                        f"▸ **2X Progression Rate :** Maximize weapon levels and military rank in minimal time\n"
+                        f"▸ **Free 1H Trial :** Test our zero-recoil & ESP profiles in <#1345864197779361875>\n\n"
+                        f"──────────────────────────────────────────\n"
+                        f"🎯 *Active notification ping enabled for all official double XP weekends.*"
                     ),
-                ).set_author(name="⚡ CORE MARKET RADAR  ·  Double XP Alerts").set_footer(
-                    text="CORE MARKET RADAR  •  Never miss a Double XP weekend"
-                ),
+                    color=COLOR_WARNING,
+                ).set_footer(text="CORE MARKET RADAR • Double XP Tracker"),
                 "key": "channel_doublexp",
             },
             {
                 "name": "🎁・free-games",
                 "topic": "Automatic sniper for free games on Epic Games Store & Steam giveaways.",
                 "embed": discord.Embed(
-                    color=ACCENT_PURPLE,
+                    title="🎁  Free Games & Loot Sniper",
                     description=(
-                        "```ansi\n"
-                        f"\033[1;35m{BORDER_TOP}\033[0m\n"
-                        f"\033[1;35m│\033[0m  🎁  \033[1;37mFREE GAMES SNIPER\033[0m\n"
-                        f"\033[1;35m{BORDER_MID}\033[0m\n"
-                        f"\033[1;35m│\033[0m  \033[0;37mOur bot scans the\033[0m \033[1;33mEpic Games Store\033[0m\n"
-                        f"\033[1;35m│\033[0m  \033[0;37mand Steam promos every hour.\033[0m\n"
-                        f"\033[1;35m│\033[0m\n"
-                        f"\033[1;35m│\033[0m  \033[0;37mWhenever a paid game drops to\033[0m \033[1;32m$0.00 FREE\033[0m\033[0;37m,\033[0m\n"
-                        f"\033[1;35m│\033[0m  \033[0;37man alert is posted here with direct claim link.\033[0m\n"
-                        f"\033[1;35m│\033[0m\n"
-                        f"\033[1;35m{BORDER_MID}\033[0m\n"
-                        f"\033[1;35m│\033[0m  \033[0;37mTurn on notifications to claim games before deals expire.\033[0m\n"
-                        f"\033[1;35m{BORDER_BOT}\033[0m\n"
-                        "```"
+                        f"> Our automated scanner monitors the **Epic Games Store** and **Steam** 24/7.\n\n"
+                        f"**Automated Deals:**\n"
+                        f"Whenever a paid game or DLC drops to **`$0.00 FREE`**, an instant alert with direct claim link is delivered here.\n\n"
+                        f"──────────────────────────────────────────\n"
+                        f"⏰ *Enable notifications to claim free games before limited-time promotions expire.*"
                     ),
-                ).set_author(name="🎁 CORE MARKET RADAR  ·  Free Games Sniper").set_footer(
-                    text="CORE MARKET RADAR  •  Epic Games & Steam  •  Scan: every hour"
-                ),
+                    color=COLOR_SPECIAL,
+                ).set_footer(text="CORE MARKET RADAR • Epic Games & Steam Scanner • Scanned Hourly"),
                 "key": "channel_freegames",
             },
             {
                 "name": "🛍️・daily-shop",
                 "topic": "Daily Call of Duty store rotation — fresh bundles every evening.",
                 "embed": discord.Embed(
-                    color=ACCENT_CYAN,
+                    title="🛍️  Daily Call of Duty Store Rotation",
                     description=(
-                        "```ansi\n"
-                        f"\033[1;36m{BORDER_TOP}\033[0m\n"
-                        f"\033[1;36m│\033[0m  🛍️  \033[1;37mDAILY CALL OF DUTY STORE\033[0m\n"
-                        f"\033[1;36m{BORDER_MID}\033[0m\n"
-                        f"\033[1;36m│\033[0m  \033[0;37mEvery evening at\033[0m \033[1;33m19:00 UTC\033[0m\033[0;37m,\033[0m\n"
-                        f"\033[1;36m│\033[0m  \033[0;37mour bot broadcasts the daily CoD store\033[0m\n"
-                        f"\033[1;36m│\033[0m  \033[0;37mrotation with direct bundle links.\033[0m\n"
-                        f"\033[1;36m│\033[0m\n"
-                        f"\033[1;36m{BORDER_MID}\033[0m\n"
-                        f"\033[1;36m│\033[0m  \033[0;37mPro Tip:\033[0m \033[1;37mWeapon blueprints look\033[0m \033[1;32m2x better\033[0m\n"
-                        f"\033[1;36m│\033[0m  \033[1;37mwith our smooth tracking & zero-recoil profiles.\033[0m\n"
-                        f"\033[1;36m{BORDER_MID}\033[0m\n"
-                        f"\033[1;36m│\033[0m  \033[0;37mClaim Free 1H Trial:\033[0m \033[1;32m#🎁・free-trial\033[0m\n"
-                        f"\033[1;36m{BORDER_BOT}\033[0m\n"
-                        "```"
+                        f"> Daily broadcast of the newest weapon blueprints, operator skins, and featured bundles.\n\n"
+                        f"▸ **Daily Refresh :** Every evening at `19:00 UTC`\n"
+                        f"▸ **Official Catalog :** [Browse CoD Store](https://callofduty.com/store)\n"
+                        f"▸ **Free 1H Trial :** Claim your key in <#1345864197779361875>\n\n"
+                        f"──────────────────────────────────────────\n"
+                        f"✨ *Check back daily to preview the latest cosmetics rotation.*"
                     ),
-                ).set_author(name="🛍️ CORE MARKET  ·  Daily CoD Store").set_footer(
-                    text="CORE MARKET  •  Daily Rotation  •  Updated every day at 19:00 UTC"
-                ),
+                    color=COLOR_PRIMARY,
+                ).set_footer(text="CORE MARKET RADAR • Daily CoD Store Rotation"),
                 "key": "channel_shop",
             },
         ]
 
-        created = []
         for cfg in channels_config:
             ch = discord.utils.get(guild.text_channels, name=cfg["name"])
             if not ch:
@@ -679,7 +645,6 @@ class Watchdog(commands.Cog):
                     reason="CORE MARKET Radar setup",
                 )
                 await ch.send(embed=cfg["embed"])
-                created.append(cfg["name"])
             else:
                 await ch.send(embed=cfg["embed"])
 
@@ -687,24 +652,18 @@ class Watchdog(commands.Cog):
 
         self._save()
 
-        e = discord.Embed(color=ACCENT_GREEN)
-        e.set_author(name="✅ CORE MARKET RADAR  ·  Setup Complete")
-        e.description = (
-            "```ansi\n"
-            f"\033[1;32m{BORDER_TOP}\033[0m\n"
-            f"\033[1;32m│\033[0m  ✅  \033[1;37mALL RADAR CHANNELS INITIALIZED\033[0m\n"
-            f"\033[1;32m{BORDER_MID}\033[0m\n"
-            + "".join(
-                f"\033[1;32m│\033[0m  \033[1;32m✓\033[0m  {n}\n"
-                for n in [c["name"] for c in channels_config]
-            )
-            + f"\033[1;32m{BORDER_MID}\033[0m\n"
-            f"\033[1;32m│\033[0m  \033[0;37mAll 24/7 background watchdogs\033[0m\n"
-            f"\033[1;32m│\033[0m  \033[1;37mare now routing to these channels.\033[0m\n"
-            f"\033[1;32m{BORDER_BOT}\033[0m\n"
-            "```"
+        e = discord.Embed(
+            title="✅  Radar Channels Initialized",
+            description=(
+                f"> All 5 dedicated radar channels have been configured and linked to background watchdogs.\n\n"
+                + "".join(f"▸ 🟢 `#{c['name']}`\n" for c in channels_config) +
+                f"\n──────────────────────────────────────────\n"
+                f"🛡️ *All background watchdogs on VPS are now routing alerts to their dedicated channels.*"
+            ),
+            color=COLOR_ONLINE,
+            timestamp=discord.utils.utcnow(),
         )
-        e.set_footer(text="CORE MARKET RADAR  •  24/7 Background Automation Active")
+        e.set_footer(text="CORE MARKET RADAR • Setup Verified")
         await interaction.followup.send(embed=e, ephemeral=True)
 
 

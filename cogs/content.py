@@ -1,7 +1,7 @@
 """
 Content Engine Cog — /render_clip Discord command.
 Sends a gameplay video to the VPS FFmpeg pipeline and returns
-ready-to-post TikTok/Shorts clips directly in Discord (100% English).
+ready-to-post TikTok/Shorts clips directly in Discord with sleek modern embeds.
 """
 
 import asyncio
@@ -23,108 +23,95 @@ log = logging.getLogger("ticketbot.content")
 STUDIO_URL = os.getenv("STUDIO_URL", "http://127.0.0.1:5050")
 
 # ─────────────────────────────────────────────────────────────
-#  EMBED DESIGN SYSTEM  —  Premium Cyberpunk / Terminal Aesthetics
+#  DESIGN SYSTEM — Sleek, Minimal, Modern Tech Embeds
 # ─────────────────────────────────────────────────────────────
 
-BLOCK_TOP    = "╔══════════════════════════════════════╗"
-BLOCK_MID    = "╠══════════════════════════════════════╣"
-BLOCK_BOT    = "╚══════════════════════════════════════╝"
-
-ACCENT_GOLD  = 0xFFD700
-ACCENT_CYAN  = 0x00E5FF
-ACCENT_GREEN = 0x00FF88
-ACCENT_RED   = 0xFF3B3B
+COLOR_PRIMARY = 0x0070FF  # Electric Blue
+COLOR_SUCCESS = 0x10B981  # Emerald Green
+COLOR_ALERT   = 0xE11D48  # Crimson Red
+COLOR_WARNING = 0xF59E0B  # Amber Gold
 
 
-def _ansi(text: str) -> str:
-    return f"```ansi\n{text}\n```"
-
-
-def render_progress_bar(percent: int, width: int = 20) -> str:
+def render_progress_bar(percent: int, width: int = 16) -> str:
     filled = int(width * percent / 100)
     bar = "█" * filled + "░" * (width - filled)
-    return f"[{bar}] {percent}%"
+    return f"`[{bar}]` **{percent}%**"
 
 
 def embed_render_started(task_id: str, filename: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_CYAN)
-    e.set_author(name="⚡ CORE STUDIO  ·  Content Engine")
-    e.description = (
-        _ansi(
-            f"\033[1;36m{BLOCK_TOP}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[1;37m🎬  RENDERING PIPELINE STARTED\033[0m           \033[1;36m│\033[0m\n"
-            f"\033[1;36m{BLOCK_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mFile :\033[0m  \033[1;33m{filename[:32]}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mTask :\033[0m  \033[1;35m{task_id}\033[0m\n"
-            f"\033[1;36m│\033[0m  \033[0;37mMode :\033[0m  \033[1;32mAuto-Clip 9:16 Vertical\033[0m\n"
-            f"\033[1;36m{BLOCK_MID}\033[0m\n"
-            f"\033[1;36m│\033[0m  {render_progress_bar(15)}\033[0m\n"
-            f"\033[1;36m{BLOCK_BOT}\033[0m"
-        )
+    e = discord.Embed(
+        title="🎬  Rendering Pipeline Started",
+        description=(
+            f"> Your gameplay video is being processed by the VPS video studio engine.\n\n"
+            f"▸ **Source File :** `{filename}`\n"
+            f"▸ **Task Identifier :** `{task_id}`\n"
+            f"▸ **Output Format :** `9:16 Vertical (1080x1920) for TikTok/Shorts`\n"
+            f"▸ **Current Progress :** {render_progress_bar(15)}\n\n"
+            f"──────────────────────────────────────────\n"
+            f"⚙️ *Intelligent action detection & multi-clip rendering in progress on VPS…*"
+        ),
+        color=COLOR_PRIMARY,
+        timestamp=discord.utils.utcnow(),
     )
-    e.set_footer(text="CORE STUDIO  •  VPS FFmpeg Pipeline  •  Processing in background…")
+    e.set_footer(text="CORE STUDIO • FFmpeg NVENC/CPU Pipeline")
     return e
 
 
 def embed_render_done(clips: list[dict], task_id: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_GREEN)
-    e.set_author(name="✅ CORE STUDIO  ·  Clips Ready to Post")
-
-    clips_block = ""
+    clips_list = ""
     for i, c in enumerate(clips[:5], 1):
-        title = c.get("title", f"Clip #{i}")[:30]
         meta = c.get("meta", {})
-        hook = meta.get("title", "—")[:32]
-        time_slot = meta.get("optimal_time", "—")[:28]
-        clips_block += (
-            f"\033[1;33m  ◈ Clip #{i}\033[0m  \033[0;37m{title}\033[0m\n"
-            f"\033[0;37m    Hook   :\033[0m  \033[1;37m{hook}\033[0m\n"
-            f"\033[0;37m    Post   :\033[0m  \033[1;32m{time_slot}\033[0m\n"
-        )
+        title = meta.get("title", f"Action Highlight #{i}")[:45]
+        time_slot = meta.get("optimal_time", "Evening Prime (18:30 - 21:30)")
+        clips_list += f"▸ **Clip #{i} :** `{title}`\n  *Best upload window:* `{time_slot}`\n\n"
 
-    e.description = (
-        _ansi(
-            f"\033[1;32m{BLOCK_TOP}\033[0m\n"
-            f"\033[1;32m│\033[0m  \033[1;37m🎯  {len(clips)} CLIP(S) SUCCESSFULLY GENERATED\033[0m\n"
-            f"\033[1;32m{BLOCK_MID}\033[0m\n"
-            f"{clips_block}"
-            f"\033[1;32m{BLOCK_MID}\033[0m\n"
-            f"\033[1;32m│\033[0m  \033[0;37mTask ID :\033[0m  \033[1;35m{task_id}\033[0m\n"
-            f"\033[1;32m│\033[0m  {render_progress_bar(100)}\033[0m\n"
-            f"\033[1;32m{BLOCK_BOT}\033[0m"
-        )
+    e = discord.Embed(
+        title=f"✅  {len(clips)} Short(s) Ready to Post",
+        description=(
+            f"> High-intensity action clips have been successfully cropped, formatted, and rendered.\n\n"
+            f"{clips_list}"
+            f"──────────────────────────────────────────\n"
+            f"📥 *All `.mp4` video files and copy-paste social metadata are attached below.*"
+        ),
+        color=COLOR_SUCCESS,
+        timestamp=discord.utils.utcnow(),
     )
-    e.set_footer(text="CORE STUDIO  •  Download your files below  •  Best upload window: 18:30 - 21:30")
+    e.set_footer(text="CORE STUDIO • Processing Complete")
     return e
 
 
 def embed_render_error(error: str) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_RED)
-    e.set_author(name="✗ CORE STUDIO  ·  Rendering Error")
-    e.description = (
-        _ansi(
-            f"\033[1;31m{BLOCK_TOP}\033[0m\n"
-            f"\033[1;31m│\033[0m  \033[1;37m⛔  PIPELINE ERROR\033[0m\n"
-            f"\033[1;31m{BLOCK_MID}\033[0m\n"
-            f"\033[1;31m│\033[0m  \033[0;37m{error[:60]}\033[0m\n"
-            f"\033[1;31m{BLOCK_BOT}\033[0m"
-        )
+    e = discord.Embed(
+        title="⛔  Pipeline Rendering Error",
+        description=(
+            f"> An unexpected error occurred while processing the video.\n\n"
+            f"▸ **Error Detail :** `{error[:120]}`\n\n"
+            f"──────────────────────────────────────────\n"
+            f"ℹ️ *Please ensure the file is a valid video format (MP4, MKV, MOV) under 500 MB.*"
+        ),
+        color=COLOR_ALERT,
+        timestamp=discord.utils.utcnow(),
     )
-    e.set_footer(text="CORE STUDIO  •  Check your video format (MP4, MKV, MOV)")
+    e.set_footer(text="CORE STUDIO • Error Logged")
     return e
 
 
 def embed_metadata_card(meta: dict, clip_num: int) -> discord.Embed:
-    e = discord.Embed(color=ACCENT_GOLD)
-    e.title = f"📋  Clip #{clip_num} — Social Media Metadata"
-    e.description = (
-        _ansi(
-            f"\033[1;33m  Title  :\033[0m  {meta.get('title','—')[:50]}\n"
-            f"\033[1;33m  Tags   :\033[0m  {meta.get('hashtags_string','')[:60]}\n"
-            f"\033[1;33m  Pinned :\033[0m  {meta.get('pinned_comment','')[:60]}\n"
-            f"\033[1;33m  Post   :\033[0m  \033[1;32m{meta.get('optimal_time','—')}\033[0m"
-        )
+    e = discord.Embed(
+        title=f"📋  Clip #{clip_num} — Social Copy & Strategy",
+        description=(
+            f"**Recommended Title / Hook**\n"
+            f"```{meta.get('title', 'Dominating every lobby with this setup ⚡')}```\n"
+            f"**Hashtags to Copy**\n"
+            f"```{meta.get('hashtags_string', '#BO7 #Warzone #Gaming #FYP')}```\n"
+            f"**Pinned Comment (Anti-Shadowban)**\n"
+            f"```{meta.get('pinned_comment', '🎁 Free 1H Trial in bio link!')}```\n"
+            f"▸ **Recommended Posting Slot :** `{meta.get('optimal_time', '18:30 - 21:30')}`\n"
+            f"▸ **Strategy :** *{meta.get('strategy_tip', 'Maximum evening gaming audience retention.')}*"
+        ),
+        color=COLOR_WARNING,
     )
+    e.set_footer(text="CORE STUDIO • Ready to Publish on TikTok / Shorts / Reels")
     return e
 
 
@@ -132,7 +119,7 @@ def embed_metadata_card(meta: dict, clip_num: int) -> discord.Embed:
 #  STUDIO API HELPERS
 # ─────────────────────────────────────────────────────────────
 
-async def _submit_render(video_bytes: bytes, filename: str, num_clips: int = 5) -> dict[str, Any]:
+async def _submit_render(video_bytes: bytes, filename: str, num_clips: int = 3) -> dict[str, Any]:
     form = aiohttp.FormData()
     form.add_field("file", video_bytes, filename=filename, content_type="video/mp4")
     form.add_field("mode", "multi_shorts")
@@ -198,7 +185,6 @@ class ContentEngine(commands.Cog):
         nb_clips = max(1, min(10, nb_clips))
         filename = video.filename
 
-        # Guard: file size (500 MB max)
         if video.size > 500 * 1024 * 1024:
             await interaction.followup.send(
                 embed=embed_render_error("File too large — maximum 500 MB per upload."),
@@ -207,18 +193,16 @@ class ContentEngine(commands.Cog):
             return
 
         await interaction.followup.send(
-            embed=embed_render_started("pending…", filename),
+            embed=embed_render_started("initialization…", filename),
             ephemeral=True,
         )
 
-        # Download attachment from Discord CDN
         try:
             video_bytes = await video.read()
         except Exception as exc:
             await interaction.edit_original_response(embed=embed_render_error(str(exc)))
             return
 
-        # Submit to Studio API
         try:
             result = await _submit_render(video_bytes, filename, nb_clips)
         except Exception as exc:
@@ -232,7 +216,6 @@ class ContentEngine(commands.Cog):
         task_id = result["task_id"]
         await interaction.edit_original_response(embed=embed_render_started(task_id, filename))
 
-        # Poll until done
         task = await _poll_task(task_id)
 
         if task.get("status") == "error":
@@ -242,7 +225,6 @@ class ContentEngine(commands.Cog):
         clips = task.get("clips", [])
         await interaction.edit_original_response(embed=embed_render_done(clips, task_id))
 
-        # Deliver clips as Discord file attachments
         for i, clip in enumerate(clips[:5], 1):
             clip_filename = clip.get("filename")
             meta = clip.get("meta", {})
@@ -274,27 +256,31 @@ class ContentEngine(commands.Cog):
                     data = await r.json()
 
             nvenc = data.get("nvenc_gpu_active", False)
-            gpu = data.get("gpu_name", "CPU")
-            status_line = "\033[1;32mONLINE ✓\033[0m" if nvenc else "\033[1;33mCPU Mode (Fast)\033[0m"
+            gpu = data.get("gpu_name", "CPU Fallback")
 
-            e = discord.Embed(color=ACCENT_GREEN if nvenc else ACCENT_GOLD)
-            e.set_author(name="🖥️  CORE STUDIO — Pipeline Status")
-            e.description = (
-                "```ansi\n"
-                f"\033[1;36m╔══════════════════════════════════════╗\033[0m\n"
-                f"\033[1;36m│\033[0m  \033[1;37mSTUDIO VPS PIPELINE\033[0m\n"
-                f"\033[1;36m╠══════════════════════════════════════╣\033[0m\n"
-                f"\033[1;36m│\033[0m  Status  :  {status_line}\n"
-                f"\033[1;36m│\033[0m  Encoder :  \033[1;33m{gpu}\033[0m\n"
-                f"\033[1;36m│\033[0m  URL     :  \033[1;35m{STUDIO_URL}\033[0m\n"
-                f"\033[1;36m╚══════════════════════════════════════╝\033[0m\n"
-                "```"
+            e = discord.Embed(
+                title="🖥️  CORE STUDIO — Video Pipeline Health",
+                description=(
+                    f"> Real-time state of the video processing engine running on the VPS.\n\n"
+                    f"▸ **Engine Status :** 🟢 `ONLINE`\n"
+                    f"▸ **Hardware Acceleration :** `{gpu}`\n"
+                    f"▸ **Service Endpoint :** `{STUDIO_URL}`\n"
+                    f"▸ **Target Resolution :** `1080x1920 (9:16 Vertical)`\n\n"
+                    f"──────────────────────────────────────────\n"
+                    f"⚡ *Ready to process gameplay uploads via `/render_clip`.*"
+                ),
+                color=COLOR_SUCCESS if nvenc else COLOR_PRIMARY,
+                timestamp=discord.utils.utcnow(),
             )
+            e.set_footer(text="CORE STUDIO • VPS Microservice")
             await interaction.followup.send(embed=e, ephemeral=True)
 
         except Exception:
-            e = discord.Embed(color=ACCENT_RED)
-            e.description = "```ansi\n\033[1;31m✗ CORE STUDIO OFFLINE — VPS unreachable\033[0m\n```"
+            e = discord.Embed(
+                title="🔴  CORE STUDIO — Service Offline",
+                description="> The studio microservice on the VPS is currently unreachable.",
+                color=COLOR_ALERT,
+            )
             await interaction.followup.send(embed=e, ephemeral=True)
 
 
