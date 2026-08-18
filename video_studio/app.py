@@ -97,6 +97,7 @@ async def run_generation_background(
     sub_style: str,
     top_banner: str,
     bottom_cta: str,
+    layout_style: str = "zoom",
 ) -> None:
     task = TASKS[task_id]
     try:
@@ -189,6 +190,7 @@ async def run_generation_background(
                     subtitles_ass_path=subtitles_ass if idx == 0 else None,
                     watermark_top=top_banner,
                     watermark_bottom=bottom_cta,
+                    layout_style=layout_style,
                 )
 
                 if success and os.path.exists(out_filepath):
@@ -222,6 +224,7 @@ async def run_generation_background(
                 subtitles_ass_path=subtitles_ass,
                 watermark_top=top_banner,
                 watermark_bottom=bottom_cta,
+                layout_style=layout_style,
             )
 
             if success and os.path.exists(out_filepath):
@@ -265,8 +268,8 @@ async def generate_handler(request: web.Request) -> web.Response:
     script = ""
     voice_key = "en_gamer_christopher"
     sub_style = "hormozi_yellow"
-    top_banner = "⚡ CORE MARKET • 1H FREE TRIAL"
-    bottom_cta = "👉 LINK IN BIO • DISCORD.GG/NPXP9UK9JG"
+    top_banner = "POV: You finally found the zero-recoil config 😳"
+    bottom_cta = "⚡ 1-Hour FREE Trial : Link in Bio"
 
     while True:
         part = await reader.next()

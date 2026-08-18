@@ -195,22 +195,20 @@ def build_9_16_vertical_short(
     duration: float = 30.0,
     audio_path: str | None = None,
     subtitles_ass_path: str | None = None,
-    watermark_top: str = "⚡ CORE MARKET • 1H FREE TRIAL",
-    watermark_bottom: str = "👉 LINK IN BIO • DISCORD.GG/NPXP9UK9JG",
+    watermark_top: str = "POV: You finally found the zero-recoil config 😳",
+    watermark_bottom: str = "⚡ 1-Hour FREE Trial : Link in Bio",
+    layout_style: str = "zoom",
 ) -> bool:
     """
     Renders a dynamic 9:16 vertical Short (1080x1920) with:
-    - Background: 1080x1920 heavily blurred & darkened for depth (downscale-optimized for 8x speed)
-    - Foreground: 1080px wide centered crisp gameplay
+    - Full-Screen Crosshair Crop: crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920
+    - Top Hook Banner (y=180): High-engagement dark contrasting box
+    - Bottom CTA Badge (y=1450): Yellow high-contrast conversion badge outside TikTok dead zones
     - Subtitles: Hormozi animated ASS burned in
-    - High quality, lightweight bitrate (< 8MB per 30s) for Discord & social media compliance
     """
-    # Optimized background blur: scale down to 270x480 -> blur -> scale up to 1080x1920 (instant speed)
+    # 1. Full-Screen 9:16 Crosshair Crop (No letterboxing/blur)
     filter_complex_parts = [
-        "[0:v]split=2[v_bg][v_fg];"
-        "[v_bg]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=6:1,scale=1080:1920:flags=bilinear,eq=brightness=-0.15[bg_blur];"
-        "[v_fg]scale=1080:-2[fg_scaled];"
-        "[bg_blur][fg_scaled]overlay=(W-w)/2:(H-h)/2[base_comp]"
+        "[0:v]crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920[base_comp]"
     ]
 
     current_tag = "base_comp"
@@ -221,19 +219,19 @@ def build_9_16_vertical_short(
         filter_complex_parts.append(f"[{current_tag}]ass='{escaped_ass}'[with_subs]")
         current_tag = "with_subs"
 
-    # Add stylish top banner text
+    # 2. Top Banner Hook (y=180)
     if watermark_top:
         escaped_top = watermark_top.replace(":", "\\:").replace("'", "")
         filter_complex_parts.append(
-            f"[{current_tag}]drawtext=text='{escaped_top}':fontcolor=white:fontsize=36:x=(w-text_w)/2:y=120:box=1:boxcolor=black@0.7:boxborderw=14[with_top]"
+            f"[{current_tag}]drawtext=text='{escaped_top}':fontcolor=white:fontsize=36:x=(w-text_w)/2:y=180:box=1:boxcolor=black@0.75:boxborderw=16[with_top]"
         )
         current_tag = "with_top"
 
-    # Add bottom CTA banner text
+    # 3. Bottom CTA Badge (y=1450 — above TikTok bottom bar)
     if watermark_bottom:
         escaped_bottom = watermark_bottom.replace(":", "\\:").replace("'", "")
         filter_complex_parts.append(
-            f"[{current_tag}]drawtext=text='{escaped_bottom}':fontcolor=#00e5ff:fontsize=32:x=(w-text_w)/2:y=h-160:box=1:boxcolor=black@0.75:boxborderw=12[final_v]"
+            f"[{current_tag}]drawtext=text='{escaped_bottom}':fontcolor=black:fontsize=34:x=(w-text_w)/2:y=1450:box=1:boxcolor=yellow@0.92:boxborderw=14[final_v]"
         )
         current_tag = "final_v"
 

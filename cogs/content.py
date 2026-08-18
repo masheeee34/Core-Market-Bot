@@ -126,18 +126,33 @@ def embed_metadata_card(meta: dict, clip_num: int) -> discord.Embed:
 #  STUDIO API HELPERS
 # ─────────────────────────────────────────────────────────────
 
-async def _submit_render(video_bytes: bytes, filename: str, num_clips: int = 3) -> dict[str, Any]:
+async def _submit_render(
+    video_bytes: bytes | None = None,
+    filename: str | None = None,
+    yt_url: str | None = None,
+    num_clips: int = 3,
+) -> dict[str, Any]:
     form = aiohttp.FormData()
-    form.add_field("file", video_bytes, filename=filename, content_type="video/mp4")
+    if video_bytes and filename:
+        form.add_field("file", video_bytes, filename=filename, content_type="video/mp4")
+    if yt_url:
+        form.add_field("youtube_url", yt_url)
     form.add_field("mode", "multi_shorts")
     form.add_field("num_clips", str(num_clips))
     form.add_field("clip_len", "30")
-    form.add_field("top_banner", "⚡ CORE MARKET • 1H FREE TRIAL")
-    form.add_field("bottom_cta", "👉 LINK IN BIO • DISCORD.GG/COREMARKET")
+    form.add_field("top_banner", "POV: You finally found the zero-recoil config 😳")
+    form.add_field("bottom_cta", "⚡ 1-Hour FREE Trial : Link in Bio")
 
     timeout = aiohttp.ClientTimeout(total=180)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.post(f"{STUDIO_URL}/api/generate", data=form) as r:
+            if r.status != 200:
+                text = await r.text()
+                try:
+                    err_json = json.loads(text)
+                    return {"success": False, "error": err_json.get("error", text)}
+                except Exception:
+                    return {"success": False, "error": f"HTTP {r.status}: {text[:120]}"}
             return await r.json()
 
 
@@ -176,7 +191,7 @@ async def _poll_task_live(
 
             await asyncio.sleep(2.5)
 
-    return {"status": "error", "error": "Timeout — rendering took too long."}
+    return {"status": "error", "error": "Timeout — rendering took longer than expected."}
 
 
 async def _download_clip(filename: str) -> bytes | None:
@@ -201,18 +216,20 @@ class ContentEngine(commands.Cog):
 
     @app_commands.command(
         name="render_clip",
-        description="🎬 Upload raw gameplay → VPS generates vertical 9:16 Shorts ready for TikTok/YouTube",
+        description="🎬 Upload raw gameplay or YouTube URL → VPS generates 9:16 Shorts ready for TikTok/YT",
     )
     @app_commands.describe(
         video="Raw gameplay video file (MP4, MKV, MOV — max 500 MB)",
-        nb_clips="Number of clips to generate (1 to 10, default: 3)",
+        youtube_url="Optional YouTube gameplay URL to extract clips from",
+        nb_clips="Number of clips to generate (1 to 5, default: 3)",
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.guild_only()
     async def render_clip(
         self,
         interaction: discord.Interaction,
-        video: discord.Attachment,
+        video: discord.Attachment | None = None,
+        youtube_url: str | None = None,
         nb_clips: int = 3,
     ) -> None:
         # Immediate defer to avoid Discord 3s timeout
@@ -221,48 +238,73 @@ class ContentEngine(commands.Cog):
         except Exception:
             pass
 
-        nb_clips = max(1, min(10, nb_clips))
-        filename = video.filename
-
-        if video.size > 500 * 1024 * 1024:
-            await interaction.followup.send(
-                embed=embed_render_error("File too large — maximum 500 MB per upload."),
-                ephemeral=True,
+        if not video and not youtube_url:
+            await interaction.edit_original_response(
+                embed=embed_render_error("Please provide either a video file attachment OR a YouTube URL.")
             )
             return
 
-        await interaction.followup.send(
-            embed=embed_render_started("uploading…", filename, percent=10, message="Reading video file from Discord…"),
-            ephemeral=True,
+        nb_clips = max(1, min(5, nb_clips))
+        source_name = video.filename if video else (youtube_url or "YouTube Source")
+
+        await interaction.edit_original_response(
+            embed=embed_render_started("uploading…", source_name, percent=10, message="Preparing media stream for VPS Studio…")
         )
 
-        try:
-            video_bytes = await video.read()
-        except Exception as exc:
-            await interaction.edit_original_response(embed=embed_render_error(f"Failed to read file: {exc}"))
-            return
+        video_bytes = None
+        if video:
+            if video.size > 500 * 1024 * 1024:
+                await interaction.edit_original_response(
+                    embed=embed_render_error("File too large — maximum 500 MB per upload.")
+                )
+                return
+
+            try:
+                video_bytes = await video.read()
+            except Exception as exc:
+                await interaction.edit_original_response(
+                    embed=embed_render_error(f"Failed to read file from Discord: {exc}")
+                )
+                return
 
         try:
             await interaction.edit_original_response(
-                embed=embed_render_started("initializing…", filename, percent=20, message="Transferring video to VPS Studio engine…")
+                embed=embed_render_started("initializing…", source_name, percent=20, message="Transferring video to VPS Studio engine…")
             )
-            result = await _submit_render(video_bytes, filename, nb_clips)
+            result = await _submit_render(
+                video_bytes=video_bytes,
+                filename=video.filename if video else None,
+                yt_url=youtube_url,
+                num_clips=nb_clips,
+            )
         except Exception as exc:
-            await interaction.edit_original_response(embed=embed_render_error(f"Studio API unreachable: {exc}"))
+            await interaction.edit_original_response(
+                embed=embed_render_error(f"Studio API unreachable ({STUDIO_URL}): {exc}")
+            )
             return
 
         if not result.get("success"):
-            await interaction.edit_original_response(embed=embed_render_error(result.get("error", "Unknown error")))
+            await interaction.edit_original_response(
+                embed=embed_render_error(result.get("error", "Unknown error returned by Studio engine"))
+            )
             return
 
         task_id = result["task_id"]
-        task = await _poll_task_live(task_id, interaction, filename)
+        task = await _poll_task_live(task_id, interaction, source_name)
 
         if task.get("status") == "error":
-            await interaction.edit_original_response(embed=embed_render_error(task.get("error", "Unknown error")))
+            await interaction.edit_original_response(
+                embed=embed_render_error(task.get("error", "Unknown error occurred during rendering."))
+            )
             return
 
         clips = task.get("clips", [])
+        if not clips:
+            await interaction.edit_original_response(
+                embed=embed_render_error("No clips were generated. Check the video length or audio track.")
+            )
+            return
+
         await interaction.edit_original_response(embed=embed_render_done(clips, task_id))
 
         for i, clip in enumerate(clips[:5], 1):
@@ -276,11 +318,26 @@ class ContentEngine(commands.Cog):
                 continue
 
             file = discord.File(io.BytesIO(clip_bytes), filename=f"core_market_short_{i}.mp4")
-            await interaction.followup.send(
-                embed=embed_metadata_card(meta, i),
-                file=file,
-                ephemeral=True,
-            )
+            try:
+                await interaction.followup.send(
+                    embed=embed_metadata_card(meta, i),
+                    file=file,
+                    ephemeral=True,
+                )
+            except discord.HTTPException as err:
+                log.warning("Could not attach video file directly to Discord: %s", err)
+                # Graceful fallback with direct download link if attachment limits are hit
+                download_url = f"{STUDIO_URL}/output/{clip_filename}"
+                meta_embed = embed_metadata_card(meta, i)
+                meta_embed.add_field(
+                    name="📥 Direct Video Download",
+                    value=f"Discord upload limit reached. [**Click here to download clip #{i} (.mp4)**]({download_url})",
+                    inline=False,
+                )
+                await interaction.followup.send(
+                    embed=meta_embed,
+                    ephemeral=True,
+                )
 
     @app_commands.command(
         name="studio_status",
