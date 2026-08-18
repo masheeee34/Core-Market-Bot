@@ -282,6 +282,7 @@ async def generate_handler(request: web.Request) -> web.Response:
     hook_y = 180
     cta_y = 1360
     badge_style = "dark-neon"
+    layout_style = "zoom"
 
     while True:
         part = await reader.next()
@@ -349,6 +350,8 @@ async def generate_handler(request: web.Request) -> web.Response:
                     cta_y = 1360
             elif name == "badge_style":
                 badge_style = value
+            elif name == "layout_style":
+                layout_style = value
 
     if not yt_url and not local_video_path:
         return web.json_response({"success": False, "error": "Please provide a video file or YouTube URL."}, status=400)
