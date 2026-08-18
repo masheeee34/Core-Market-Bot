@@ -497,6 +497,245 @@ class Watchdog(commands.Cog):
         await self._broadcast(embed_double_xp(jeu, fin), "general")
         await interaction.followup.send(f"📢 Alerte Double XP **{jeu}** diffusée.", ephemeral=True)
 
+    # ─────────────────────────────────────────────────────────
+    #  /radar_setup — Crée tous les salons dédiés automatiquement
+    # ─────────────────────────────────────────────────────────
+
+    @app_commands.command(
+        name="radar_setup",
+        description="🛠️ Crée automatiquement tous les salons RADAR CORE MARKET avec leurs explications",
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def radar_setup(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer(ephemeral=True)
+        guild = interaction.guild
+
+        # ── 1. Créer (ou récupérer) la catégorie ──────────────
+        category_name = "📡 ─── CORE MARKET RADAR"
+        category = discord.utils.get(guild.categories, name=category_name)
+        if not category:
+            category = await guild.create_category(
+                name=category_name,
+                reason="CORE MARKET Radar setup",
+            )
+
+        # ── Définition des salons + leurs embeds d'explication ─
+        channels_config = [
+            {
+                "name": "🚨・alertes-patches",
+                "topic": "Alertes automatiques : patchs Steam BO7 & Warzone, mises à jour en temps réel.",
+                "embed": discord.Embed(
+                    color=ACCENT_ORANGE,
+                    description=(
+                        "```ansi\n"
+                        f"\033[1;31m{BORDER_TOP}\033[0m\n"
+                        f"\033[1;31m│\033[0m  🚨  \033[1;37mALERTES PATCHES & MISES À JOUR\033[0m\n"
+                        f"\033[1;31m{BORDER_MID}\033[0m\n"
+                        f"\033[1;31m│\033[0m  \033[0;37mCe salon est surveillé\033[0m \033[1;32m24h/24 et 7j/7\033[0m \033[0;37mpar le bot.\033[0m\n"
+                        f"\033[1;31m│\033[0m\n"
+                        f"\033[1;31m│\033[0m  \033[1;37mChaque fois qu'un patch est détecté sur\033[0m\n"
+                        f"\033[1;31m│\033[0m  \033[1;33mBlack Ops 7\033[0m \033[0;37mor\033[0m \033[1;33mWarzone\033[0m\033[0;37m, une alerte apparaît ici.\033[0m\n"
+                        f"\033[1;31m│\033[0m\n"
+                        f"\033[1;31m{BORDER_MID}\033[0m\n"
+                        f"\033[1;31m│\033[0m  🔴  \033[1;37mPATCH DÉTECTÉ\033[0m  →  Injection suspendue\n"
+                        f"\033[1;31m│\033[0m  🟢  \033[1;37mPATCH VÉRIFIÉ\033[0m  →  Retour en ligne\n"
+                        f"\033[1;31m{BORDER_MID}\033[0m\n"
+                        f"\033[1;31m│\033[0m  \033[0;37mActivez\033[0m \033[1;32m@Loot-Alerts\033[0m \033[0;37mpour être notifié.\033[0m\n"
+                        f"\033[1;31m{BORDER_BOT}\033[0m\n"
+                        "```"
+                    ),
+                ).set_author(name="📡 CORE MARKET RADAR  ·  Surveillance des Patchs").set_footer(
+                    text="CORE MARKET RADAR  •  Steam / Battle.net  •  Poll : toutes les 10 min"
+                ),
+                "key": "channel_patches",
+            },
+            {
+                "name": "📡・statut-serveurs",
+                "topic": "Statut en direct des serveurs Activision et Riot Games — pannes et retours en ligne.",
+                "embed": discord.Embed(
+                    color=ACCENT_GREEN,
+                    description=(
+                        "```ansi\n"
+                        f"\033[1;32m{BORDER_TOP}\033[0m\n"
+                        f"\033[1;32m│\033[0m  📡  \033[1;37mSTATUT DES SERVEURS OFFICIELS\033[0m\n"
+                        f"\033[1;32m{BORDER_MID}\033[0m\n"
+                        f"\033[1;32m│\033[0m  \033[0;37mLe bot surveille les serveurs\033[0m \033[1;33mActivision\033[0m\n"
+                        f"\033[1;32m│\033[0m  \033[0;37met\033[0m \033[1;33mRiot Games\033[0m \033[0;37mtoutes les\033[0m \033[1;37m5 minutes.\033[0m\n"
+                        f"\033[1;32m│\033[0m\n"
+                        f"\033[1;32m{BORDER_MID}\033[0m\n"
+                        f"\033[1;32m│\033[0m  🔴  \033[1;37mSERVEURS HS\033[0m     →  Alerte immédiate\n"
+                        f"\033[1;32m│\033[0m  🟢  \033[1;37mDE RETOUR EN LIGNE\033[0m →  Notification auto\n"
+                        f"\033[1;32m{BORDER_MID}\033[0m\n"
+                        f"\033[1;32m│\033[0m  \033[0;37mSi les serveurs sont down :\033[0m\n"
+                        f"\033[1;32m│\033[0m  \033[1;32mc'est Activision, pas votre config.\033[0m\n"
+                        f"\033[1;32m{BORDER_BOT}\033[0m\n"
+                        "```"
+                    ),
+                ).set_author(name="📡 CORE MARKET RADAR  ·  Serveurs en Direct").set_footer(
+                    text="CORE MARKET RADAR  •  Activision & Riot  •  Poll : toutes les 5 min"
+                ),
+                "key": "channel_status",
+            },
+            {
+                "name": "⚡・double-xp",
+                "topic": "Alertes Double XP & événements temporaires Call of Duty / Valorant.",
+                "embed": discord.Embed(
+                    color=ACCENT_GOLD,
+                    description=(
+                        "```ansi\n"
+                        f"\033[1;33m{BORDER_TOP}\033[0m\n"
+                        f"\033[1;33m│\033[0m  ⚡  \033[1;37mDOUBLE XP & ÉVÉNEMENTS SPÉCIAUX\033[0m\n"
+                        f"\033[1;33m{BORDER_MID}\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[0;37mChaque weekend double XP, chaque événement\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[0;37mspécial Call of Duty ou Valorant est annoncé\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[1;37mautomatiquement dans ce salon.\033[0m\n"
+                        f"\033[1;33m│\033[0m\n"
+                        f"\033[1;33m{BORDER_MID}\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[0;37mPourquoi c'est important :\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[1;33mx2 XP + nos profils\033[0m \033[0;37m= progression\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[1;37mmaxima en un minimum de games.\033[0m\n"
+                        f"\033[1;33m{BORDER_MID}\033[0m\n"
+                        f"\033[1;33m│\033[0m  \033[0;37mEssai 1H gratuit :\033[0m \033[1;32m#🎁・free-trial\033[0m\n"
+                        f"\033[1;33m{BORDER_BOT}\033[0m\n"
+                        "```"
+                    ),
+                ).set_author(name="⚡ CORE MARKET RADAR  ·  Événements & Double XP").set_footer(
+                    text="CORE MARKET RADAR  •  Ne ratez plus jamais un weekend Double XP"
+                ),
+                "key": "channel_doublexp",
+            },
+            {
+                "name": "🎁・jeux-gratuits",
+                "topic": "Sniper automatique des jeux gratuits Epic Games & promotions Steam.",
+                "embed": discord.Embed(
+                    color=ACCENT_PURPLE,
+                    description=(
+                        "```ansi\n"
+                        f"\033[1;35m{BORDER_TOP}\033[0m\n"
+                        f"\033[1;35m│\033[0m  🎁  \033[1;37mSNIPER DE JEUX GRATUITS\033[0m\n"
+                        f"\033[1;35m{BORDER_MID}\033[0m\n"
+                        f"\033[1;35m│\033[0m  \033[0;37mLe bot scrute\033[0m \033[1;33mEpic Games Store\033[0m\n"
+                        f"\033[1;35m│\033[0m  \033[0;37mtoutes les heures.\033[0m\n"
+                        f"\033[1;35m│\033[0m\n"
+                        f"\033[1;35m│\033[0m  \033[0;37mDès qu'un jeu passe à\033[0m \033[1;32m0€\033[0m\033[0;37m, une alerte\033[0m\n"
+                        f"\033[1;35m│\033[0m  \033[0;37mappraît ici avec le lien direct.\033[0m\n"
+                        f"\033[1;35m│\033[0m\n"
+                        f"\033[1;35m{BORDER_MID}\033[0m\n"
+                        f"\033[1;35m│\033[0m  \033[0;37mActivez les notifs sur ce salon\033[0m\n"
+                        f"\033[1;35m│\033[0m  \033[1;37mpour ne jamais rater une promo.\033[0m\n"
+                        f"\033[1;35m{BORDER_BOT}\033[0m\n"
+                        "```"
+                    ),
+                ).set_author(name="🎁 CORE MARKET RADAR  ·  Jeux Gratuits Epic & Steam").set_footer(
+                    text="CORE MARKET RADAR  •  Epic Games  •  Scan : toutes les heures"
+                ),
+                "key": "channel_freegames",
+            },
+            {
+                "name": "🛍️・boutique-du-jour",
+                "topic": "Rotation quotidienne de la boutique Call of Duty — nouveaux skins chaque soir.",
+                "embed": discord.Embed(
+                    color=ACCENT_CYAN,
+                    description=(
+                        "```ansi\n"
+                        f"\033[1;36m{BORDER_TOP}\033[0m\n"
+                        f"\033[1;36m│\033[0m  🛍️  \033[1;37mBOUTIQUE QUOTIDIENNE CALL OF DUTY\033[0m\n"
+                        f"\033[1;36m{BORDER_MID}\033[0m\n"
+                        f"\033[1;36m│\033[0m  \033[0;37mChaque soir à\033[0m \033[1;33m21h00 (heure de Paris)\033[0m\033[0;37m,\033[0m\n"
+                        f"\033[1;36m│\033[0m  \033[0;37mle bot poste la rotation de la boutique\033[0m\n"
+                        f"\033[1;36m│\033[0m  \033[0;37mCall of Duty du jour avec lien direct.\033[0m\n"
+                        f"\033[1;36m│\033[0m\n"
+                        f"\033[1;36m{BORDER_MID}\033[0m\n"
+                        f"\033[1;36m│\033[0m  \033[0;37mConseil :\033[0m \033[1;37mLes skins sont\033[0m \033[1;32m2x plus stylés\033[0m\n"
+                        f"\033[1;36m│\033[0m  \033[1;37mavec nos profils de mouvement actifs.\033[0m\n"
+                        f"\033[1;36m{BORDER_MID}\033[0m\n"
+                        f"\033[1;36m│\033[0m  \033[0;37mEssai gratuit 1H :\033[0m \033[1;32m#🎁・free-trial\033[0m\n"
+                        f"\033[1;36m{BORDER_BOT}\033[0m\n"
+                        "```"
+                    ),
+                ).set_author(name="🛍️ CORE MARKET  ·  Boutique du Jour").set_footer(
+                    text="CORE MARKET  •  Boutique CoD  •  Mise à jour quotidienne à 21h00"
+                ),
+                "key": "channel_shop",
+            },
+        ]
+
+        # ── 2. Créer les salons & poster les embeds ────────────
+        created = []
+        for cfg in channels_config:
+            ch = discord.utils.get(guild.text_channels, name=cfg["name"])
+            if not ch:
+                ch = await guild.create_text_channel(
+                    name=cfg["name"],
+                    category=category,
+                    topic=cfg["topic"],
+                    reason="CORE MARKET Radar setup",
+                )
+                # Post explanation embed only on fresh channels
+                await ch.send(embed=cfg["embed"])
+                created.append(cfg["name"])
+            else:
+                # Channel exists — refresh the embed anyway
+                await ch.send(embed=cfg["embed"])
+
+            # Save channel ID in state for precise targeting
+            self.state[cfg["key"]] = ch.id
+
+        self._save()
+
+        # ── 3. Réponse de confirmation ─────────────────────────
+        e = discord.Embed(color=ACCENT_GREEN)
+        e.set_author(name="✅ CORE MARKET RADAR  ·  Setup Terminé")
+        e.description = (
+            "```ansi\n"
+            f"\033[1;32m{BORDER_TOP}\033[0m\n"
+            f"\033[1;32m│\033[0m  ✅  \033[1;37mTOUS LES SALONS RADAR CRÉÉS\033[0m\n"
+            f"\033[1;32m{BORDER_MID}\033[0m\n"
+            + "".join(
+                f"\033[1;32m│\033[0m  \033[1;32m✓\033[0m  {n}\n"
+                for n in [c["name"] for c in channels_config]
+            )
+            + f"\033[1;32m{BORDER_MID}\033[0m\n"
+            f"\033[1;32m│\033[0m  \033[0;37mLes radars envoient désormais\033[0m\n"
+            f"\033[1;32m│\033[0m  \033[1;37mles alertes dans les bons salons.\033[0m\n"
+            f"\033[1;32m{BORDER_BOT}\033[0m\n"
+            "```"
+        )
+        e.set_footer(text="CORE MARKET RADAR  •  Surveillance 24h/24 active")
+        await interaction.followup.send(embed=e, ephemeral=True)
+
+    # ─────────────────────────────────────────────────────────
+    #  Override broadcast — utilise les salons dédiés si dispo
+    # ─────────────────────────────────────────────────────────
+
+    async def _send_to_channel_key(self, key: str, embed: discord.Embed) -> None:
+        """Sends to the dedicated channel saved by /radar_setup, fallback to generic resolve."""
+        ch_id = self.state.get(key)
+        for guild in self.bot.guilds:
+            ch = None
+            if ch_id:
+                ch = guild.get_channel(ch_id)
+            if not ch:
+                ch = _resolve_alert_channel(guild)
+            if ch:
+                try:
+                    await ch.send(embed=embed)
+                except Exception as e:
+                    log.warning("Send to %s failed: %s", key, e)
+
+    async def _broadcast(self, embed: discord.Embed, channel_type: str = "alert") -> None:
+        # Map channel type → dedicated channel key
+        type_to_key = {
+            "alert": "channel_patches",
+            "status": "channel_status",
+            "freegames": "channel_freegames",
+            "shop": "channel_shop",
+            "doublexp": "channel_doublexp",
+        }
+        key = type_to_key.get(channel_type, "channel_patches")
+        await self._send_to_channel_key(key, embed)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Watchdog(bot))
