@@ -84,6 +84,13 @@ async def status_handler(_: web.Request) -> web.Response:
     })
 
 
+async def channels_handler(_: web.Request) -> web.Response:
+    return web.json_response({
+        "success": True,
+        "channels": get_channel_profiles()
+    })
+
+
 async def clips_handler(_: web.Request) -> web.Response:
     clips = load_all_metadata()
     return web.json_response({"success": True, "clips": clips})
@@ -147,62 +154,123 @@ async def run_generation_background(
             task["error"] = "Source video file not found."
             return
 
-        # Ensure video is standard MP4
-        if not source_mp4.lower().endswith(".mp4"):
-            task["message"] = "Converting raw gameplay to standard MP4 stream..."
-            converted_path = str(TEMP_DIR / f"converted_{uuid.uuid4().hex[:8]}.mp4")
-            conv_ok = await asyncio.to_thread(convert_to_mp4, source_mp4, converted_path)
-            if conv_ok:
-                source_mp4 = converted_path
+        duration = await asyncio.to_thread(get_video_duration, source_mp4)
+        task["percent"] = 25
 
-        # Step 2: Voiceover & Subtitles (if requested)
+        # Step 2: Voiceover / Script (if provided)
         audio_path = None
         subtitles_ass = None
-
-        if script:
-            task["message"] = "Generating AI viral gamer voiceover (EdgeTTS)..."
-            task["percent"] = 30
-            tts_out = str(TEMP_DIR / f"tts_{uuid.uuid4().hex[:8]}.mp3")
-            success_tts, word_cues = await generate_voiceover(script, tts_out, voice_key)
-
-            if success_tts and os.path.exists(tts_out):
-                audio_path = tts_out
-                task["message"] = "Generating animated viral captions (ASS)..."
-                task["percent"] = 40
-                ass_out = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:8]}.ass")
+        if script and script.strip():
+            task["message"] = "Generating AI Voiceover narration..."
+            task["percent"] = 35
+            audio_path = str(TEMP_DIR / f"voice_{uuid.uuid4().hex[:6]}.mp3")
+            gen_ok = await asyncio.to_thread(generate_voiceover, script, voice_key, audio_path)
+            if gen_ok and os.path.exists(audio_path):
+                task["message"] = "Generating dynamic animated subtitles..."
+                task["percent"] = 45
+                subtitles_ass = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:6]}.ass")
                 await asyncio.to_thread(
-                    generate_hormozi_ass_subtitles,
-                    word_cues,
-                    ass_out,
-                    raw_text=script,
-                    style_theme=sub_style,
+                    build_ass_subtitles,
+                    text=script,
+                    duration=clip_len,
+                    output_path=subtitles_ass,
+                    style=sub_style,
                 )
-                subtitles_ass = ass_out
-
-        # Step 3: Intelligent Highlight Detection & Render
-        duration = await asyncio.to_thread(get_video_duration, source_mp4)
-        task["message"] = "Analyzing audio peaks & detecting top action moments..."
-        task["percent"] = 45
 
         generated_clips = []
 
-        if mode == "multi_shorts":
-            if custom_start is not None and custom_start >= 0:
-                start_timestamps = [custom_start]
-            else:
-                # Automatic intelligent peak action detection
-                start_timestamps = await asyncio.to_thread(
-                    detect_action_highlights,
-                    source_mp4,
-                    max_highlights=num_clips,
-                    clip_duration=clip_len,
+        # ──────────────────────────────────────────────────────────────
+        # MODE A: Multi-Channel Farm Batch (1 Clip -> Multiple Channels)
+        # ──────────────────────────────────────────────────────────────
+        if mode in ("farm_batch", "multi_channels"):
+            farm_channels_count = max(2, min(num_clips, 5))
+            chan_pack = generate_multichannel_pack(
+                base_title=top_banner,
+                hook_text=top_banner,
+                num_channels=farm_channels_count,
+            )
+
+            viral_music_rotation = [
+                "s3bzs_pr_funk",
+                "kordhell_murder",
+                "dxrk_rave",
+                "hensonn_sahara",
+                "yeat_money",
+            ]
+
+            badge_styles_rotation = ["dark-neon", "solid-yellow", "minimal"]
+
+            start_t = custom_start if (custom_start is not None and custom_start >= 0) else 0.0
+
+            for idx, item in enumerate(chan_pack):
+                clip_id = uuid.uuid4().hex[:6]
+                out_filename = f"farm_{item['channel_id']}_{clip_id}.mp4"
+                out_filepath = str(OUTPUT_DIR / out_filename)
+
+                task["message"] = f"Rendering Channel Short #{idx+1}/{len(chan_pack)} ({item['channel_name']})..."
+                task["percent"] = 50 + int((idx / len(chan_pack)) * 45)
+
+                assigned_music = music_track if music_track not in ("none", "random_viral") else viral_music_rotation[idx % len(viral_music_rotation)]
+                assigned_badge = badge_styles_rotation[idx % len(badge_styles_rotation)]
+
+                success = await asyncio.to_thread(
+                    build_9_16_vertical_short,
+                    video_path=source_mp4,
+                    output_path=out_filepath,
+                    start_time=start_t,
+                    duration=clip_len,
+                    audio_path=audio_path,
+                    subtitles_ass_path=subtitles_ass,
+                    watermark_top=item["title"],
+                    watermark_bottom=bottom_cta,
+                    layout_style=layout_style,
+                    hook_y=hook_y,
+                    cta_y=cta_y,
+                    badge_style=assigned_badge,
+                    music_track=assigned_music,
+                    music_volume=music_volume,
+                    custom_music_url=custom_music_url,
                 )
 
-            total_cuts = len(start_timestamps) if start_timestamps else 1
-            if not start_timestamps:
-                start_timestamps = [0.0]
+                if success and os.path.exists(out_filepath):
+                    meta_entry = {
+                        "title": item["title"],
+                        "description": item["description"],
+                        "hashtags": item["hashtags"].split(),
+                        "hashtags_string": item["hashtags"],
+                        "pinned_comment": item["pinned_comment"],
+                        "channel_name": item["channel_name"],
+                        "channel_handle": item["channel_handle"],
+                        "optimal_time": "18:30 - 21:30 (Prime Engagement)",
+                        "strategy_tip": f"Assignée à {item['channel_name']} avec musique {assigned_music}",
+                    }
 
-            for idx, start_t in enumerate(start_timestamps):
+                    clip_entry = {
+                        "filename": out_filename,
+                        "title": f"[{item['channel_name']}] {item['title']}",
+                        "channel_name": item["channel_name"],
+                        "channel_handle": item["channel_handle"],
+                        "meta": meta_entry,
+                    }
+                    save_clip_metadata(clip_entry)
+                    generated_clips.append(clip_entry)
+
+        # ──────────────────────────────────────────────────────────────
+        # MODE B: Multi-Shorts Highlights
+        # ──────────────────────────────────────────────────────────────
+        elif mode == "multi_shorts":
+            task["message"] = "Detecting high-action moments..."
+            task["percent"] = 40
+            cuts = await asyncio.to_thread(
+                detect_action_highlights,
+                video_path=source_mp4,
+                clip_duration=clip_len,
+                num_clips=num_clips,
+                custom_start=custom_start,
+            )
+
+            total_cuts = len(cuts)
+            for idx, start_t in enumerate(cuts):
                 clip_id = uuid.uuid4().hex[:6]
                 out_filename = f"short_{idx+1}_{clip_id}.mp4"
                 out_filepath = str(OUTPUT_DIR / out_filename)
@@ -451,6 +519,7 @@ def create_app() -> web.Application:
     app = web.Application(client_max_size=1024 * 1024 * 500)  # Support up to 500MB video uploads
     app.router.add_get("/", index_handler)
     app.router.add_get("/api/status", status_handler)
+    app.router.add_get("/api/channels", channels_handler)
     app.router.add_get("/api/clips", clips_handler)
     app.router.add_get("/api/task_status/{task_id}", task_status_handler)
     app.router.add_post("/api/generate", generate_handler)
