@@ -2,80 +2,81 @@ import hashlib
 import random
 import struct
 import time
+from typing import Any
 
 # ──────────────────────────────────────────────────────────────
-#  BANQUE DE 50 HOOKS VIRAUX — Catégorisés par psychologie
-#  (Jamais les mêmes 2 fois consécutives grâce au mutateur)
+#  BANK OF 50 VIRAL HOOKS (100% English — Categorized by Psychology)
+#  (Never repeat twice consecutively thanks to dynamic mutator)
 # ──────────────────────────────────────────────────────────────
 
-# Curiosité / FOMO
+# Curiosity / FOMO
 HOOKS_CURIOSITY = [
-    "Ils m'ont report pour ça... 💀",
-    "Mon teammate a cru que j'étais pro 😭",
-    "Ma config secrète depuis 6 mois 🤫",
-    "Personne me croit quand je montre ça ⚡",
-    "Le truc que personne ne te dit sur BO7 🎯",
-    "J'ai découvert ça par accident... 👀",
-    "Regardez jusqu'à la fin, vous allez comprendre 😂",
-    "Ce setup change littéralement tout 🔥",
-    "On m'a accusé de cheat… c'est mon everyday 💀",
-    "POV : Ton premier match avec la bonne config 🎮",
+    "They reported me for this clutch... 💀",
+    "My teammate thought I was a pro player 😭",
+    "My secret config for the last 6 months 🤫",
+    "Nobody believes me when I show this ⚡",
+    "The one thing nobody tells you about BO7 🎯",
+    "Found this setup completely by accident... 👀",
+    "Watch until the end, you'll understand 😂",
+    "This single setting changed everything 🔥",
+    "Accused of cheating... this is just my everyday 💀",
+    "POV: Your first ranked match with proper config 🎮",
 ]
 
-# Résultat immédiat / Valeur directe
+# Immediate Result / Direct Value
 HOOKS_VALUE = [
-    "Settings qui te font gagner 200 Elo instantanément 📈",
-    "Le seul guide dont tu as besoin en 2026 ✅",
-    "Smooth tracking sur chaque cible, explications en bio 🎯",
-    "Mon mouvement après 1H de warm-up avec ces params 🔥",
-    "FPS stable, visée verrouillée, zero recoil — bio link 👇",
-    "Comment je suis passé Silver à Diamond en 3 semaines 📊",
-    "La setup que les pros utilisent mais ne montrent pas 👑",
-    "Zero input lag, réponse instantanée — mon secret ⚡",
-    "J'ai testé TOUTES les configs. Voilà la meilleure 💯",
-    "Ce réglage seul vaut 3 semaines d'entraînement 🧠",
+    "Settings that gain you +200 ELO instantly 📈",
+    "The only guide you actually need in 2026 ✅",
+    "Smooth tracking on every target — bio link 🎯",
+    "My movement after 1 hour warm-up with these params 🔥",
+    "Stable FPS, locked crosshair, zero recoil — bio link 👇",
+    "How I went from Silver to Diamond in 3 weeks 📊",
+    "The setup pro players use but never share 👑",
+    "Zero input lag, instant response time — my secret ⚡",
+    "Tested EVERY config. This is the undisputed best 💯",
+    "This one tweak is worth 3 weeks of aim training 🧠",
 ]
 
-# Provocation / Contro  verse douce
+# Controversy / High Engagement
 HOOKS_CONTROVERSY = [
-    "C'est légal mais les lobbies me détestent 😅",
-    "Ils ont shadow-ban mon compte pour ça 😤",
-    "Quand tu domines le lobby sans cheat… 👀",
-    "Ce n'est PAS de l'aimbot (lire la bio avant de juger)",
-    "POV : Tu joues dans des lobbies normaux avec ça 💀",
-    "C'est borderline ? Non, c'est de l'optimisation ✅",
-    "Les gens pensent que c'est impossible sans cheat 🎯",
-    "Mon opposant a quitté en plein milieu… 💀",
-    "Le mouvement qui fait tilt tout le lobby 😂",
-    "Top 1 avec 0 sweat apparent 👑 (bio pour la setup)",
+    "It's 100% legit but lobbies hate me for it 😅",
+    "They shadow-banned my alt for this gameplay 😤",
+    "When you dominate the lobby without breaking a sweat 👀",
+    "This is NOT aimbot (check bio before judging)",
+    "POV: You play normal lobbies with this config 💀",
+    "Is this borderline? No, it's just pure optimization ✅",
+    "People think this is impossible without cheats 🎯",
+    "Opponent literally ragequit mid-game… 💀",
+    "The movement that tilts the entire lobby 😂",
+    "Victory Royale with 0 effort 👑 (bio for setup)",
 ]
 
-# Témoignage / Social proof
+# Social Proof / Verified Results
 HOOKS_PROOF = [
-    "5 games, 5 wins — résultats de la semaine 📊",
-    "Ranked bronze → platinum en 14 jours 📈",
-    "200 games en ranked sans ban 🛡️ — voici pourquoi",
-    "Mon K/D avant vs après ce réglage 💀",
-    "Premier match de la journée, résultat dans les commentaires",
-    "Après 100H de tests, voici ce que j'ai trouvé ⚡",
-    "Mon pote m'a demandé ma setup… j'ai dit non 😂",
-    "3 mois d'utilisation, 0 problème. C'est tout. ✅",
-    "Les stats parlent d'elles-mêmes 📊 (lien en bio)",
-    "Real gameplay, no cuts, no edits — bio link pour la config 🎯",
+    "5 games, 5 wins — this week's rank grind 📊",
+    "Ranked Bronze to Platinum in 14 days 📈",
+    "200 ranked games with zero bans 🛡️ — here's why",
+    "My K/D ratio before vs after this setup 💀",
+    "First game of the day, results in pinned comment 🎯",
+    "After 100 hours of testing, here are the results ⚡",
+    "Duo partner asked for my config… had to share 😂",
+    "3 months of daily use, 0 issues. Undetected. ✅",
+    "The stats speak for themselves 📊 (link in bio)",
+    "Raw gameplay, no cuts, no edits — check bio for trial 🎯",
 ]
 
-# Urgence / Limited
+# Urgency / Limited Time
 HOOKS_URGENCY = [
-    "Dispo seulement 1H GRATUITE ce soir 👇",
-    "J'aurais voulu savoir ça avant de perdre 200 parties 😭",
-    "Patch demain — voilà le dernier test 🛡️",
-    "Dernier clip avant la mise à jour ⚡",
-    "Trial 1H gratuit, lien en bio avant qu'il parte 🔥",
-    "Ça peut disparaître n'importe quand — profitez 👀",
-    "Ce clip résume les 6 derniers mois d'optimisation ⏰",
-    "Mise à jour dans 2H — voilà le statut actuel ✅",
-    "Je partage ça UNE seule fois publiquement 👇",
-    "Il reste 12 clés gratuites — lien en bio 🎁",
+    "Available for 1-HOUR FREE TRIAL right now 👇",
+    "Wish I knew this before losing 200 ranked games 😭",
+    "Patch drops tomorrow — final test results 🛡️",
+    "Last gameplay clip before the new update ⚡",
+    "1H Free Trial available, link in bio before it closes 🔥",
+    "This setup might get patched soon — grab it now 👀",
+    "6 months of tuning summarized in 30 seconds ⏰",
+    "Major game update in 2H — current status is GREEN ✅",
+    "Sharing this only ONCE publicly 👇",
+    "Only 15 free trial keys left for tonight — bio link 🎁",
 ]
 
 ALL_HOOKS = (
@@ -85,6 +86,9 @@ ALL_HOOKS = (
     HOOKS_PROOF +
     HOOKS_URGENCY
 )
+
+VIRAL_HOOKS = ALL_HOOKS
+
 
 def get_hook(seed: int | None = None) -> str:
     """Returns a unique hook. Uses time-based seed to prevent repeats."""
@@ -121,6 +125,7 @@ def mutate_video_metadata() -> dict:
             f"asetrate=44100*{1 + pitch_shift/100},aresample=44100"
         ),
     }
+
 
 HASHTAG_PACKS = {
     "call_of_duty": [
