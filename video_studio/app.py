@@ -102,46 +102,62 @@ async def run_generation_background(
     hook_y: int = 180,
     cta_y: int = 1360,
     badge_style: str = "dark-neon",
+    music_track: str = "none",
+    music_volume: float = 0.35,
+    custom_music_url: str = "",
 ) -> None:
-    task = TASKS[task_id]
-    try:
-        # Step 1: Video source acquisition
-        task["message"] = "Fetching / Preparing Video Source..."
-        task["percent"] = 20
+    task = TASKS.get(task_id)
+    if not task:
+        return
 
+    try:
+        # Step 1: Download or locate source video
         source_mp4 = None
         source_title = "Gameplay"
-
         if yt_url:
-            task["message"] = "Downloading YouTube Video (High Definition)..."
+            task["message"] = "Downloading YouTube gameplay in HD 1080p..."
+            task["percent"] = 15
             yt_res = await asyncio.to_thread(download_youtube_video, yt_url, str(TEMP_DIR))
-            if not yt_res or not os.path.exists(yt_res["filepath"]):
+            if not yt_res or not yt_res.get("filepath"):
                 task["status"] = "error"
-                task["error"] = "Failed to download YouTube video. Please check the URL."
+                task["error"] = "Failed to download YouTube video."
                 return
             source_mp4 = yt_res["filepath"]
             source_title = yt_res.get("title", "YouTube Video")
-        elif local_video_path and os.path.exists(local_video_path):
-            source_title = Path(local_video_path).stem
+        elif local_video_path:
+            task["message"] = "Processing uploaded gameplay footage..."
+            task["percent"] = 15
             source_mp4 = local_video_path
-        else:
+            source_title = Path(local_video_path).stem
+
+        if not source_mp4 or not os.path.exists(source_mp4):
             task["status"] = "error"
-            task["error"] = "No valid video file or YouTube URL provided."
+            task["error"] = "Source video file not found."
             return
 
-        # Step 2: Voiceover & Subtitles (if script provided)
+        # Ensure video is standard MP4
+        if not source_mp4.lower().endswith(".mp4"):
+            task["message"] = "Converting raw gameplay to standard MP4 stream..."
+            converted_path = str(TEMP_DIR / f"converted_{uuid.uuid4().hex[:8]}.mp4")
+            conv_ok = await asyncio.to_thread(convert_to_mp4, source_mp4, converted_path)
+            if conv_ok:
+                source_mp4 = converted_path
+
+        # Step 2: Voiceover & Subtitles (if requested)
         audio_path = None
         subtitles_ass = None
 
         if script:
-            task["message"] = "Generating AI Neural Voiceover & Subtitles..."
-            task["percent"] = 35
-            audio_out = str(TEMP_DIR / f"voice_{uuid.uuid4().hex[:8]}.mp3")
-            ass_out = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:8]}.ass")
+            task["message"] = "Generating AI viral gamer voiceover (EdgeTTS)..."
+            task["percent"] = 30
+            tts_out = str(TEMP_DIR / f"tts_{uuid.uuid4().hex[:8]}.mp3")
+            success_tts, word_cues = await generate_voiceover(script, tts_out, voice_key)
 
-            success_tts, word_cues = await generate_voiceover(script, audio_out, voice_key=voice_key)
-            if success_tts:
-                audio_path = audio_out
+            if success_tts and os.path.exists(tts_out):
+                audio_path = tts_out
+                task["message"] = "Generating animated viral captions (ASS)..."
+                task["percent"] = 40
+                ass_out = str(TEMP_DIR / f"subs_{uuid.uuid4().hex[:8]}.ass")
                 await asyncio.to_thread(
                     generate_hormozi_ass_subtitles,
                     word_cues,
@@ -198,6 +214,9 @@ async def run_generation_background(
                     hook_y=hook_y,
                     cta_y=cta_y,
                     badge_style=badge_style,
+                    music_track=music_track,
+                    music_volume=music_volume,
+                    custom_music_url=custom_music_url,
                 )
 
                 if success and os.path.exists(out_filepath):
@@ -284,6 +303,9 @@ async def generate_handler(request: web.Request) -> web.Response:
     cta_y = 1360
     badge_style = "dark-neon"
     layout_style = "zoom"
+    music_track = "none"
+    music_volume = 0.35
+    custom_music_url = ""
 
     while True:
         part = await reader.next()
@@ -353,6 +375,15 @@ async def generate_handler(request: web.Request) -> web.Response:
                 badge_style = value
             elif name == "layout_style":
                 layout_style = value
+            elif name == "music_track":
+                music_track = value.strip()
+            elif name == "music_volume":
+                try:
+                    music_volume = float(value)
+                except ValueError:
+                    music_volume = 0.35
+            elif name == "custom_music_url":
+                custom_music_url = value.strip()
 
     if not yt_url and not local_video_path:
         return web.json_response({"success": False, "error": "Please provide a video file or YouTube URL."}, status=400)
@@ -383,6 +414,9 @@ async def generate_handler(request: web.Request) -> web.Response:
             hook_y=hook_y,
             cta_y=cta_y,
             badge_style=badge_style,
+            music_track=music_track,
+            music_volume=music_volume,
+            custom_music_url=custom_music_url,
         )
     )
 
@@ -401,6 +435,9 @@ def create_app() -> web.Application:
     app.router.add_post("/api/generate", generate_handler)
     app.router.add_static("/static/", path=STATIC_DIR, name="static")
     app.router.add_static("/output/", path=OUTPUT_DIR, name="output")
+    music_dir = BASE_DIR / "assets" / "music"
+    music_dir.mkdir(parents=True, exist_ok=True)
+    app.router.add_static("/music/", path=music_dir, name="music")
     return app
 
 

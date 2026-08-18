@@ -202,12 +202,16 @@ def build_9_16_vertical_short(
     hook_y: int = 180,
     cta_y: int = 1360,
     badge_style: str = "dark-neon",
+    music_track: str = "none",
+    music_volume: float = 0.35,
+    custom_music_url: str = "",
 ) -> bool:
     """
     Renders a High-Definition 9:16 vertical Short (1080x1920) with:
     - Full-Screen 9:16 Crosshair Crop: crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920
     - Vector Top Hook Badge: Montserrat-Black, 85% Dark Pill, Drop Shadow (customizable Y)
     - Vector Bottom CTA Badge: Safe-Zone Y (default 1360), Customizable style ('dark-neon', 'solid-yellow', 'minimal')
+    - Viral Background Music: 10 curated tracks or custom YouTube audio mixed seamlessly
     - Crisp 60FPS High-Definition Encoding Profile (CRF 19, No pixel mush)
     """
     import uuid
@@ -228,6 +232,29 @@ def build_9_16_vertical_short(
         create_hook_badge(watermark_top, hook_png, font_size=36)
     if watermark_bottom:
         create_cta_badge(watermark_bottom, cta_png, font_size=34, badge_style=badge_style)
+
+    # Resolve Background Music Track
+    music_file_path = None
+    music_dir = Path(__file__).parent.parent / "assets" / "music"
+
+    if custom_music_url and custom_music_url.strip():
+        try:
+            try:
+                from video_studio.core.downloader import download_youtube_audio
+            except ImportError:
+                from core.downloader import download_youtube_audio
+            custom_target = str(temp_dir / f"custom_music_{uid}.mp3")
+            downloaded = download_youtube_audio(custom_music_url.strip(), custom_target)
+            if downloaded and os.path.exists(downloaded):
+                music_file_path = downloaded
+        except Exception as e:
+            log.warning("Failed to download custom music: %s", e)
+    elif music_track and music_track != "none":
+        for ext in [".mp3", ".m4a", ".wav", ".aac"]:
+            candidate = music_dir / f"{music_track}{ext}"
+            if candidate.exists():
+                music_file_path = str(candidate)
+                break
 
     cmd = [
         FFMPEG_EXE,
@@ -260,6 +287,12 @@ def build_9_16_vertical_short(
         extra_inputs += 1
         audio_input_idx = extra_inputs
 
+    music_input_idx = -1
+    if music_file_path and os.path.exists(music_file_path):
+        cmd.extend(["-i", music_file_path])
+        extra_inputs += 1
+        music_input_idx = extra_inputs
+
     # 1. Full-Screen 9:16 Crosshair Crop (No letterboxing/blur)
     filter_parts = [
         "[0:v]crop=ih*(9/16):ih:(iw-ow)/2:(ih-oh)/2,scale=1080:1920[base_v]"
@@ -286,8 +319,31 @@ def build_9_16_vertical_short(
 
     source_has_audio = has_audio_stream(video_path)
 
-    # Audio Mixing
-    if audio_input_idx > 0:
+    # Audio Mixing with Viral Background Music Support
+    if music_input_idx > 0:
+        # Music is present
+        vol = max(0.05, min(1.0, float(music_volume)))
+        if source_has_audio:
+            filter_parts.append(
+                f"[0:a]volume=1.0[game_a];"
+                f"[{music_input_idx}:a]aloop=loop=-1:size=2e+09,volume={vol}[music_a];"
+                f"[game_a][music_a]amix=inputs=2:duration=first:dropout_transition=2[mixed_a]"
+            )
+            cur_a = "mixed_a"
+        else:
+            filter_parts.append(
+                f"[{music_input_idx}:a]aloop=loop=-1:size=2e+09,volume={vol},atrim=0:{duration}[mixed_a]"
+            )
+            cur_a = "mixed_a"
+
+        if audio_input_idx > 0:
+            filter_parts.append(
+                f"[{cur_a}]volume=0.85[duck_a];[{audio_input_idx}:a]volume=1.2[voice_a];[duck_a][voice_a]amix=inputs=2:duration=first[final_a]"
+            )
+        else:
+            filter_parts.append(f"[{cur_a}]volume=1.0[final_a]")
+
+    elif audio_input_idx > 0:
         if source_has_audio:
             filter_parts.append(f"[0:a]volume=0.35[bg_a];[{audio_input_idx}:a]volume=1.1[voice_a];[bg_a][voice_a]amix=inputs=2:duration=first[final_a]")
         else:
