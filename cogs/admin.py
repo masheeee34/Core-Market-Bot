@@ -480,7 +480,8 @@ class Admin(commands.Cog):
                 (
                     "🎯 ─── VALORANT ─── 🎯",
                     [
-                        ("⚡・pulse-internal", "Produit Pulse Internal", member_only_overwrites, None),
+                        ("🟡・colorbot-full", "Colorbot Full Premium Valorant", member_only_overwrites, "colorbot_full"),
+                        ("🟢・colorbot-lite", "Colorbot Lite Essential Pixel Aim", member_only_overwrites, "colorbot_lite"),
                     ],
                 ),
                 (
@@ -529,7 +530,8 @@ class Admin(commands.Cog):
                 (
                     "✦ ─── VALORANT ─── ✦",
                     [
-                        ("⚡・ᴘᴜʟꜱᴇ-ɪɴᴛᴇʀɴᴀʟ", "Pulse Internal Valorant", member_only_overwrites, "pulse"),
+                        ("🟡・ᴄᴏʟᴏʀʙᴏᴛ-ꜰᴜʟʟ", "Colorbot Full Premium Valorant", member_only_overwrites, "colorbot_full"),
+                        ("🟢・ᴄᴏʟᴏʀʙᴏᴛ-ʟɪᴛᴇ", "Colorbot Lite Essential Pixel Aim", member_only_overwrites, "colorbot_lite"),
                     ],
                 ),
                 (
@@ -679,9 +681,16 @@ class Admin(commands.Cog):
                     )
 
                 # Auto post product sales embeds (FR version default for clean server presentation)
-                elif action in ("mcore", "spectre", "pulse"):
+                elif action in ("mcore", "spectre", "pulse", "colorbot_full", "colorbot_lite"):
                     from cogs.products import build_product_embed, build_product_view
-                    pkey = "mcore_fr" if action == "mcore" else ("spectre_fr" if action == "spectre" else "pulse_internal_fr")
+                    mapping = {
+                        "mcore": "mcore_fr",
+                        "spectre": "spectre_fr",
+                        "pulse": "colorbot_full_fr",
+                        "colorbot_full": "colorbot_full_fr",
+                        "colorbot_lite": "colorbot_lite_fr",
+                    }
+                    pkey = mapping.get(action, "colorbot_full_fr")
                     embed = build_product_embed(pkey)
                     if embed:
                         logs_ch = discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ") or ch
