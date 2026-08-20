@@ -1106,6 +1106,115 @@ class Products(commands.Cog):
             ephemeral=True,
         )
 
+    @commands.command(name="setup_valorant")
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    async def cmd_setup_valorant(self, ctx: commands.Context, lang: str = "fr") -> None:
+        """Prefix command: !setup_valorant"""
+        guild = ctx.guild
+        if guild is None:
+            return
+
+        staff_role = (
+            discord.utils.get(guild.roles, name="Staff")
+            or discord.utils.get(guild.roles, name="Owner")
+            or guild.default_role
+        )
+        member_role = (
+            discord.utils.get(guild.roles, name="💎・Member")
+            or discord.utils.get(guild.roles, name="Member")
+            or discord.utils.get(guild.roles, name="Membre")
+            or guild.default_role
+        )
+        logs_channel = (
+            discord.utils.get(guild.text_channels, name="📜・ʟᴏɢꜱ-ᴛɪᴄᴋᴇᴛꜱ")
+            or discord.utils.get(guild.text_channels, name="📜・logs-tickets")
+            or ctx.channel
+        )
+
+        category = None
+        for cat in guild.categories:
+            if "VALORANT" in cat.name.upper():
+                category = cat
+                break
+
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(
+                view_channel=True,
+                read_messages=True,
+                send_messages=False,
+                add_reactions=True,
+                read_message_history=True,
+            ),
+            staff_role: discord.PermissionOverwrite(
+                view_channel=True,
+                read_messages=True,
+                send_messages=True,
+                manage_messages=True,
+                read_message_history=True,
+            ),
+        }
+        if member_role and member_role != guild.default_role:
+            overwrites[member_role] = discord.PermissionOverwrite(
+                view_channel=True,
+                read_messages=True,
+                send_messages=False,
+                add_reactions=True,
+                read_message_history=True,
+            )
+
+        if category is None:
+            category = await guild.create_category("✦ ─── VALORANT ─── ✦", overwrites=overwrites)
+
+        channels_to_create = [
+            ("🟡・colorbot-full", "colorbot_full_fr" if lang == "fr" else "colorbot_full", "Colorbot Full Premium Valorant"),
+            ("🟢・colorbot-lite", "colorbot_lite_fr" if lang == "fr" else "colorbot_lite", "Colorbot Lite Essential Pixel Aim"),
+        ]
+
+        created_channels = []
+        for ch_name, pkey, desc in channels_to_create:
+            ch = discord.utils.get(category.text_channels, name=ch_name)
+            if ch is None:
+                clean_target = ch_name.split("・")[-1]
+                for tc in category.text_channels:
+                    if clean_target in tc.name.lower():
+                        ch = tc
+                        break
+
+            if ch is None:
+                ch = await category.create_text_channel(name=ch_name, topic=desc, overwrites=overwrites)
+
+            try:
+                def is_bot_msg(m: discord.Message) -> bool:
+                    return m.author.id == self.bot.user.id
+                await ch.purge(limit=10, check=is_bot_msg)
+            except Exception:
+                pass
+
+            embed = build_product_embed(pkey)
+            if embed:
+                view = build_product_view(pkey, staff_role.id, logs_channel.id)
+                sent = False
+                if os.path.exists("banner.gif"):
+                    try:
+                        banner_file = discord.File("banner.gif", filename="banner.gif")
+                        await ch.send(file=banner_file, embed=embed, view=view)
+                        sent = True
+                    except Exception:
+                        pass
+                if not sent:
+                    await ch.send(embed=embed, view=view)
+
+            created_channels.append(ch)
+
+        ch_mentions = " et ".join([ch.mention for ch in created_channels])
+        await ctx.send(
+            f"✅ **Salons Valorant créés et configurés avec succès !**\n"
+            f"📁 Catégorie : **{category.name}**\n"
+            f"💬 Salons : {ch_mentions}\n"
+            f"🛒 Les vitrines et boutons d'achat ont été postés automatiquement."
+        )
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Products(bot))
