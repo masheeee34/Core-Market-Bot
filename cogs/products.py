@@ -77,108 +77,321 @@ PRODUCTS: dict[str, dict[str, Any]] = {
             ),
         ],
     },
-    "colorbot": {
-        "raw_title": "COLORBOT PRIVATE [EN]",
-        "title": "🟡 COLORBOT PRIVATE 🟡",
-        "description": "*Private pipeline · Web-only access · Built for discretion*",
+    "colorbot_full": {
+        "raw_title": "COLORBOT FULL | VALORANT [EN]",
+        "title": "🟡 COLORBOT FULL | PREMIUM VALORANT 🟡",
+        "description": "*Premium Valorant Enhancement · Entirely Web-Based · Safe & Undetected*",
         "button_label": "Buy Here",
         "color": discord.Color.from_str("#F1C40F"),
         "fields": [
             (
-                "🌐 SYSTEM & COMPATIBILITY",
-                "• **OS:** Windows 10 & 11 (Home & Pro, All Versions)\n"
-                "• **Hardware:** Supports all CPU & GPU components\n"
-                "• **HVCI Mode:** Compatible with HVCI On/Off\n"
-                "• **Anti-Cheat:** Vanguard",
+                "🌐 System & Compatibility",
+                "• **OS:** Windows 10 & 11 (All Versions)\n"
+                "• **Architecture:** Entirely Web-Based (Zero disk footprint)\n"
+                "• **Anti-Cheat:** Vanguard • Status: 🟢 Fully Undetected / Safe",
                 False,
             ),
             (
-                "🎯 AIMBOT FEATURES",
-                "• **Aim Bot & Aim Assist**\n"
-                "• **Silent Aim & Flickbot**\n"
-                "• **Trigger Bot (Auto-fire)**\n"
-                "• **Target Colors:** Yellow, Purple",
+                "🎯 Aimbot Features",
+                "• **Precision Lock:** Customizable FOV & smoothness settings\n"
+                "• **Multi-Bone Targeting:** Head, neck, chest, pelvis selection\n"
+                "• **Target Priority:** Closest to crosshair, sticky tracking",
                 False,
             ),
             (
-                "🛠️ ADJUSTABLE SETTINGS",
-                "• **FOV:** (Field of View Size)\n"
-                "• **Smoothness:** (Fluidity Speed)\n"
-                "• **Speed**\n"
-                "• **Offset**",
+                "⚡ Triggerbot & Flickbot",
+                "• **Instant Fire:** Zero-delay shot on enemy detection\n"
+                "• **Reaction Delay:** Human-like randomized delays (ms adjustable)\n"
+                "• **Burst Mode:** Custom tap-fire patterns for recoil control\n"
+                "• **Flickbot:** Lightning flicks, sub-10ms flick to target",
                 False,
             ),
             (
-                "📦 UTILITIES & DELIVERIES",
-                "• **Config Save & Load**\n"
-                "• **Custom Keybinds**\n"
-                "• **Panic Key**\n"
-                "• **Web-based session:** (nothing written to disk)\n"
-                "• **Isolated private delivery channel**\n"
-                "• **AI-assisted targeting & color logic**\n"
-                "• **Minimal host footprint**\n"
-                "• **Continuous integrity monitoring & updates**",
+                "🤫 Silent Aim & Humanization",
+                "• **Invisible Correction:** Subtle assistance, completely legit looking\n"
+                "• **Low FOV Mode:** Blends with natural mouse movement\n"
+                "• **Randomized Patterns:** Bezier curves, micro delays (1-10ms variance)\n"
+                "• **Shake Compensation:** Simulates natural hand tremor realism",
                 False,
             ),
             (
-                "💳 PRICING PLAN",
-                "• **1 Day:** 7.00 €\n"
-                "• **1 Week:** 20.00 €\n"
-                "• **1 Month:** 40.00 €\n"
-                "• **Lifetime:** 75.00 €",
+                "⚙️ Config System",
+                "• **Profile Manager:** Save unlimited custom configurations\n"
+                "• **Import/Export:** Share configs with community\n"
+                "• **Weapon Specific:** Separate settings per gun type\n"
+                "• **Quick Toggle:** On-the-fly adjustments with hotkeys",
+                False,
+            ),
+            (
+                "💳 Pricing Plan",
+                "• **3 Days:** 19.99 €\n"
+                "• **1 Week:** 39.99 €\n"
+                "• **1 Month:** 54.99 €\n"
+                "• **Lifetime:** 89.99 €",
+                False,
+            ),
+        ],
+    },
+    "colorbot_full_fr": {
+        "raw_title": "COLORBOT FULL | VALORANT [FR]",
+        "title": "🟡 COLORBOT FULL | PREMIUM VALORANT 🟡",
+        "description": "*Solution Premium Valorant · 100% Web-Based · Indétecté & Sécurisé*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#F1C40F"),
+        "fields": [
+            (
+                "🌐 Système & Compatibilité",
+                "• **OS :** Windows 10 & 11 (Toutes versions)\n"
+                "• **Architecture :** 100% Web-Based (Aucun fichier écrit sur le disque)\n"
+                "• **Anti-Cheat :** Vanguard • Statut : 🟢 Totalement Indétecté / Sûr",
+                False,
+            ),
+            (
+                "🎯 Fonctionnalités Aimbot",
+                "• **Verrouillage Précis :** FOV et lissage (smoothness) personnalisables\n"
+                "• **Ciblage Multi-Hitbox :** Tête, Cou, Poitrine, Bassin\n"
+                "• **Priorité de Cible :** Plus proche du réticule, suivi sticky fluide",
+                False,
+            ),
+            (
+                "⚡ Triggerbot & Flickbot",
+                "• **Tir Instantané :** 0 ms de délai sur détection ennemie\n"
+                "• **Délai Humanisé :** Délais aléatoires configurables (millisecondes réglables)\n"
+                "• **Mode Rafale (Burst) :** Modèles de tir personnalisés pour le recul\n"
+                "• **Flickbot :** Tirs réflexes ultra-rapides (< 10 ms)",
+                False,
+            ),
+            (
+                "🤫 Silent Aim & Humanisation",
+                "• **Correction Invisible :** Trajectoires lissées, rendu 100% legit/naturel\n"
+                "• **Mode Low FOV :** Assistance subtile invisible en spectateur\n"
+                "• **Courbes de Bézier :** Accélération & décélération naturelles\n"
+                "• **Micro-Délais & Shake :** Simulation de tremblement de main naturel",
+                False,
+            ),
+            (
+                "⚙️ Système de Configurations",
+                "• **Gestionnaire de Profils :** Sauvegarde illimitée de configurations\n"
+                "• **Import / Export :** Partagez vos réglages avec la communauté\n"
+                "• **Spécifique par Arme :** Paramètres séparés par type d'arme\n"
+                "• **Touches Rapides :** Ajustements en temps réel en pleine partie",
+                False,
+            ),
+            (
+                "💳 Grille de Tarifs",
+                "• **3 Jours :** `19.99 €`\n"
+                "• **1 Semaine :** `39.99 €`\n"
+                "• **1 Mois :** `54.99 €`\n"
+                "• **À vie (Lifetime) :** `89.99 €`",
+                False,
+            ),
+        ],
+    },
+    "colorbot_lite": {
+        "raw_title": "COLORBOT LITE | VALORANT [EN]",
+        "title": "🟢 COLORBOT LITE | ESSENTIAL PIXEL AIM 🟢",
+        "description": "*Essential Pixel Aim · External & Stream-Proof · Lightweight*",
+        "button_label": "Buy Here",
+        "color": discord.Color.from_str("#2ECC71"),
+        "fields": [
+            (
+                "🌐 System & Compatibility",
+                "• **OS:** Windows 10 & 11 (All Versions)\n"
+                "• **Type:** External & Stream-Proof (Hidden on OBS / Discord)\n"
+                "• **Anti-Cheat:** Vanguard • Status: 🟢 Undetected",
+                False,
+            ),
+            (
+                "🎯 Color Aim",
+                "• **Pixel Detection:** Enemy outline scanning (Yellow / Purple)\n"
+                "• **Scan Area:** Adjustable FOV box\n"
+                "• **Smooth Tracking:** Basic aim assistance & target locking",
+                False,
+            ),
+            (
+                "⚡ Triggerbot",
+                "• **Auto-Fire:** Automatic shot on color detection\n"
+                "• **Reaction Delay:** Adjustable firing delay",
+                False,
+            ),
+            (
+                "👤 Humanization",
+                "• **Randomized Curves:** Natural aim trajectories\n"
+                "• **Speed Variation:** Human-like speed acceleration",
+                False,
+            ),
+            (
+                "⚙️ Config & Profiles",
+                "• **Profiles:** Save and load custom configs\n"
+                "• **Hotkeys:** Simple hotkey toggles on the fly",
+                False,
+            ),
+            (
+                "💳 Pricing Plan",
+                "• **1 Day:** 9.99 €\n"
+                "• **1 Week:** 19.99 €\n"
+                "• **1 Month:** 39.99 €\n"
+                "• **Lifetime:** 69.99 €",
+                False,
+            ),
+        ],
+    },
+    "colorbot_lite_fr": {
+        "raw_title": "COLORBOT LITE | VALORANT [FR]",
+        "title": "🟢 COLORBOT LITE | ESSENTIAL PIXEL AIM 🟢",
+        "description": "*Visée Pixel Essentielle · Externe & Stream-Proof · Léger*",
+        "button_label": "Acheter ici",
+        "color": discord.Color.from_str("#2ECC71"),
+        "fields": [
+            (
+                "🌐 Système & Compatibilité",
+                "• **OS :** Windows 10 & 11 (Toutes versions)\n"
+                "• **Type :** Externe & Stream-Proof (Invisible sur OBS, Medal, Discord)\n"
+                "• **Anti-Cheat :** Vanguard • Statut : 🟢 Totalement Indétecté",
+                False,
+            ),
+            (
+                "🎯 Visée Pixel Color",
+                "• **Détection de Contours :** Scan des contours ennemis (Jaune / Violet)\n"
+                "• **Zone de Scan :** Boîte FOV ajustable\n"
+                "• **Tracking Fluide :** Assistance de visée lissée & fluide",
+                False,
+            ),
+            (
+                "⚡ Triggerbot (Tir Automatique)",
+                "• **Auto-Fire :** Tir automatique dès détection de couleur ennemie\n"
+                "• **Délai Ajustable :** Temps de réaction personnalisable",
+                False,
+            ),
+            (
+                "👤 Module d'Humanisation",
+                "• **Courbes Aléatoires :** Trajectoires de visée humanisées\n"
+                "• **Variation de Vitesse :** Accélération et décélération naturelles",
+                False,
+            ),
+            (
+                "⚙️ Configuration & Profils",
+                "• **Gestion des Profils :** Sauvegarde & chargement rapides\n"
+                "• **Touches Raccourcis :** Activation/Désactivation rapide en jeu",
+                False,
+            ),
+            (
+                "💳 Grille de Tarifs",
+                "• **1 Jour :** `9.99 €`\n"
+                "• **1 Semaine :** `19.99 €`\n"
+                "• **1 Mois :** `39.99 €`\n"
+                "• **À vie (Lifetime) :** `69.99 €`",
+                False,
+            ),
+        ],
+    },
+    # Backwards compatibility aliases
+    "colorbot": {
+        "raw_title": "COLORBOT FULL | VALORANT [EN]",
+        "title": "🟡 COLORBOT FULL | PREMIUM VALORANT 🟡",
+        "description": "*Premium Valorant Enhancement · Entirely Web-Based · Safe & Undetected*",
+        "button_label": "Buy Here",
+        "color": discord.Color.from_str("#F1C40F"),
+        "fields": [
+            (
+                "🌐 System & Compatibility",
+                "• **OS:** Windows 10 & 11 (All Versions)\n"
+                "• **Architecture:** Entirely Web-Based (Zero disk footprint)\n"
+                "• **Anti-Cheat:** Vanguard • Status: 🟢 Fully Undetected / Safe",
+                False,
+            ),
+            (
+                "🎯 Aimbot Features",
+                "• **Precision Lock:** Customizable FOV & smoothness settings\n"
+                "• **Multi-Bone Targeting:** Head, neck, chest, pelvis selection\n"
+                "• **Target Priority:** Closest to crosshair, sticky tracking",
+                False,
+            ),
+            (
+                "⚡ Triggerbot & Flickbot",
+                "• **Instant Fire:** Zero-delay shot on enemy detection\n"
+                "• **Reaction Delay:** Human-like randomized delays (ms adjustable)\n"
+                "• **Burst Mode:** Custom tap-fire patterns for recoil control\n"
+                "• **Flickbot:** Lightning flicks, sub-10ms flick to target",
+                False,
+            ),
+            (
+                "🤫 Silent Aim & Humanization",
+                "• **Invisible Correction:** Subtle assistance, completely legit looking\n"
+                "• **Low FOV Mode:** Blends with natural mouse movement\n"
+                "• **Randomized Patterns:** Bezier curves, micro delays (1-10ms variance)\n"
+                "• **Shake Compensation:** Simulates natural hand tremor realism",
+                False,
+            ),
+            (
+                "⚙️ Config System",
+                "• **Profile Manager:** Save unlimited custom configurations\n"
+                "• **Import/Export:** Share configs with community\n"
+                "• **Weapon Specific:** Separate settings per gun type\n"
+                "• **Quick Toggle:** On-the-fly adjustments with hotkeys",
+                False,
+            ),
+            (
+                "💳 Pricing Plan",
+                "• **3 Days:** 19.99 €\n"
+                "• **1 Week:** 39.99 €\n"
+                "• **1 Month:** 54.99 €\n"
+                "• **Lifetime:** 89.99 €",
                 False,
             ),
         ],
     },
     "colorbot_fr": {
-        "raw_title": "COLORBOT PRIVATE [FR]",
-        "title": "🟡 COLORBOT PRIVATE 🟡",
-        "description": "*Pipeline privé · Accès Web uniquement · Conçu pour la discrétion*",
+        "raw_title": "COLORBOT FULL | VALORANT [FR]",
+        "title": "🟡 COLORBOT FULL | PREMIUM VALORANT 🟡",
+        "description": "*Solution Premium Valorant · 100% Web-Based · Indétecté & Sécurisé*",
         "button_label": "Acheter ici",
         "color": discord.Color.from_str("#F1C40F"),
         "fields": [
             (
-                "🌐 SYSTÈME & COMPATIBILITÉ",
-                "• **OS :** Windows 10 & 11 (Home & Pro, toutes versions)\n"
-                "• **Composants :** Supporte tous les processeurs CPU & cartes GPU\n"
-                "• **Mode HVCI :** Compatible avec HVCI Activé/Désactivé\n"
-                "• **Anti-Cheat :** Vanguard",
+                "🌐 Système & Compatibilité",
+                "• **OS :** Windows 10 & 11 (Toutes versions)\n"
+                "• **Architecture :** 100% Web-Based (Aucun fichier écrit sur le disque)\n"
+                "• **Anti-Cheat :** Vanguard • Statut : 🟢 Totalement Indétecté / Sûr",
                 False,
             ),
             (
-                "🎯 FONCTIONNALITÉS AIMBOT",
-                "• **Aim Bot & Aim Assist**\n"
-                "• **Silent Aim & Flickbot**\n"
-                "• **Trigger Bot (Tir automatique)**\n"
-                "• **Couleurs cibles :** Jaune, Violet",
+                "🎯 Fonctionnalités Aimbot",
+                "• **Verrouillage Précis :** FOV et lissage (smoothness) personnalisables\n"
+                "• **Ciblage Multi-Hitbox :** Tête, Cou, Poitrine, Bassin\n"
+                "• **Priorité de Cible :** Plus proche du réticule, suivi sticky fluide",
                 False,
             ),
             (
-                "🛠️ RÉGLAGES AJUSTABLES",
-                "• **FOV :** (Taille du champ de vision)\n"
-                "• **Smoothness :** (Vitesse de fluidité)\n"
-                "• **Vitesse (Speed)**\n"
-                "• **Décalage (Offset)**",
+                "⚡ Triggerbot & Flickbot",
+                "• **Tir Instantané :** 0 ms de délai sur détection ennemie\n"
+                "• **Délai Humanisé :** Délais aléatoires configurables (millisecondes réglables)\n"
+                "• **Mode Rafale (Burst) :** Modèles de tir personnalisés pour le recul\n"
+                "• **Flickbot :** Tirs réflexes ultra-rapides (< 10 ms)",
                 False,
             ),
             (
-                "📦 UTILITAIRES & LIVRAISON",
-                "• **Sauvegarde & Chargement de la configuration**\n"
-                "• **Raccourcis personnalisés (Keybinds)**\n"
-                "• **Touche d'urgence (Panic Key)**\n"
-                "• **Session basée sur le Web :** (Rien n'est écrit sur le disque)\n"
-                "• **Salon de livraison privé et isolé**\n"
-                "• **Ciblage assisté par IA & logique des couleurs**\n"
-                "• **Empreinte minimale sur le système**\n"
-                "• **Surveillance continue de l'intégrité & mises à jour**",
+                "🤫 Silent Aim & Humanisation",
+                "• **Correction Invisible :** Trajectoires lissées, rendu 100% legit/naturel\n"
+                "• **Mode Low FOV :** Assistance subtile invisible en spectateur\n"
+                "• **Courbes de Bézier :** Accélération & décélération naturelles\n"
+                "• **Micro-Délais & Shake :** Simulation de tremblement de main naturel",
                 False,
             ),
             (
-                "💳 TARIFS",
-                "• **1 Jour :** 7.00 €\n"
-                "• **1 Semaine :** 20.00 €\n"
-                "• **1 Mois :** 40.00 €\n"
-                "• **À vie (Lifetime) :** 75.00 €",
+                "⚙️ Système de Configurations",
+                "• **Gestionnaire de Profils :** Sauvegarde illimitée de configurations\n"
+                "• **Import / Export :** Partagez vos réglages avec la communauté\n"
+                "• **Spécifique par Arme :** Paramètres séparés par type d'arme\n"
+                "• **Touches Rapides :** Ajustements en temps réel en pleine partie",
+                False,
+            ),
+            (
+                "💳 Grille de Tarifs",
+                "• **3 Jours :** `19.99 €`\n"
+                "• **1 Semaine :** `39.99 €`\n"
+                "• **1 Mois :** `54.99 €`\n"
+                "• **À vie (Lifetime) :** `89.99 €`",
                 False,
             ),
         ],
@@ -584,8 +797,64 @@ class Products(commands.Cog):
         await self._send_product_panel(interaction, key, role_staff, salon_logs)
 
     @app_commands.command(
+        name="setup_colorbot_full",
+        description="Poster le message de vente COLORBOT FULL (Premium Valorant) avec bouton d'achat",
+    )
+    @app_commands.describe(
+        langue="Langue de l'embed (français ou anglais)",
+        role_staff="Rôle staff ayant accès au ticket (optionnel)",
+        salon_logs="Salon des logs/transcripts (optionnel)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_colorbot_full(
+        self,
+        interaction: discord.Interaction,
+        langue: app_commands.Choice[str] | None = None,
+        role_staff: discord.Role | None = None,
+        salon_logs: discord.TextChannel | None = None,
+    ) -> None:
+        lang = langue.value if langue else "fr"
+        key = "colorbot_full_fr" if lang == "fr" else "colorbot_full"
+        await self._send_product_panel(interaction, key, role_staff, salon_logs)
+
+    @app_commands.command(
+        name="setup_colorbot_lite",
+        description="Poster le message de vente COLORBOT LITE (Essential Pixel Aim) avec bouton d'achat",
+    )
+    @app_commands.describe(
+        langue="Langue de l'embed (français ou anglais)",
+        role_staff="Rôle staff ayant accès au ticket (optionnel)",
+        salon_logs="Salon des logs/transcripts (optionnel)",
+    )
+    @app_commands.choices(
+        langue=[
+            app_commands.Choice(name="Français 🇫🇷", value="fr"),
+            app_commands.Choice(name="English 🇬🇧", value="en"),
+        ]
+    )
+    @app_commands.default_permissions(administrator=True)
+    @app_commands.guild_only()
+    async def setup_colorbot_lite(
+        self,
+        interaction: discord.Interaction,
+        langue: app_commands.Choice[str] | None = None,
+        role_staff: discord.Role | None = None,
+        salon_logs: discord.TextChannel | None = None,
+    ) -> None:
+        lang = langue.value if langue else "fr"
+        key = "colorbot_lite_fr" if lang == "fr" else "colorbot_lite"
+        await self._send_product_panel(interaction, key, role_staff, salon_logs)
+
+    @app_commands.command(
         name="setup_colorbot",
-        description="Poster le message de vente COLORBOT avec bouton d'achat",
+        description="Poster le message de vente COLORBOT FULL avec bouton d'achat",
     )
     @app_commands.describe(
         langue="Langue de l'embed (français ou anglais)",
@@ -608,7 +877,7 @@ class Products(commands.Cog):
         salon_logs: discord.TextChannel | None = None,
     ) -> None:
         lang = langue.value if langue else "fr"
-        key = "colorbot_fr" if lang == "fr" else "colorbot"
+        key = "colorbot_full_fr" if lang == "fr" else "colorbot_full"
         await self._send_product_panel(interaction, key, role_staff, salon_logs)
 
     @app_commands.command(
@@ -678,10 +947,12 @@ class Products(commands.Cog):
     )
     @app_commands.choices(
         produit=[
+            app_commands.Choice(name="🟡 COLORBOT FULL (FR 🇫🇷)", value="colorbot_full_fr"),
+            app_commands.Choice(name="🟡 COLORBOT FULL (EN 🇬🇧)", value="colorbot_full"),
+            app_commands.Choice(name="🟢 COLORBOT LITE (FR 🇫🇷)", value="colorbot_lite_fr"),
+            app_commands.Choice(name="🟢 COLORBOT LITE (EN 🇬🇧)", value="colorbot_lite"),
             app_commands.Choice(name="🟣 UNLOCK ALL (FR 🇫🇷)", value="unlockall_fr"),
             app_commands.Choice(name="🟣 UNLOCK ALL (EN 🇬🇧)", value="unlockall"),
-            app_commands.Choice(name="🟡 COLORBOT PRIVATE (FR 🇫🇷)", value="colorbot_fr"),
-            app_commands.Choice(name="🟡 COLORBOT PRIVATE (EN 🇬🇧)", value="colorbot"),
             app_commands.Choice(name="🔴 M-CORE BO7/WARZONE (FR 🇫🇷)", value="mcore_fr"),
             app_commands.Choice(name="🔴 M-CORE BO7/WARZONE (EN 🇬🇧)", value="mcore"),
             app_commands.Choice(name="🔮 TRINITY SPECTRE BO7/WARZONE (FR 🇫🇷)", value="spectre_fr"),
