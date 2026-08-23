@@ -1,26 +1,20 @@
-# ⚡ Bienvenue sur la Documentation Officielle Core Market
+# ⚡ Core Market — Documentation Officielle
 
-Bienvenue sur le centre de documentation officiel de **Core Market** !
+Bienvenue sur le portail de documentation officiel de **Core Market**.
 
-Ce guide vous accompagne pas-à-pas pour configurer votre PC, installer le loader et profiter de nos logiciels indétectés (**BO7 / Warzone / Valorant**) en toute sécurité.
+Vous trouverez ici tous les guides d'installation étape par étape, les configurations recommandées, ainsi que les solutions aux problèmes fréquents pour l'ensemble de nos logiciels et services.
 
 ---
 
-### 🚀 Démarrage Rapide
+### 📌 Navigation Rapide
 
-{% hint style="info" %}
-**IMPORTANT :** Vous devez obligatoirement suivre les étapes de la section **ÉTAPES OBLIGATOIRES** avant de télécharger ou lancer le loader.
-{% endhint %}
-
-1. **Activez la virtualisation dans votre BIOS :** [Étape 1 : Virtualisation](etapes-obligatoires/1-virtualisation.md)
-2. **Configurez les exclusions antivirus :** [Étape 2 : Sécurité Windows](etapes-obligatoires/2-securite-windows.md)
-3. **Téléchargez le Loader :** [Téléchargement](installation-utilisation/telechargement.md)
-4. **Récupérez votre clé d'essai gratuit sur Discord :** Rejoignez notre serveur et rendez-vous dans le salon `#🔑・ꜰʀᴇᴇ-ᴛʀɪᴀʟ`.
+* [⚙️ Prérequis & Installation](01-prerequis/virtualisation.md)
+* [🎯 Valorant (Colorbot, Triggerbot, Emulator)](02-valorant/colorbot.md)
+* [🎮 Call of Duty (Spectre, M-Core, Essai Gratuit)](03-call-of-duty/trinity-spectre.md)
+* [🎫 Support & Assistance Discord](04-support/tickets.md)
 
 ---
 
 ### 🌐 Liens Utiles
-
-* 📥 **Téléchargement direct Loader (Mega) :** [https://mega.nz/folder/w7VjQS6I#wav1HBlD04Hj9w-N\_2CVaQ](https://mega.nz/folder/w7VjQS6I#wav1HBlD04Hj9w-N\_2CVaQ)
-* 📖 **Guide GitBook :** [https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation](https://trinityshop.gitbook.io/untitled/etapes-obligatoire/1.-virtualisation)
-* 💬 **Support Discord :** Ouvrez un ticket 24/7 sur notre serveur Discord.
+* **Discord Officiel :** [discord.gg/coremarket](https://discord.gg/coremarket)
+* **Support 24/7 :** Ouvrez un ticket dans le salon `#creer-un-ticket` sur notre serveur.

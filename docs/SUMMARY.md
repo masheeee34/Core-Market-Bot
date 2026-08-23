@@ -1,23 +1,22 @@
 # Table of contents
 
-* [🚀 Bienvenue sur Core Market](README.md)
+* [Accueil](README.md)
 
-## 📌 ÉTAPES OBLIGATOIRES
-* [1. Activation de la Virtualisation (BIOS)](etapes-obligatoires/1-virtualisation.md)
-* [2. Configuration Sécurité & Windows Defender](etapes-obligatoires/2-securite-windows.md)
-* [3. Désactivation Isolation du Noyau (HVCI)](etapes-obligatoires/3-isolation-noyau.md)
-* [4. Configuration Overlay (Discord / Nvidia)](etapes-obligatoires/4-overlay.md)
+## ⚙️ Prérequis & Système
+* [1. Virtualisation BIOS](01-prerequis/virtualisation.md)
+* [2. Composants & Runtimes](01-prerequis/composants.md)
+* [3. Sécurité & Antivirus](01-prerequis/antivirus.md)
 
-## 📥 INSTALLATION & UTILISATION
-* [⬇️ Téléchargement du MultiLoader](installation-utilisation/telechargement.md)
-* [🔑 Activation de la Clé d'Essai (Trial)](installation-utilisation/activation-cle.md)
+## 🎯 Valorant
+* [Colorbot (Full & Lite)](02-valorant/colorbot.md)
+* [Triggerbot Standalone](02-valorant/triggerbot.md)
+* [Public Emulator (TPM/HVCI)](02-valorant/public-emulator.md)
 
-## 🎮 GUIDES PRODUITS
-* [🔮 Guide SPECTRE EXTERNAL (BO7 & WZ)](guides-produits/spectre-external.md)
-* [🔴 Guide M-CORE EXTERNAL (BO7 & WZ)](guides-produits/mcore-external.md)
-* [⚡ Guide SPOOFER PERMANENT](guides-produits/spoofer.md)
+## 🎮 Call of Duty & Spoofer
+* [Trinity Spectre (BO7 / WZ)](03-call-of-duty/trinity-spectre.md)
+* [M-Core External](03-call-of-duty/mcore.md)
+* [Essai Gratuit 1H (Trial)](03-call-of-duty/free-trial.md)
 
-## 🛠️ AUTO SUPPORT & DÉPANNAGE
-* [🔧 Outils de Support Automatique](support/support-tool-et-crash.md)
-* [🛑 Arrêter de Crash sur BO7 & Warzone](support/arreter-crash-bo7.md)
-* [❓ FAQ & Problèmes Courants](support/faq.md)
+## 💬 Support & FAQ
+* [Questions Fréquentes](04-support/faq.md)
+* [Ouvrir un Ticket](04-support/tickets.md)
