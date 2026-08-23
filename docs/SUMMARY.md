@@ -1,22 +1,29 @@
 # Table of contents
 
-* [Accueil](README.md)
+* [Accueil / Home](README.md)
 
-## ⚙️ Prérequis & Système
-* [1. Virtualisation BIOS](01-prerequis/virtualisation.md)
-* [2. Composants & Runtimes](01-prerequis/composants.md)
-* [3. Sécurité & Antivirus](01-prerequis/antivirus.md)
+## 🇫🇷 Français (FR)
+* [⚙️ 1. Virtualisation BIOS](01-prerequis/virtualisation.md)
+* [⚙️ 2. Composants & Runtimes](01-prerequis/composants.md)
+* [⚙️ 3. Sécurité & Antivirus](01-prerequis/antivirus.md)
+* [🎯 Valorant Colorbot (Full/Lite)](02-valorant/colorbot.md)
+* [🎯 Valorant Triggerbot](02-valorant/triggerbot.md)
+* [🎯 Valorant Public Emulator](02-valorant/public-emulator.md)
+* [🎮 BO7 Trinity Spectre](03-call-of-duty/trinity-spectre.md)
+* [🎮 BO7 M-Core External](03-call-of-duty/mcore.md)
+* [🎁 Essai Gratuit 1H](03-call-of-duty/free-trial.md)
+* [❓ FAQ & Résolution](04-support/faq.md)
+* [🎫 Support & Tickets](04-support/tickets.md)
 
-## 🎯 Valorant
-* [Colorbot (Full & Lite)](02-valorant/colorbot.md)
-* [Triggerbot Standalone](02-valorant/triggerbot.md)
-* [Public Emulator (TPM/HVCI)](02-valorant/public-emulator.md)
-
-## 🎮 Call of Duty & Spoofer
-* [Trinity Spectre (BO7 / WZ)](03-call-of-duty/trinity-spectre.md)
-* [M-Core External](03-call-of-duty/mcore.md)
-* [Essai Gratuit 1H (Trial)](03-call-of-duty/free-trial.md)
-
-## 💬 Support & FAQ
-* [Questions Fréquentes](04-support/faq.md)
-* [Ouvrir un Ticket](04-support/tickets.md)
+## 🇬🇧 English (EN)
+* [⚙️ 1. BIOS Virtualization](en/01-prerequisites/virtualization.md)
+* [⚙️ 2. Required Runtimes](en/01-prerequisites/components.md)
+* [⚙️ 3. Security & Antivirus](en/01-prerequisites/antivirus.md)
+* [🎯 Valorant Colorbot (Full/Lite)](en/02-valorant/colorbot.md)
+* [🎯 Valorant Triggerbot](en/02-valorant/triggerbot.md)
+* [🎯 Valorant Public Emulator](en/02-valorant/public-emulator.md)
+* [🎮 BO7 Trinity Spectre](en/03-call-of-duty/trinity-spectre.md)
+* [🎮 BO7 M-Core External](en/03-call-of-duty/mcore.md)
+* [🎁 1-Hour Free Trial](en/03-call-of-duty/free-trial.md)
+* [❓ FAQ & Troubleshooting](en/04-support/faq.md)
+* [🎫 Support & Tickets](en/04-support/tickets.md)
